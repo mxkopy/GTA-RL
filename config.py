@@ -11,3 +11,6 @@ action_sizes = {
 visual_features_size = (8, 8)
 visual_channels = [state_sizes['image'][0], 3, 3, 3, 3, 3]
 device = 'cuda'
+
+action_space_shape = (4,)
+observation_space_shape = state_sizes
