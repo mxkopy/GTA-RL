@@ -36,13 +36,19 @@ class DriverModelBase(nn.Module):
         self.hidden_size = config.visual_features_size[0] * config.visual_features_size[1] * config.visual_channels[-1] + 1
         self.collate_mean = nn.Sequential(
             nn.Linear(self.hidden_size, self.hidden_size),
-            # nn.LayerNorm(self.hidden_size),
+            nn.ReLU(),
+            nn.Linear(self.hidden_size, self.hidden_size),
+            nn.ReLU(),
+            nn.Linear(self.hidden_size, self.hidden_size),
             nn.ReLU(),
             nn.Linear(self.hidden_size, config.action_sizes['controller'][0])
         )
         self.collate_std = nn.Sequential(
             nn.Linear(self.hidden_size, self.hidden_size),
-            # nn.LayerNorm(self.hidden_size),
+            nn.ReLU(),
+            nn.Linear(self.hidden_size, self.hidden_size),
+            nn.ReLU(),
+            nn.Linear(self.hidden_size, self.hidden_size),
             nn.ReLU(),
             nn.Linear(self.hidden_size, config.action_sizes['controller'][0])
         )

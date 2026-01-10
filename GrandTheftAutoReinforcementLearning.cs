@@ -16,7 +16,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-
 public class GrandTheftAutoReinforcementLearning : Script
 {
     static readonly Vector3 AIRPORT = new Vector3(-1161.462f, -2584.786f, 13.505f);
@@ -25,6 +24,8 @@ public class GrandTheftAutoReinforcementLearning : Script
     static GameState GameState = new GameState();
     static Flags Flags = GameState.flags;
     static Random rand = new Random();
+
+    static uint count = 0;
 
     //public delegate void PresentCallback([MarshalAs(UnmanagedType.LPStruct)] IntPtr SwapChain);
 
@@ -40,13 +41,23 @@ public class GrandTheftAutoReinforcementLearning : Script
 
         Flags.SetFlag(FLAGS.REQUEST_ACTION, true);
 
+
+
     }
+
     private void OnTick(object sender, EventArgs e)
     {
+
+        //GTA.Native.Hash.GET_GAMEPLAY_CAM_COORD;
+        //GameplayCamera.Position;
+
         Vehicle V = Game.Player.Character.CurrentVehicle;
 
         Game.Player.Wanted.SetWantedLevel(0, false);
         Game.Player.Wanted.ApplyWantedLevelChangeNow(false);
+
+        //GTA.Native.Hash.CAM
+
 
         if (V != null && Flags.GetFlag(FLAGS.IS_TRAINING))
         {

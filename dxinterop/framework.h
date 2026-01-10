@@ -5,12 +5,16 @@
 #include <windows.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <type_traits>
+
 
 #include <system_error>
 #include <cmath>
 #include <cstdio>
 #include <fstream>
 #include <format>
+
 
 #include <assert.h>
 #include <dxgi.h>
@@ -22,21 +26,12 @@
 #include <cuda_d3d11_interop.h>
 #include <driver_types.h>
 #include <wrl/client.h>
+#include <iomanip>
+#include <Eigen/Core>
+#include <Eigen/SVD>
+#include <Eigen/Geometry>
+
 #include "detours.h"
 #include "scripthookv_sdk/inc/natives.h"
 #include "scripthookv_sdk/inc/main.h"
 #include "launchDebugger.h"
-
-/*extern IDXGISwapChain* swapChain;
-extern ID3D11Device* dev;
-extern ID3D11DeviceContext* ctx;
-extern ID3D11Texture2D* depthStencilBuffer;
-extern ID3D11DepthStencilView* depthStencilView;
-extern ID3D11ShaderResourceView* shaderResourceView;
-extern cudaGraphicsResource* cudaResource;
-extern HANDLE cuDevPtrMmap;
-extern HANDLE cuDevPtrSizeMmap;
-extern void* cuDevPtrMmapView;
-extern void* cuDevPtrSizeMmapView;
-extern void* cuDevPtr;
-extern size_t cuDevPtrSize;*/

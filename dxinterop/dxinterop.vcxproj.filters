@@ -21,15 +21,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\shared\dxgi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Program Files (x86)\Windows Kits\10\Include\10.0.26100.0\um\d3d11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="launchDebugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>

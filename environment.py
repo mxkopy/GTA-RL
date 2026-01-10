@@ -104,41 +104,71 @@ class Transition(TransitionTuple):
         else:
             return self.__class__( *(x[idx] for x in self))
 
+from ipc import Channel
+
 class VideoState:
+
+    cuda_arrays = {}
+    tensors = {}
+
+    nearclipfarclip = Channel(8, "NearClipFarClip")
 
     def __init__(self, queue_length=100, depth=True):
         self.depth = depth
-        self.cuda_array = None
 
-    def init_cuda_array(idx=1):
-        from ipc import Channel
-        array_handle = Channel(64, f"CudaArray{idx}")
-        array_format = Channel(32, f"CudaArray{idx}Info")
-        memory_handle = array_handle.pop_nbl()
-        components, bpp, pitch, height = unpack("@4P", array_format.pop_nbl())
-        if components != 0:
-            arrayPtr = cupy.cuda.runtime.ipcOpenMemHandle(memory_handle)
-            membuffer = cupy.cuda.UnownedMemory(arrayPtr, pitch * height, owner=VideoState, device_id=0)
-            return cupy.ndarray(shape=(components, height, pitch // bpp), dtype=cupy.float32, memptr=cupy.cuda.MemoryPointer(membuffer, 0))
-        return None
+    def get_dtype(components, bpp):
+        if bpp == 4 and components == 4:
+            return cupy.uint8
+        if bpp == 4 and components == 1:
+            return cupy.float32
 
-    def linearize_depth(array, near, far):
-        y = (torch.pow(far/near,array)-1) * (near / far)
-        return ((y * near) / far)
-    
-    def pop(self) -> torch.Tensor:
-        if self.cuda_array is None:
-            self.cuda_array = VideoState.init_cuda_array(idx=1)
-            if self.cuda_array is None:
-                print("Something went wrong initializing VideoState")
-                exit()
-        tensor = torch.from_dlpack(self.cuda_array)
-        if self.depth:
-            if not hasattr(self, 'nearclipfarclip'):
+    def init_cuda_array(id):
+        if id not in VideoState.tensors:
+            try: 
                 from ipc import Channel
-                self.nearclipfarclip = Channel(8, "NearClipFarClip")
-            near, far = unpack('@2f', self.nearclipfarclip.pop_nbl())
-            img = VideoState.linearize_depth(tensor, near, far).unsqueeze(0)
+                array_handle = Channel(64, f"{id}")
+                array_format = Channel(32, f"{id}Info")
+                memory_handle_bytes = array_handle.pop_nbl()
+                components, bpp, pitch, height = unpack("@4P", array_format.pop_nbl())
+                memory_handle = cupy.cuda.runtime.ipcOpenMemHandle(memory_handle_bytes)
+                mem_buffer = cupy.cuda.UnownedMemory(memory_handle, pitch * height, owner=VideoState, device_id=0)
+                memory_pointer = cupy.cuda.MemoryPointer(mem_buffer, 0)
+                dtype = VideoState.get_dtype(components, bpp)
+                cuda_array = cupy.ndarray(shape=(height, pitch // bpp, components), dtype=dtype, memptr=memory_pointer)
+                VideoState.cuda_arrays[id] = cuda_array
+                VideoState.tensors[id] = torch.from_dlpack(cuda_array)
+            except Exception as exception:
+                exception.add_note(f"Error occurred while initializing {id} in VideoState")
+                print(exception)
+                exit()
+
+    def rescale(img: torch.Tensor):
+        return torch.nn.functional.interpolate(img, config.state_sizes['image'][1:], mode='bilinear', antialias=True)
+
+    def pop_rgb():
+        VideoState.init_cuda_array("RGB")
+        img = VideoState.tensors["RGB"]
+        img = img.permute(2, 0, 1).unsqueeze(0).to(dtype=torch.float16)
+        img = img / 255
+        img = VideoState.rescale(img) 
+        return img
+
+    def linearize_depth(array):
+        near, far = unpack('@2f', VideoState.nearclipfarclip.pop_nbl())
+        y = (torch.pow(far/near,array)-1) * (near / far)
+        depth = ((y * near) / far)
+        return depth
+
+    def pop_depth():
+        VideoState.init_cuda_array("DepthBuffer")
+        depth = VideoState.linearize_depth(VideoState.tensors["DepthBuffer"])
+        depth = depth.squeeze().unsqueeze(0).unsqueeze(0)
+        depth = VideoState.rescale(depth)
+        return depth
+
+    def pop(self) -> torch.Tensor:
+        if self.depth:
+            img = VideoState.pop_depth()
         else:
             img = img[:, :, :3].permute(2, 0, 1).unsqueeze(0)
             if self.grayscale:
@@ -146,17 +176,6 @@ class VideoState:
             img = img.to(dtype=torch.float16)
         img = torch.nn.functional.interpolate(img, config.state_sizes['image'][1:], mode='bilinear', antialias=True)
         return img
-        
-    def display(self):
-        import numpy as np
-        from PIL import Image
-        img = self.pop()
-        if img.shape[1] == 1:
-            img = img.squeeze().cpu().numpy()
-            Image.fromarray(((img / img.max())*255).astype(np.uint8)).show()
-        else:
-            img = img.squeeze().permute(1, 2, 0).cpu().numpy()
-            Image.fromarray(((img / img.max())*255).astype(np.uint8)).show()
 
 class FrameQueue:
 
