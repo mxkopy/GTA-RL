@@ -41,8 +41,6 @@ public class GrandTheftAutoReinforcementLearning : Script
 
         Flags.SetFlag(FLAGS.REQUEST_ACTION, true);
 
-
-
     }
 
     private void OnTick(object sender, EventArgs e)

@@ -4,6 +4,7 @@ import time
 import msgs_pb2
 from google.protobuf.message import Message
 from google.protobuf.descriptor import FieldDescriptor
+
 N_FLAGS = 5
 FLAGS_TAG = "flags.ipc"
 IPC_SLEEP_DURATION = 1e-3

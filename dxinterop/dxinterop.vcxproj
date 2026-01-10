@@ -250,7 +250,7 @@ copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
-    <ClInclude Include="launchDebugger.h" />
+    <ClInclude Include="launch_debugger.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -263,6 +263,7 @@ copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="MainScript.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ComputeShader.hlsl">

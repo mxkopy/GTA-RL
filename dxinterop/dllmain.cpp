@@ -1,6 +1,7 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 #include "framework.h"
+#include "scripthookv_sdk/inc/main.h"
 
 using Microsoft::WRL::ComPtr;
 using std::string;

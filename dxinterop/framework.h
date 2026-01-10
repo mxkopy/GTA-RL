@@ -7,13 +7,12 @@
 #include <vector>
 #include <unordered_map>
 #include <type_traits>
-
-
 #include <system_error>
 #include <cmath>
 #include <cstdio>
 #include <fstream>
 #include <format>
+#include <random>
 
 
 #include <assert.h>
@@ -33,5 +32,4 @@
 
 #include "detours.h"
 #include "scripthookv_sdk/inc/natives.h"
-#include "scripthookv_sdk/inc/main.h"
-#include "launchDebugger.h"
+#include "launch_debugger.h"
