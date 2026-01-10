@@ -20,17 +20,10 @@ public class GrandTheftAutoReinforcementLearning : Script
 {
     static readonly Vector3 AIRPORT = new Vector3(-1161.462f, -2584.786f, 13.505f);
     static readonly Vector3 HIGHWAY = new Vector3(-704.8778f, -2111.786f, 13.51563f);
-    static readonly Vector3 HIGHWAY_DIRECTION = new Vector3(-0.7894784f, -0.6133158f, 0.02382357f);
     static GameState GameState = new GameState();
     static Flags Flags = GameState.flags;
     static Random rand = new Random();
 
-    static uint count = 0;
-
-    //public delegate void PresentCallback([MarshalAs(UnmanagedType.LPStruct)] IntPtr SwapChain);
-
-    //[DllImport("dxinterop.asi", ExactSpelling = true, EntryPoint = "?getSwapChainPtr@@YAPEAXXZ")]
-    //public static extern IntPtr GetSwapChainPtr();
     public GrandTheftAutoReinforcementLearning()
     {
         Tick += OnTick;
@@ -40,26 +33,22 @@ public class GrandTheftAutoReinforcementLearning : Script
         Game.Player.Wanted.SetPoliceIgnorePlayer(true);
 
         Flags.SetFlag(FLAGS.REQUEST_ACTION, true);
-
+        Flags.SetFlag(FLAGS.RESET, true);
     }
 
     private void OnTick(object sender, EventArgs e)
     {
-
-        //GTA.Native.Hash.GET_GAMEPLAY_CAM_COORD;
-        //GameplayCamera.Position;
 
         Vehicle V = Game.Player.Character.CurrentVehicle;
 
         Game.Player.Wanted.SetWantedLevel(0, false);
         Game.Player.Wanted.ApplyWantedLevelChangeNow(false);
 
-        //GTA.Native.Hash.CAM
-
-
-        if (V != null && Flags.GetFlag(FLAGS.IS_TRAINING))
+        if (V != null && !Flags.GetFlag(FLAGS.RESET))
         {
-            Flags.WaitUntil(FLAGS.REQUEST_GAME_STATE, true);
+            while (!Flags.GetFlag(FLAGS.REQUEST_GAME_STATE))
+                if (Flags.GetFlag(FLAGS.RESET)) 
+                    return;
 
             GameplayCamera.ForceRelativeHeadingAndPitch(0, 0, 0);
             GTA.Native.Function.Call(GTA.Native.Hash.FORCE_BONNET_CAMERA_RELATIVE_HEADING_AND_PITCH, 0, 0, 0);
@@ -76,12 +65,9 @@ public class GrandTheftAutoReinforcementLearning : Script
 
             GameState.State.Damage = (uint)(V.HasCollided ? 1 : 0);
             GameState.Put(GameState.State);
-
-            Flags.SetFlag(FLAGS.REQUEST_GAME_STATE, false);
-
         }
 
-        else if (V != null)
+        else if (Flags.GetFlag(FLAGS.RESET))
         {
             Reset();
             Wait(10);

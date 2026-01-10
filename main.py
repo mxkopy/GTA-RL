@@ -6,28 +6,35 @@ import time
 import random
 import sys
 from collections.abc import Callable, Buffer
-from model import DriverActorModel, DriverCriticModel
+from ray.rllib.core.rl_module.rl_module import RLModuleSpec
+# from model import DriverActorModel, DriverCriticModel
 
 if __name__ == '__main__':
 
     assert len(sys.argv) >= 2
 
-    if sys.argv[1] == 'controller':
-        from controller import ControllerHandler
-        ControllerHandler().start()
-
     if sys.argv[1] == 'train':
-        from ddpg import DeterministicPolicyGradient
-        from model import DriverActorModel, DriverCriticModel
+        # from model import DriverActorModel, DriverCriticModel
+        from environment import Environment
         from ipc import Flags, FLAGS
-        from controller import VirtualController
-        actor = DriverActorModel().to(device=config.device)
-        critic = DriverCriticModel().to(device=config.device)
+        from ray.rllib.algorithms.ppo import PPOConfig
+        from model import Model
+        algorithm = (
+            PPOConfig()
+            .framework("torch")
+            .resources(num_gpus=1)
+            .environment(env=Environment)
+            .rl_module(rl_module_spec=RLModuleSpec(module_class=Model))
+            .training(lr=1e-5)
+            .build_algo()
+        )
+        # actor = DriverActorModel().to(device=config.device)
+        # critic = DriverCriticModel().to(device=config.device)
         print("Waiting for script to load")
-        Flags().wait_until(FLAGS.REQUEST_ACTION, True)
+        # Flags().wait_until(FLAGS.REQUEST_ACTION, True)
         print("Script loaded")
-        ddpg = DeterministicPolicyGradient(actor, critic)
-        ddpg.train()
+        while True:
+            algorithm.train()
 
     if sys.argv[1] == 'debug':
         from ipc import debug_flags, Flags

@@ -3,7 +3,6 @@ import math
 import time
 from msgs_pb2 import ControllerState
 from time import sleep
-from ipc import VirtualControllerState, PhysicalControllerState, FLAGS
 
 def initialize_output_pad():
     print("\nInitializing virtual controller")  

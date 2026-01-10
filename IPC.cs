@@ -35,6 +35,7 @@ namespace IPC
         public Flags(int n = NUMBER_OF_FLAGS, string tag = FLAGS_TAG)
         {
             int size = -(n / -8);
+            //ipc_flags_f = MemoryMappedFile.CreateOrOpen(tag, size);
             ipc_flags_f = MemoryMappedFile.OpenExisting(tag);
             flags = ipc_flags_f.CreateViewStream(0, size);
         }
@@ -88,24 +89,6 @@ namespace IPC
         public void WaitUntil(FLAGS idx, bool value)
         {
             WaitUntil((int)idx, value);
-        }
-
-        public void WaitUntil(IEnumerable<int> idxs, IEnumerable<bool> values, Action fn)
-        {
-            while (idxs.Zip(values, (idx, value) => GetFlag(idx) == value).All(x => x))
-                fn();
-        }
-        public void WaitUntil(IEnumerable<FLAGS> idxs, IEnumerable<bool> values, Action fn)
-        {
-            WaitUntil(idxs.Cast<int>(), values, fn);
-        }
-        public void WaitUntil(IEnumerable<int> idxs, IEnumerable<bool> values)
-        {
-            WaitUntil(idxs, values, () => { });
-        }
-        public void WaitUntil(IEnumerable<FLAGS> idxs, IEnumerable<bool> values)
-        {
-            WaitUntil(idxs.Cast<int>(), values);
         }
     }
 

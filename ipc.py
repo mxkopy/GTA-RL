@@ -20,8 +20,6 @@ class FLAGS:
     RESET = 4
     IS_TRAINING = 5
 
-    REQUEST_INPUT = -1
-    INPUT_WRITTEN = -1
 
 class Flags:
 
@@ -72,37 +70,61 @@ class Channel:
         payload: bytes = self.ipc.read(-1)
         return payload
 
-class MappedChannel(Channel):
+class MessageChannel(type):
 
-    N_BYTES: int
-    MSG_TYPE: type[Message]
+    def default_init_dict(descriptor: FieldDescriptor):
+        descriptor.fields: list[FieldDescriptor]
+        return {
+            field.name: 0 if field.message_type is None else MessageChannel.default_init_dict(field.message_type)
+            for field in descriptor.fields
+        }
 
-    def __init__(self, tagname: str):
-        super().__init__(self.__class__.N_BYTES, tagname=tagname)
-        self.push_nbl( self.MSG_TYPE.init() )
+    def create_init(msg_type: type[Message]):
+        def init():
+            return msg_type(**MessageChannel.default_init_dict(msg_type.DESCRIPTOR))
+        return init
+
+    def from_iterable(message: Message, itr: Iterable):
+        for field, x in zip(message.DESCRIPTOR.fields, itr):
+            value = getattr(message, field.name)
+            if not isinstance(value, Message) and x is not None:
+                setattr(message, field.name, x)
+            elif x is not None:
+                MessageChannel.from_iterable(value, x)
+        return message
+
+    def to_list(message: Message):
+        return [getattr(message, field.name) if field.message_type is None else MessageChannel.to_list(getattr(message, field.name)) for field in message.DESCRIPTOR.fields]
+
+    def to_tuple(message: Message):
+        return tuple(getattr(message, field.name) if field.message_type is None else MessageChannel.to_tuple(getattr(message, field.name)) for field in message.DESCRIPTOR.fields)
 
     def push_nbl(self, payload: Message):
         assert payload.__class__ == self.__class__.MSG_TYPE
         msg: bytes = payload.SerializeToString()
-        super().push_nbl(msg)
+        Channel.push_nbl(self, msg)
 
     def pop_nbl(self) -> Message:
-        msg: bytes = super().pop_nbl()
-        msgs_pb2.ControllerState.FromString(msg)
+        msg: bytes = Channel.pop_nbl(self)
         return self.__class__.MSG_TYPE.FromString(msg)
 
-class StateQueue(Flags, MappedChannel):
+    # def __new__(mcls, name, bases, dict):
+        # cls = type(name, bases, dict)
+        # cls.push_nbl = MessageChannel.push_nbl
+        # cls.pop_nbl = MessageChannel.pop_nbl
+        # return cls
 
-    READY_TO_READ: int
-    NEW_MESSAGE_WRITTEN: int
-    TAGNAME: str
+    def __init__(cls, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cls.MSG_TYPE.init = MessageChannel.create_init(cls.MSG_TYPE)
+        cls.N_BYTES = cls.MSG_TYPE(**MessageChannel.default_init_dict(cls.MSG_TYPE.DESCRIPTOR)).ByteSize()
+        cls.MSG_TYPE.to_list = MessageChannel.to_list
+        cls.MSG_TYPE.to_tuple = MessageChannel.to_tuple
+        cls.MSG_TYPE.from_iterable = MessageChannel.from_iterable
+        cls.pop_nbl = MessageChannel.pop_nbl
+        cls.push_nbl = MessageChannel.push_nbl
 
-    N_BYTES: int
-    MSG_TYPE: type[Message]
-
-    def __init__(self):
-        Flags.__init__(self)
-        MappedChannel.__init__(self, tagname=self.__class__.TAGNAME)
+class MessageQueue(MessageChannel):
 
     def push(self, state: tuple | list | Message):
         self.wait_until(self.__class__.READY_TO_READ, True)
@@ -110,8 +132,10 @@ class StateQueue(Flags, MappedChannel):
         self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, True)
 
     def pop(self) -> tuple:
-        self.wait_until(self.__class__.NEW_MESSAGE_WRITTEN, True)
+        self.set_flag(self.__class__.READY_TO_READ, True)
+        # self.wait_until(self.__class__.NEW_MESSAGE_WRITTEN, True)
         state: Message = self.pop_nbl()
+        self.set_flag(self.__class__.READY_TO_READ, False)
         self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, False)
         return state
     
@@ -126,90 +150,49 @@ class StateQueue(Flags, MappedChannel):
         self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, True)
         return self
 
-class FixedSizeState(type):
-
-    def default_init_dict(descriptor: FieldDescriptor):
-        descriptor.fields: list[FieldDescriptor]
-        return {
-            field.name: 0 if field.message_type is None else FixedSizeState.default_init_dict(field.message_type)
-            for field in descriptor.fields
-        }
-
-    def create_init(msg_type: type[Message]):
-        def init():
-            return msg_type(**FixedSizeState.default_init_dict(msg_type.DESCRIPTOR))
-        return init
-
-    def from_iterable(self: Message, itr: Iterable):
-        for field, x in zip(self.DESCRIPTOR.fields, itr):
-            value = getattr(self, field.name)
-            if not isinstance(value, Message) and x is not None:
-                setattr(self, field.name, x)
-            elif x is not None:
-                FixedSizeState.from_iterable(value, x)
-        return self
-
-    def to_list(self: Message):
-        return [getattr(self, field.name) if field.message_type is None else FixedSizeState.to_list(getattr(self, field.name)) for field in self.DESCRIPTOR.fields]
-
-    def to_tuple(self: Message):
-        return tuple(getattr(self, field.name) if field.message_type is None else FixedSizeState.to_tuple(getattr(self, field.name)) for field in self.DESCRIPTOR.fields)
-
     def __init__(cls, *args, **kwargs):
-        cls.MSG_TYPE.init = FixedSizeState.create_init(cls.MSG_TYPE)
-        cls.MSG_TYPE.to_list = FixedSizeState.to_list
-        cls.MSG_TYPE.to_tuple = FixedSizeState.to_tuple
-        cls.MSG_TYPE.from_iterable = FixedSizeState.from_iterable
-        cls.N_BYTES = cls.MSG_TYPE(**FixedSizeState.default_init_dict(cls.MSG_TYPE.DESCRIPTOR)).ByteSize()
+        super().__init__(*args, **kwargs)
+        # cls.pop = MessageQueue.pop
+        # cls.push = MessageQueue.push
+        # cls.__xor__ = MessageQueue.__xor__
+        # cls.__ixor__ = MessageQueue.__ixor__
 
-class VirtualControllerState(StateQueue, metaclass=FixedSizeState):
+# class StateQueue(Flags, metaclass=MessageChannel):
 
-    READY_TO_READ = FLAGS.REQUEST_ACTION
-    NEW_MESSAGE_WRITTEN = FLAGS.ACTION_WRITTEN
-    TAGNAME = 'virtual_controller.ipc'
-    MSG_TYPE = msgs_pb2.ControllerState
+#     READY_TO_READ: int
+#     NEW_MESSAGE_WRITTEN: int
+#     TAGNAME: str
 
-    def pop(self: StateQueue):
-        controller_state = StateQueue.pop(self)
-        return (
-            controller_state.left_joystick_x, 
-            controller_state.left_joystick_y, 
-            controller_state.left_trigger, 
-            controller_state.right_trigger
-        )
+#     N_BYTES: int
+#     MSG_TYPE: type[Message]
 
-class PhysicalControllerState(StateQueue, metaclass=FixedSizeState):
+#     def __init__(self):
+#         Flags.__init__(self)        
+#         MappedChannel.__init__(self, tagname=self.__class__.TAGNAME)
 
-    READY_TO_READ = FLAGS.REQUEST_INPUT
-    NEW_MESSAGE_WRITTEN = FLAGS.INPUT_WRITTEN
-    TAGNAME = 'physical_controller.ipc'
-    MSG_TYPE = msgs_pb2.ControllerState
+#     def push(self, state: tuple | list | Message):
+#         self.wait_until(self.__class__.READY_TO_READ, True)
+#         self.push_nbl(state)
+#         self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, True)
 
-    def pop(self: StateQueue):
-        self.set_flag(FLAGS.INPUT_WRITTEN, True)
-        controller_state = StateQueue.pop(self)
-        return (
-            controller_state.left_joystick_x, 
-            controller_state.left_joystick_y, 
-            controller_state.left_trigger, 
-            controller_state.right_trigger
-        )
-
-class GameState(StateQueue, metaclass=FixedSizeState):
-
-    READY_TO_READ = FLAGS.REQUEST_GAME_STATE
-    NEW_MESSAGE_WRITTEN = FLAGS.GAME_STATE_WRITTEN
-    TAGNAME = 'game_state.ipc'
-    MSG_TYPE = msgs_pb2.GameState
-
-    def pop(self: StateQueue):
-        self.set_flag(FLAGS.REQUEST_GAME_STATE, True)
-        game_state = StateQueue.pop(self)
-        return (
-            (game_state.velocity.x, game_state.velocity.y, game_state.velocity.z),
-            game_state.damage
-        )
-
+#     def pop(self) -> tuple:
+#         self.set_flag(self.__class__.READY_TO_READ, True)
+#         self.wait_until(self.__class__.NEW_MESSAGE_WRITTEN, True)
+#         state: Message = self.pop_nbl()
+#         self.set_flag(self.__class__.READY_TO_READ, False)
+#         self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, False)
+#         return state
+    
+#     def __xor__(self, update: Message):
+#         current_state: Message = self.pop_nbl()
+#         current_state.MergeFrom(update)
+#         return current_state
+    
+#     def __ixor__(self, update: Message):
+#         updated_state = self ^ update
+#         self.push_nbl(updated_state)
+#         self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, True)
+#         return self
 
 def debug_flags():
     flags = Flags()
@@ -222,19 +205,5 @@ def debug_flags():
     flags.flags.seek(0)
     print(f'{flags.flags.read_byte()}')
 
-# debug_flags()
-# exit()
-
 if __name__ == '__main__':
     debug_flags()
-    # ipc = GameIPC()
-    # while True:
-    #     if ipc.get_flag(FLAGS.IS_TRAINING):
-    #         state = [1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [0,]
-    #         print('writing game state')
-    #         ipc.debug_write_game_state(state)
-    #         print('wrote game state')
-    #         while ipc.get_flag(FLAGS.GAME_STATE_WRITTEN) and ipc.get_flag(FLAGS.IS_TRAINING):
-    #             time.sleep(1e-3)
-    #     else:
-    #         print('not training')

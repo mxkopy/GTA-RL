@@ -1,5 +1,5 @@
 state_sizes = {
-    'image': (1, 360, 640),
+    'image': (360, 640),
     'velocity': (3,),
     'damage': (1,)
 }

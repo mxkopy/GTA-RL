@@ -47,7 +47,6 @@ def main(stdscr):
         gv = np.ravel(np.array((0, 1, 0, 0)) @ ROT) #* np.array(( 1914/1046, 1, 1, 1))
         bv = np.ravel(np.array((0, 0, 1, 0)) @ ROT) #* np.array(( 1914/1046, 1, 1, 1))
 
-
         writevec(R, rv[0:3])
         writevec(G, gv[0:3])
         writevec(B, bv[0:3])
