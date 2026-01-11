@@ -5,26 +5,44 @@ import msgs_pb2
 from google.protobuf.message import Message
 from google.protobuf.descriptor import FieldDescriptor
 
-N_FLAGS = 5
+
+class Mutex:
+
+    def __init__(self, name=u"RLLibWorkerMutex"):
+        # Windows Mutex
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        self.CreateMutexW = kernel32.CreateMutexW
+        self.WaitForSingleObject = kernel32.WaitForSingleObject
+        self.ReleaseMutex = kernel32.ReleaseMutex
+        self.CloseHandle = kernel32.CloseHandle
+        self.Mutex = self.CreateMutexW(None, False, name)
+
+    def acquire(self, timeout=0xFFFFFFFF):
+        acquired = self.WaitForSingleObject(self.Mutex, timeout)
+        return acquired == 0
+
+    def release(self):
+        self.ReleaseMutex(self.Mutex)
+
+    def close(self):
+        self.CloseHandle(self.Mutex)
+
+N_FLAGS = 2
 FLAGS_TAG = "flags.ipc"
 IPC_SLEEP_DURATION = 1e-3
     
 class FLAGS:
 
-    REQUEST_GAME_STATE = 0
-    REQUEST_ACTION = 1
+    BEGIN_TRAINING = 0
+    REQUEST_GAME_STATE = 1
 
-    GAME_STATE_WRITTEN = 2
-    ACTION_WRITTEN = 3
-
-    RESET = 4
-    IS_TRAINING = 5
 
 
 class Flags:
 
-    def __init__(self):
-        self.flags = mmap.mmap(-1, -(N_FLAGS // -8), FLAGS_TAG)
+    def __init__(self, n_flags=N_FLAGS, tagname=FLAGS_TAG):
+        self.flags = mmap.mmap(-1, -(n_flags // -8), tagname)
 
     def set_flag(self, idx: int, value: bool) -> None:
         pos, offset = idx // 8, idx % 8
@@ -70,19 +88,25 @@ class Channel:
         payload: bytes = self.ipc.read(-1)
         return payload
 
-class MessageChannel(type):
+class MessageMapped(type):
 
     def default_init_dict(descriptor: FieldDescriptor):
         descriptor.fields: list[FieldDescriptor]
         return {
-            field.name: 0 if field.message_type is None else MessageChannel.default_init_dict(field.message_type)
+            field.name: 0 if field.message_type is None else MessageMapped.default_init_dict(field.message_type)
             for field in descriptor.fields
         }
 
     def create_init(msg_type: type[Message]):
         def init():
-            return msg_type(**MessageChannel.default_init_dict(msg_type.DESCRIPTOR))
+            return msg_type(**MessageMapped.default_init_dict(msg_type.DESCRIPTOR))
         return init
+
+    def post_init_hook(cls_init):
+        def hook(self, *args, **kwargs):
+            cls_init(self, *args, **kwargs)
+            self.push_nbl(self.MSG_TYPE.init())
+        return hook
 
     def from_iterable(message: Message, itr: Iterable):
         for field, x in zip(message.DESCRIPTOR.fields, itr):
@@ -90,14 +114,14 @@ class MessageChannel(type):
             if not isinstance(value, Message) and x is not None:
                 setattr(message, field.name, x)
             elif x is not None:
-                MessageChannel.from_iterable(value, x)
+                MessageMapped.from_iterable(value, x)
         return message
 
     def to_list(message: Message):
-        return [getattr(message, field.name) if field.message_type is None else MessageChannel.to_list(getattr(message, field.name)) for field in message.DESCRIPTOR.fields]
+        return [getattr(message, field.name) if field.message_type is None else MessageMapped.to_list(getattr(message, field.name)) for field in message.DESCRIPTOR.fields]
 
     def to_tuple(message: Message):
-        return tuple(getattr(message, field.name) if field.message_type is None else MessageChannel.to_tuple(getattr(message, field.name)) for field in message.DESCRIPTOR.fields)
+        return tuple(getattr(message, field.name) if field.message_type is None else MessageMapped.to_tuple(getattr(message, field.name)) for field in message.DESCRIPTOR.fields)
 
     def push_nbl(self, payload: Message):
         assert payload.__class__ == self.__class__.MSG_TYPE
@@ -108,37 +132,6 @@ class MessageChannel(type):
         msg: bytes = Channel.pop_nbl(self)
         return self.__class__.MSG_TYPE.FromString(msg)
 
-    # def __new__(mcls, name, bases, dict):
-        # cls = type(name, bases, dict)
-        # cls.push_nbl = MessageChannel.push_nbl
-        # cls.pop_nbl = MessageChannel.pop_nbl
-        # return cls
-
-    def __init__(cls, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        cls.MSG_TYPE.init = MessageChannel.create_init(cls.MSG_TYPE)
-        cls.N_BYTES = cls.MSG_TYPE(**MessageChannel.default_init_dict(cls.MSG_TYPE.DESCRIPTOR)).ByteSize()
-        cls.MSG_TYPE.to_list = MessageChannel.to_list
-        cls.MSG_TYPE.to_tuple = MessageChannel.to_tuple
-        cls.MSG_TYPE.from_iterable = MessageChannel.from_iterable
-        cls.pop_nbl = MessageChannel.pop_nbl
-        cls.push_nbl = MessageChannel.push_nbl
-
-class MessageQueue(MessageChannel):
-
-    def push(self, state: tuple | list | Message):
-        self.wait_until(self.__class__.READY_TO_READ, True)
-        self.push_nbl(state)
-        self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, True)
-
-    def pop(self) -> tuple:
-        self.set_flag(self.__class__.READY_TO_READ, True)
-        # self.wait_until(self.__class__.NEW_MESSAGE_WRITTEN, True)
-        state: Message = self.pop_nbl()
-        self.set_flag(self.__class__.READY_TO_READ, False)
-        self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, False)
-        return state
-    
     def __xor__(self, update: Message):
         current_state: Message = self.pop_nbl()
         current_state.MergeFrom(update)
@@ -147,15 +140,43 @@ class MessageQueue(MessageChannel):
     def __ixor__(self, update: Message):
         updated_state = self ^ update
         self.push_nbl(updated_state)
-        self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, True)
+        if isinstance(self, Queue):
+            self.set_flag(self.__class__.NEW_MESSAGE_WRITTEN, True)
         return self
 
     def __init__(cls, *args, **kwargs):
+        # assert cls subtype of Channel and Flags
         super().__init__(*args, **kwargs)
-        # cls.pop = MessageQueue.pop
-        # cls.push = MessageQueue.push
-        # cls.__xor__ = MessageQueue.__xor__
-        # cls.__ixor__ = MessageQueue.__ixor__
+        cls.MSG_TYPE.init = MessageMapped.create_init(cls.MSG_TYPE)
+        cls.N_BYTES = cls.MSG_TYPE(**MessageMapped.default_init_dict(cls.MSG_TYPE.DESCRIPTOR)).ByteSize()
+        cls.MSG_TYPE.to_list = MessageMapped.to_list
+        cls.MSG_TYPE.to_tuple = MessageMapped.to_tuple
+        cls.MSG_TYPE.from_iterable = MessageMapped.from_iterable
+        cls.pop_nbl = MessageMapped.pop_nbl
+        cls.push_nbl = MessageMapped.push_nbl
+        cls.__xor__ = MessageMapped.__xor__
+        cls.__ixor__ = MessageMapped.__ixor__
+        cls.__init__ = MessageMapped.post_init_hook(cls.__init__)
+
+class Queue(Flags, Channel):
+
+    LOCK: FLAGS
+    TAGNAME: str
+
+    def push(self, state: tuple | list | Message):
+        self.wait_until(self.__class__.LOCK, True)
+        self.push_nbl(state)
+        self.set_flag(self.__class__.LOCK, False)
+
+    def pop(self) -> tuple:
+        self.set_flag(self.__class__.LOCK, True)
+        self.wait_until(self.__class__.LOCK, False)
+        state = self.pop_nbl()
+        return state
+
+    def __init__(self, size: int, tagname: str):
+        Flags.__init__(self)
+        Channel.__init__(self, size, tagname)
 
 # class StateQueue(Flags, metaclass=MessageChannel):
 
@@ -196,14 +217,8 @@ class MessageQueue(MessageChannel):
 
 def debug_flags():
     flags = Flags()
+    print(f'BEGIN_TRAINING: {flags.get_flag(FLAGS.BEGIN_TRAINING)}')
     print(f'REQUEST_GAME_STATE: {flags.get_flag(FLAGS.REQUEST_GAME_STATE)}')
-    print(f'REQUEST_ACTION: {flags.get_flag(FLAGS.REQUEST_ACTION)}')
-    print(f'GAME_STATE_WRITTEN: {flags.get_flag(FLAGS.GAME_STATE_WRITTEN)}')
-    print(f'ACTION_WRITTEN: {flags.get_flag(FLAGS.ACTION_WRITTEN)}')
-    print(f'RESET: {flags.get_flag(FLAGS.RESET)}')
-    print(f'IS_TRAINING: {flags.get_flag(FLAGS.IS_TRAINING)}')
-    flags.flags.seek(0)
-    print(f'{flags.flags.read_byte()}')
 
 if __name__ == '__main__':
     debug_flags()

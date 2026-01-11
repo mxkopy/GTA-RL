@@ -15,14 +15,16 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
+[ScriptAttributes(NoScriptThread = true)]
 public class GrandTheftAutoReinforcementLearning : Script
 {
     static readonly Vector3 AIRPORT = new Vector3(-1161.462f, -2584.786f, 13.505f);
     static readonly Vector3 HIGHWAY = new Vector3(-704.8778f, -2111.786f, 13.51563f);
     static GameState GameState = new GameState();
     static Flags Flags = GameState.flags;
-    static Random rand = new Random();
+    static Random Rand = new Random();
 
     public GrandTheftAutoReinforcementLearning()
     {
@@ -32,8 +34,8 @@ public class GrandTheftAutoReinforcementLearning : Script
         Game.Player.Wanted.SetEveryoneIgnorePlayer(true);
         Game.Player.Wanted.SetPoliceIgnorePlayer(true);
 
-        Flags.SetFlag(FLAGS.REQUEST_ACTION, true);
-        Flags.SetFlag(FLAGS.RESET, true);
+        Flags.SetFlag(FLAGS.BEGIN_TRAINING, true);
+        Reset();
     }
 
     private void OnTick(object sender, EventArgs e)
@@ -44,11 +46,8 @@ public class GrandTheftAutoReinforcementLearning : Script
         Game.Player.Wanted.SetWantedLevel(0, false);
         Game.Player.Wanted.ApplyWantedLevelChangeNow(false);
 
-        if (V != null && !Flags.GetFlag(FLAGS.RESET))
+        if (V != null)
         {
-            while (!Flags.GetFlag(FLAGS.REQUEST_GAME_STATE))
-                if (Flags.GetFlag(FLAGS.RESET)) 
-                    return;
 
             GameplayCamera.ForceRelativeHeadingAndPitch(0, 0, 0);
             GTA.Native.Function.Call(GTA.Native.Hash.FORCE_BONNET_CAMERA_RELATIVE_HEADING_AND_PITCH, 0, 0, 0);
@@ -64,14 +63,16 @@ public class GrandTheftAutoReinforcementLearning : Script
             GameState.State.Velocity.Z = Velocity.Z;
 
             GameState.State.Damage = (uint)(V.HasCollided ? 1 : 0);
+
             GameState.Put(GameState.State);
+            if (V.HasCollided) Reset();
         }
 
-        else if (Flags.GetFlag(FLAGS.RESET))
-        {
-            Reset();
-            Wait(10);
-        }
+        //else if (Flags.GetFlag(FLAGS.RESET))
+        //{
+        //    Reset();
+        //    Wait(10);
+        //}
     }
 
     private void Reset()
@@ -99,7 +100,7 @@ public class GrandTheftAutoReinforcementLearning : Script
         Game.Player.Character.Position = HIGHWAY;
         Vehicle vehicle = World.CreateVehicle(VehicleHash.EntityXF, Game.Player.Character.Position);
         Game.Player.Character.SetIntoVehicle(vehicle, VehicleSeat.Driver);
-        vehicle.Heading = (float) rand.NextDouble() * 360f;
+        vehicle.Heading = (float) Rand.NextDouble() * 360f;
 
         GameplayCamera.ForceRelativeHeadingAndPitch(0, 0, 0);
         GTA.Native.Function.Call(GTA.Native.Hash.FORCE_BONNET_CAMERA_RELATIVE_HEADING_AND_PITCH, 0, 0, 0);

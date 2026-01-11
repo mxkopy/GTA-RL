@@ -1,16 +1,14 @@
-state_sizes = {
-    'image': (360, 640),
+n_frames = 1
+
+observation_space_shape = {
+    'image': (1, 360, 640),
     'velocity': (3,),
-    'damage': (1,)
 }
 
-action_sizes = {
-    'controller': (4,),
-}
+action_space_shape = (3,)
 
-visual_features_size = (8, 8)
-visual_channels = [state_sizes['image'][0], 3, 3, 3, 3, 3]
+visual_channels = [1, 3, 3, 3, 3]
+visual_embedding_size = (8, 8)
+embedding_size = 16
+
 device = 'cuda'
-
-action_space_shape = (4,)
-observation_space_shape = state_sizes

@@ -6,31 +6,25 @@ import math
 import mmap
 import cupy
 import numpy as np
-from msgs_pb2 import ControllerState
-from google.protobuf.message import Message
-from collections import namedtuple
-from typing import Iterable, TypeVarTuple, TypeAlias
 from struct import unpack
-from ipc import Flags, FLAGS, Channel, MessageQueue
+from ipc import Flags, FLAGS, Channel, Message, Queue, MessageMapped, Mutex
 from gymnasium import Env
 from gymnasium.spaces import Tuple, Box, Discrete
-
 import msgs_pb2
 
-class GameState(Flags, Channel, metaclass=MessageQueue):
+class GameState(Queue, metaclass=MessageMapped):
 
-    READY_TO_READ = FLAGS.REQUEST_GAME_STATE
-    NEW_MESSAGE_WRITTEN = FLAGS.GAME_STATE_WRITTEN
+    LOCK = FLAGS.REQUEST_GAME_STATE
     TAGNAME = 'game_state.ipc'
     MSG_TYPE = msgs_pb2.GameState
 
     def __init__(self):
-        Flags.__init__(self)
-        Channel.__init__(self, GameState.N_BYTES, GameState.TAGNAME)
+        super().__init__(GameState.N_BYTES, GameState.TAGNAME)
 
     def pop(self):
-        game_state = MessageQueue.pop(self)
+        game_state = super().pop()
         return (
+            (game_state.camera_direction.x, game_state.camera_direction.y, game_state.camera_direction.z),
             (game_state.velocity.x, game_state.velocity.y, game_state.velocity.z),
             game_state.damage
         )
@@ -71,7 +65,7 @@ class VideoState:
                 exit()
 
     def rescale(img: torch.Tensor):
-        return torch.nn.functional.interpolate(img, config.state_sizes['image'], mode='bilinear', antialias=True)
+        return torch.nn.functional.interpolate(img, config.observation_space_shape['image'][1:], mode='bilinear', antialias=True)
 
     def pop_rgb():
         VideoState.init_cuda_array("RGB")
@@ -92,17 +86,17 @@ class VideoState:
         depth = VideoState.linearize_depth(VideoState.tensors["DepthBuffer"])
         depth = depth.squeeze().unsqueeze(0).unsqueeze(0)
         depth = VideoState.rescale(depth).squeeze()
-        return depth
+        return depth.to(dtype=torch.float32)
 
     def pop(self) -> torch.Tensor:
         if self.depth:
             img = VideoState.pop_depth().cpu()
         else:
-            img = img[:, :, :3].permute(2, 0, 1).unsqueeze(0)
+            img = img[:, :, :3].permute(2, 0, 1)
             if self.grayscale:
                 img = torchvision.transforms.functional.rgb_to_grayscale(img)
             img = img.to(dtype=torch.float16)
-        return img
+        return img.unsqueeze(0)
 
 class VideoGame:
 
@@ -115,30 +109,36 @@ class VideoGame:
     def act(self, action: tuple):
         self.virtual_controller.update(action)
 
+    def reward(camera_direction, velocity, collided):
+        return np.dot(np.array(camera_direction), np.array(velocity)) * (collided == 0)
+
     def observe(self):
-        self.game_state.set_flag(FLAGS.RESET, False)
-        velocity, collided = self.game_state.pop()
+        camera_direction, velocity, collided = self.game_state.pop()
         video_state = self.video_state.pop()
-        truncated = 0
-        return (video_state, velocity, collided, truncated)
+        reward = VideoGame.reward(camera_direction, velocity, collided)
+        terminal = collided == 0
+        truncated = False
+        return (video_state, velocity), reward, terminal, truncated
 
 class Environment(Env):
 
-    def __init__(self, env_config=None):
+    def __init__(self, conf=None):
+        self.device = 'cuda'
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
         self.observation_space = Tuple([
             Box(low=0, high=1, shape=config.observation_space_shape['image']),
             Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape['velocity'])
         ])
+        self.mutex = Mutex()
 
     def step(self, action):
+        self.mutex.acquire()
         self.video_game.act(action)
-        video_state, velocity, collided, truncated = self.video_game.game_state.observe()
-        reward = 0 if collided == 0 else -1
-        terminal = collided != 0
+        observation, reward, terminal, truncated = self.video_game.observe()
+        self.mutex.release()
         return (
-            (video_state, velocity),
+            observation,
             reward,
             terminal,
             truncated,
@@ -146,5 +146,5 @@ class Environment(Env):
         )
 
     def reset(self, *args, **kwargs):
-        self.video_game.game_state.set_flag(FLAGS.RESET, True)
-        return self.video_game.observe()[:2], {"env_state": "reset"}
+        obs = self.video_game.observe()[0], {"env_state": "reset"}
+        return obs

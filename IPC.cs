@@ -12,22 +12,20 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+
 
 namespace IPC
 {
     public enum FLAGS: int
     {
-        REQUEST_GAME_STATE,
-        REQUEST_ACTION,
-        GAME_STATE_WRITTEN,
-        ACTION_WRITTEN,
-        RESET,
-        IS_TRAINING
+        BEGIN_TRAINING,
+        REQUEST_GAME_STATE
     }
 
     public class Flags
     {
-        public const int NUMBER_OF_FLAGS = 5;
+        public const int NUMBER_OF_FLAGS = 2;
         public const string FLAGS_TAG = "flags.ipc";
 
         private readonly MemoryMappedFile ipc_flags_f;
@@ -169,33 +167,9 @@ namespace IPC
         }
         public void Put(Messages.GameState state)
         {
-            flags.WaitUntil(FLAGS.REQUEST_GAME_STATE, true);
+            flags.WaitUntil(FLAGS.REQUEST_GAME_STATE, true, () => Thread.Sleep(10));
             PushNbl(state);
-            flags.SetFlag(FLAGS.GAME_STATE_WRITTEN, true);
+            flags.SetFlag(FLAGS.REQUEST_GAME_STATE, false);
         }
     }
 }
-
-
-    
-//public void Debug()
-//{
-//    using (FileStream fsWrite = new FileStream("debug.txt", FileMode.OpenOrCreate, FileAccess.Write))
-//    {
-//        string[] debugstrs = new[] {
-//            $"REQUEST_GAME_STATE: {GetFlag((int) FLAGS.REQUEST_GAME_STATE)}",
-//            $"REQUEST_INPUT: {GetFlag((int) FLAGS.REQUEST_INPUT)}",
-//            $"REQUEST_ACTION: {GetFlag((int) FLAGS.REQUEST_ACTION)}",
-//            $"GAME_STATE_WRITTEN: {GetFlag((int) FLAGS.GAME_STATE_WRITTEN)}",
-//            $"INPUT_WRITTEN: {GetFlag((int) FLAGS.INPUT_WRITTEN)}",
-//            $"ACTION_WRITTEN: {GetFlag((int) FLAGS.ACTION_WRITTEN)}",
-//            $"RESET: {GetFlag((int) FLAGS.RESET)}",
-//            $"IS_TRAINING: {GetFlag((int) FLAGS.IS_TRAINING)}"
-//        };
-//        flags.Seek(0, 0);
-//        debugstrs = debugstrs.Append($"{flags.ReadByte()}").ToArray();
-//        string debugstr = string.Join("\n", debugstrs);
-//        byte[] bytestr = System.Text.Encoding.UTF8.GetBytes(debugstr);
-//        fsWrite.Write(bytestr, 0, bytestr.Length);
-//    }
-//}

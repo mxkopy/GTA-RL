@@ -23,9 +23,9 @@ class VirtualController:
     def clamp(x: float, min_val: float=-1, max_val: float=1):
         return min(max(0 if math.isnan(x) else x, min_val), max_val)
 
-    def update(action: tuple[float, float, float, float]):
-        x, y, lt, rt = action
+    def update(action: tuple[float, float, float]):
+        x, y, tr = action
         VirtualController.output_pad.left_joystick_float(VirtualController.clamp(x), VirtualController.clamp(y))
-        VirtualController.output_pad.left_trigger_float(VirtualController.clamp(lt, min_val=0))
-        VirtualController.output_pad.right_trigger_float(VirtualController.clamp(rt, min_val=0))
+        VirtualController.output_pad.left_trigger_float(VirtualController.clamp(-tr*(tr < 0), min_val=0))
+        VirtualController.output_pad.right_trigger_float(VirtualController.clamp(tr*(tr > 0), min_val=0))
         VirtualController.output_pad.update()
