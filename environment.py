@@ -70,9 +70,10 @@ class VideoState:
     def pop_rgb():
         VideoState.init_cuda_array("RGB")
         img = VideoState.tensors["RGB"]
-        img = img.permute(2, 0, 1).unsqueeze(0).to(dtype=torch.float16)
+        img = img.permute(2, 0, 1).unsqueeze(0).to(dtype=torch.float32)
         img = img / 255
-        img = VideoState.rescale(img) 
+        img = VideoState.rescale(img)
+        img = img.squeeze()[:3, ...]
         return img
 
     def linearize_depth(array):
@@ -83,26 +84,28 @@ class VideoState:
 
     def pop_depth():
         VideoState.init_cuda_array("DepthBuffer")
-        depth = VideoState.linearize_depth(VideoState.tensors["DepthBuffer"])
-        depth = depth.squeeze().unsqueeze(0).unsqueeze(0)
-        depth = VideoState.rescale(depth).squeeze()
-        return depth.to(dtype=torch.float32)
+        depth = VideoState.tensors["DepthBuffer"].squeeze()
+        depth = VideoState.linearize_depth(depth)
+        return VideoState.rescale(depth.unsqueeze(0).unsqueeze(0)).squeeze()
 
-    def pop(self) -> torch.Tensor:
-        if self.depth:
-            img = VideoState.pop_depth().cpu()
-        else:
-            img = img[:, :, :3].permute(2, 0, 1)
-            if self.grayscale:
-                img = torchvision.transforms.functional.rgb_to_grayscale(img)
-            img = img.to(dtype=torch.float16)
-        return img.unsqueeze(0)
+    def pop_depth_delta():
+        VideoState.init_cuda_array("DepthDelta")
+        delta = VideoState.tensors["DepthDelta"].squeeze()
+        delta = VideoState.linearize_depth(delta)
+        return VideoState.rescale(delta.unsqueeze(0).unsqueeze(0)).squeeze()
+
+    def pop() -> torch.Tensor:
+        depth = VideoState.pop_depth().unsqueeze(0)
+        delta = VideoState.pop_depth_delta().unsqueeze(0)
+        rgb = VideoState.pop_rgb()
+        img = torch.cat((depth, delta, rgb))
+        return img.cpu()
 
 class VideoGame:
 
     def __init__(self):
         from controller import VirtualController
-        self.video_state = VideoState()
+        self.video_state = VideoState
         self.game_state = GameState()
         self.virtual_controller = VirtualController
 
@@ -110,7 +113,10 @@ class VideoGame:
         self.virtual_controller.update(action)
 
     def reward(camera_direction, velocity, collided):
-        return np.dot(np.array(camera_direction), np.array(velocity)) * (collided == 0)
+        if collided:
+            return -10
+        else:
+            return np.dot(np.array(camera_direction), np.array(velocity)) / 1000
 
     def observe(self):
         camera_direction, velocity, collided = self.game_state.pop()
@@ -137,6 +143,7 @@ class Environment(Env):
         self.video_game.act(action)
         observation, reward, terminal, truncated = self.video_game.observe()
         self.mutex.release()
+        print(f"{action[0]: >10.5f} {action[1]: >10.5f} {action[2]: >10.5f} | {str(reward)[0:3]}")
         return (
             observation,
             reward,

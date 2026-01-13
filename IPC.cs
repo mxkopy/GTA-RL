@@ -33,7 +33,6 @@ namespace IPC
         public Flags(int n = NUMBER_OF_FLAGS, string tag = FLAGS_TAG)
         {
             int size = -(n / -8);
-            //ipc_flags_f = MemoryMappedFile.CreateOrOpen(tag, size);
             ipc_flags_f = MemoryMappedFile.OpenExisting(tag);
             flags = ipc_flags_f.CreateViewStream(0, size);
         }

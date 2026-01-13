@@ -46,18 +46,18 @@ public class GrandTheftAutoReinforcementLearning : Script
         Game.Player.Wanted.SetWantedLevel(0, false);
         Game.Player.Wanted.ApplyWantedLevelChangeNow(false);
 
-        if (V != null)
+        if (V != null && Flags.GetFlag(FLAGS.BEGIN_TRAINING))
         {
 
             GameplayCamera.ForceRelativeHeadingAndPitch(0, 0, 0);
             GTA.Native.Function.Call(GTA.Native.Hash.FORCE_BONNET_CAMERA_RELATIVE_HEADING_AND_PITCH, 0, 0, 0);
 
-            Vector3 CameraDirection = Vector3.Project(GameplayCamera.Direction, V.ForwardVector);
+            Vector3 CameraDirection = GameplayCamera.Direction;
             GameState.State.CameraDirection.X = CameraDirection.X;
             GameState.State.CameraDirection.Y = CameraDirection.Y;
             GameState.State.CameraDirection.Z = CameraDirection.Z;
 
-            Vector3 Velocity = Vector3.Project(V.Velocity, Vector3.Project(GameplayCamera.Direction, V.ForwardVector));
+            Vector3 Velocity = V.Velocity;
             GameState.State.Velocity.X = Velocity.X;
             GameState.State.Velocity.Y = Velocity.Y;
             GameState.State.Velocity.Z = Velocity.Z;
@@ -67,12 +67,6 @@ public class GrandTheftAutoReinforcementLearning : Script
             GameState.Put(GameState.State);
             if (V.HasCollided) Reset();
         }
-
-        //else if (Flags.GetFlag(FLAGS.RESET))
-        //{
-        //    Reset();
-        //    Wait(10);
-        //}
     }
 
     private void Reset()

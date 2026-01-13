@@ -1,8 +1,12 @@
 import cv2
-import torch
 from environment import VideoState
 
+
 while True:
-    keypress = cv2.waitKey(1)
-    cv2.imshow("DepthBuffer", (VideoState.pop_depth() * 255).squeeze().cpu().numpy())
-    cv2.imshow("RGB", (VideoState.pop_rgb() * 255).to(dtype=torch.uint8).squeeze().permute(1, 2, 0).cpu().numpy())
+    keypress = cv2.waitKey(10)
+    depth = VideoState.pop_depth()
+    delta = VideoState.pop_depth_delta()
+    rgb = VideoState.pop_rgb()
+    cv2.imshow("Depth", (depth * 255).squeeze().cpu().numpy())
+    cv2.imshow("Delta", (delta * 255).squeeze().cpu().numpy())
+    cv2.imshow("RGB", rgb.permute(1, 2, 0).squeeze().cpu().numpy())

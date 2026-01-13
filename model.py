@@ -28,18 +28,6 @@ class VisualModel(nn.Module):
     def forward(self, img):
         return self.model(img)
 
-    def jit(self):
-        device = list(self.model.parameters())[0].device
-        dynamic_shapes = torch.export.ShapesCollection()
-        batched_image = torch.rand(2, *config.observation_space_shape['image']).to(device)
-        dynamic_shapes[batched_image] = { 0: torch.export.Dim.DYNAMIC }
-        return torch.export.export(
-            self,
-            args=(batched_image,),
-            dynamic_shapes=dynamic_shapes
-        ).module()
-
-
 
 class Embedding(nn.Module):
 
@@ -60,20 +48,6 @@ class Embedding(nn.Module):
         features = torch.cat((visual_embedding, velocity), dim=1)
         return self.embedding(features)
     
-    def jit(self):
-        device = list(self.embedding.parameters())[0].device
-        dynamic_shapes = torch.export.ShapesCollection()
-        batched_visual_embedding = torch.rand(2, 1, *config.visual_embedding_size).to(device)
-        batched_velocity = torch.rand(2, *config.observation_space_shape['velocity']).to(device)
-        dynamic_shapes[batched_visual_embedding] = { 0: torch.export.Dim.DYNAMIC }
-        dynamic_shapes[batched_velocity] = { 0: torch.export.Dim.DYNAMIC }
-        return torch.export.export(
-            self,
-            args=(batched_visual_embedding, batched_velocity),
-            dynamic_shapes=dynamic_shapes
-        ).module()
-
-
 class Actor(nn.Module):
 
     def __init__(self, **kwargs):
@@ -88,17 +62,6 @@ class Actor(nn.Module):
 
     def forward(self, embedding):
         return self.actor(embedding)
-
-    def jit(self):
-        device = list(self.actor.parameters())[0].device
-        dynamic_shapes = torch.export.ShapesCollection()
-        batched = torch.rand(2, config.embedding_size).to(device)
-        dynamic_shapes[batched] = { 0: torch.export.Dim.DYNAMIC }
-        return torch.export.export(
-            self,
-            args=(batched,),
-            dynamic_shapes=dynamic_shapes
-        ).module()
 
 class Critic(nn.Module):
 
@@ -116,16 +79,6 @@ class Critic(nn.Module):
     def forward(self, embedding):
         return self.value(embedding)
 
-    def jit(self):
-        device = list(self.value.parameters())[0].device
-        dynamic_shapes = torch.export.ShapesCollection()
-        batched = torch.rand(2, config.embedding_size).to(device)
-        dynamic_shapes[batched] = { 0: torch.export.Dim.DYNAMIC }
-        return torch.export.export(
-            self,
-            args=(batched,),
-            dynamic_shapes=dynamic_shapes
-        ).module()
 
 class Model(TorchRLModule, ValueFunctionAPI):
      
@@ -133,10 +86,10 @@ class Model(TorchRLModule, ValueFunctionAPI):
     def setup(self, **kwargs):
         test_input = self.observation_space.sample()
         test_output = self.action_space.sample()
-        self.visual = VisualModel().to(device='cuda')#.jit()
-        self.embedding = Embedding().to(device='cuda')#.jit()
-        self.actor = Actor().to(device='cuda')#.jit()
-        self.critic = Critic().to(device='cuda')#.jit()
+        self.visual = VisualModel()
+        self.embedding = Embedding()
+        self.actor = Actor()
+        self.critic = Critic()
 
     @override(ValueFunctionAPI)
     def compute_values(self, batch: Dict[str, Any], embeddings: Optional[Any] = None, **kwargs):
