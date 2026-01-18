@@ -78,14 +78,14 @@ class Channel:
         self.ipc.flush()
         self.ipc.close()
 
-    def push_nbl(self, payload: bytes) -> None:
-        self.ipc.seek(0)
+    def push_nbl(self, payload: bytes, offset=0) -> None:
+        self.ipc.seek(offset)
         self.ipc.write(payload)
         self.ipc.flush()
 
-    def pop_nbl(self) -> bytes:
-        self.ipc.seek(0)
-        payload: bytes = self.ipc.read(-1)
+    def pop_nbl(self, offset=0, numbytes=-1) -> bytes:
+        self.ipc.seek(offset)
+        payload: bytes = self.ipc.read(numbytes)
         return payload
 
 class MessageMapped(type):

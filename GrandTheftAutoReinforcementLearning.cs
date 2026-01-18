@@ -52,12 +52,12 @@ public class GrandTheftAutoReinforcementLearning : Script
             GameplayCamera.ForceRelativeHeadingAndPitch(0, 0, 0);
             GTA.Native.Function.Call(GTA.Native.Hash.FORCE_BONNET_CAMERA_RELATIVE_HEADING_AND_PITCH, 0, 0, 0);
 
-            Vector3 CameraDirection = GameplayCamera.Direction;
+            Vector3 CameraDirection = GameplayCamera.Direction.Normalized;
             GameState.State.CameraDirection.X = CameraDirection.X;
             GameState.State.CameraDirection.Y = CameraDirection.Y;
             GameState.State.CameraDirection.Z = CameraDirection.Z;
 
-            Vector3 Velocity = V.Velocity;
+            Vector3 Velocity = V.Velocity.Normalized;
             GameState.State.Velocity.X = Velocity.X;
             GameState.State.Velocity.Y = Velocity.Y;
             GameState.State.Velocity.Z = Velocity.Z;
@@ -98,8 +98,6 @@ public class GrandTheftAutoReinforcementLearning : Script
 
         GameplayCamera.ForceRelativeHeadingAndPitch(0, 0, 0);
         GTA.Native.Function.Call(GTA.Native.Hash.FORCE_BONNET_CAMERA_RELATIVE_HEADING_AND_PITCH, 0, 0, 0);
-
-        //GameplayCamera.RelativeHeading = vehicle.Heading;
     }
 
     private void OnKeyDown(object sender, KeyEventArgs e)

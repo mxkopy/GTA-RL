@@ -1,7 +1,7 @@
 n_frames = 1
 
 observation_space_shape = {
-    'image': (5, 360, 640),
+    'image': (4, 360, 640),
     'velocity': (3,),
 }
 

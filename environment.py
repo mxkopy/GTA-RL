@@ -88,17 +88,10 @@ class VideoState:
         depth = VideoState.linearize_depth(depth)
         return VideoState.rescale(depth.unsqueeze(0).unsqueeze(0)).squeeze()
 
-    def pop_depth_delta():
-        VideoState.init_cuda_array("DepthDelta")
-        delta = VideoState.tensors["DepthDelta"].squeeze()
-        delta = VideoState.linearize_depth(delta)
-        return VideoState.rescale(delta.unsqueeze(0).unsqueeze(0)).squeeze()
-
     def pop() -> torch.Tensor:
         depth = VideoState.pop_depth().unsqueeze(0)
-        delta = VideoState.pop_depth_delta().unsqueeze(0)
         rgb = VideoState.pop_rgb()
-        img = torch.cat((depth, delta, rgb))
+        img = torch.cat((depth, rgb))
         return img.cpu()
 
 class VideoGame:
@@ -116,7 +109,7 @@ class VideoGame:
         if collided:
             return -10
         else:
-            return np.dot(np.array(camera_direction), np.array(velocity)) / 1000
+            return np.dot(np.array(camera_direction), np.array(velocity))
 
     def observe(self):
         camera_direction, velocity, collided = self.game_state.pop()
@@ -125,6 +118,8 @@ class VideoGame:
         terminal = collided == 0
         truncated = False
         return (video_state, velocity), reward, terminal, truncated
+
+
 
 class Environment(Env):
 
@@ -143,7 +138,7 @@ class Environment(Env):
         self.video_game.act(action)
         observation, reward, terminal, truncated = self.video_game.observe()
         self.mutex.release()
-        print(f"{action[0]: >10.5f} {action[1]: >10.5f} {action[2]: >10.5f} | {str(reward)[0:3]}")
+        print(f"{action[0]: >10.5f} {action[1]: >10.5f} {action[2]: >10.5f} | {str(reward)[0:5]}")
         return (
             observation,
             reward,

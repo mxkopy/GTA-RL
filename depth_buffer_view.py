@@ -5,8 +5,6 @@ from environment import VideoState
 while True:
     keypress = cv2.waitKey(10)
     depth = VideoState.pop_depth()
-    delta = VideoState.pop_depth_delta()
     rgb = VideoState.pop_rgb()
     cv2.imshow("Depth", (depth * 255).squeeze().cpu().numpy())
-    cv2.imshow("Delta", (delta * 255).squeeze().cpu().numpy())
     cv2.imshow("RGB", rgb.permute(1, 2, 0).squeeze().cpu().numpy())
