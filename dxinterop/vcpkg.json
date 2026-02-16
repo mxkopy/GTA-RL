@@ -1,0 +1,14 @@
+{
+  "name": "dxinterop",
+  "version": "0.1",
+  "dependencies": [
+    "detours",
+    "protobuf"
+  ],
+  "overrides": [
+    {
+      "name": "protobuf",
+      "version": "6.33.4"
+    }
+  ]
+}

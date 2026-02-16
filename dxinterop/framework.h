@@ -1,9 +1,14 @@
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+//#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+
+#include "all_protos.h"
+
 // Windows Header Files
 #include <windows.h>
 #include <string>
+#include <array>
+#include <span>
 #include <vector>
 #include <unordered_map>
 #include <type_traits>
@@ -13,7 +18,7 @@
 #include <fstream>
 #include <format>
 #include <random>
-
+#include <cstddef>
 
 #include <assert.h>
 #include <dxgi.h>
@@ -30,6 +35,7 @@
 #include <Eigen/SVD>
 #include <Eigen/Geometry>
 
-#include "detours.h"
+#include "detours/detours.h"
 #include "scripthookv_sdk/inc/natives.h"
 #include "launch_debugger.h"
+

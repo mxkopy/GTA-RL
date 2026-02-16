@@ -100,21 +100,40 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)\10.0.26100.0;</IncludePath>
     <TargetExt>.asi</TargetExt>
     <OutDir>$(SolutionDir)\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>dxinterop</TargetName>
+    <IncludePath>$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SolutionDir)protos;$(ProjectDir)vcpkg_installed\x64-windows\include;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath)\10.0.26100.0;</IncludePath>
     <TargetExt>.asi</TargetExt>
     <OutDir>$(SolutionDir)\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>dxinterop</TargetName>
+    <IncludePath>$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SolutionDir)protos;$(ProjectDir)vcpkg_installed\x64-windows\include;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>.asi</TargetExt>
     <OutDir>$(SolutionDir)\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>dxinterop</TargetName>
+    <IncludePath>$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SolutionDir)protos;$(ProjectDir)vcpkg_installed\x64-windows\include;$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>false</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+    <VcpkgUseStatic>false</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>false</VcpkgUseStatic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -169,28 +188,40 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PROTOBUF_USE_DLLS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>E:\vcpkg_tools\vcpkg\installed\x64-windows\include\detours;E:\GTA-RL\dxinterop;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Solutiondir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <UseStandardPreprocessor>false</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(CoreLibraryDependencies);psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>E:\vcpkg_tools\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);$(ProjectDir)vcpkg_installed\x64-windows\lib\*.lib;psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)\build"
-
 if ($(ConfigurationName) == Development -or $(ConfigurationName) == Debug)(
 copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
 )</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo R^"^( &gt; ComputeShader.hlsl.cppliteral
+type ComputeShader.hlsl &gt;&gt; ComputeShader.hlsl.cppliteral
+echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
+    </PreBuildEvent>
+    <CudaCompile>
+      <Include>%(Include)</Include>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -198,27 +229,39 @@ copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PROTOBUF_USE_DLLS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>E:\vcpkg_tools\vcpkg\installed\x64-windows\include\detours;E:\GTA-RL\dxinterop;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Solutiondir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <UseStandardPreprocessor>false</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(CoreLibraryDependencies);psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>E:\vcpkg_tools\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);$(ProjectDir)vcpkg_installed\x64-windows\lib\*.lib;psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)\build"
-
 if ($(ConfigurationName) == Development -or $(ConfigurationName) == Debug)(
 copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
 )</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo R^"^( &gt; ComputeShader.hlsl.cppliteral
+type ComputeShader.hlsl &gt;&gt; ComputeShader.hlsl.cppliteral
+echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
+    </PreBuildEvent>
+    <CudaCompile>
+      <Include>%(Include)</Include>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
     <ClCompile>
@@ -226,30 +269,43 @@ copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PROTOBUF_USE_DLLS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>E:\vcpkg_tools\vcpkg\installed\x64-windows\include\detours;E:\GTA-RL\dxinterop;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Solutiondir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <UseStandardPreprocessor>false</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(CoreLibraryDependencies);psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>E:\vcpkg_tools\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);$(ProjectDir)vcpkg_installed\x64-windows\lib\*.lib;psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)\build"
-
 if ($(ConfigurationName) == Development -or $(ConfigurationName) == Debug)(
 copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
 )</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo R^"^( &gt; ComputeShader.hlsl.cppliteral
+type ComputeShader.hlsl &gt;&gt; ComputeShader.hlsl.cppliteral
+echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
+    </PreBuildEvent>
+    <CudaCompile>
+      <Include>%(Include)</Include>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="ipc.h" />
     <ClInclude Include="launch_debugger.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

@@ -43,6 +43,8 @@ class VideoState:
             return cupy.uint8
         if bpp == 4 and components == 1:
             return cupy.float32
+        if bpp == 16 and components == 4:
+            return cupy.float32
 
     def init_cuda_array(id):
         if id not in VideoState.tensors:
@@ -65,7 +67,9 @@ class VideoState:
                 exit()
 
     def rescale(img: torch.Tensor):
-        return torch.nn.functional.interpolate(img, config.observation_space_shape['image'][1:], mode='bilinear', antialias=True)
+        img = img.squeeze()
+        size = config.observation_space_shape['image'][1:]
+        return torch.nn.functional.interpolate(img.unsqueeze(0), size, mode='bilinear', antialias=True).squeeze()
 
     def pop_rgb():
         VideoState.init_cuda_array("RGB")
@@ -76,23 +80,27 @@ class VideoState:
         img = img.squeeze()[:3, ...]
         return img
 
-    def linearize_depth(array):
-        near, far = unpack('@2f', VideoState.nearclipfarclip.pop_nbl())
-        y = (torch.pow(far/near,array)-1) * (near / far)
-        depth = ((y * near) / far)
-        return depth
-
     def pop_depth():
         VideoState.init_cuda_array("DepthBuffer")
-        depth = VideoState.tensors["DepthBuffer"].squeeze()
-        depth = VideoState.linearize_depth(depth)
-        return VideoState.rescale(depth.unsqueeze(0).unsqueeze(0)).squeeze()
+        # near, far = unpack('@2f', VideoState.nearclipfarclip.pop_nbl())
+        velocity_and_depth = VideoState.tensors["DepthBuffer"].squeeze().permute(2, 0, 1)
+        velocity_and_depth = VideoState.rescale(velocity_and_depth)
+        velocity_and_depth = torch.nan_to_num(velocity_and_depth, posinf=0, neginf=0)
+        # print(velocity_and_depth[:3, ...].max(), velocity_and_depth[:3, ...].min())
+        return velocity_and_depth[:3, ...], velocity_and_depth[3, ...].unsqueeze(0)
 
     def pop() -> torch.Tensor:
-        depth = VideoState.pop_depth().unsqueeze(0)
+        velocity, depth = VideoState.pop_depth()
         rgb = VideoState.pop_rgb()
-        img = torch.cat((depth, rgb))
+        img = torch.cat((velocity, depth, rgb))
         return img.cpu()
+
+    def linearize_depth(array):
+        near, far = unpack('@2f', VideoState.nearclipfarclip.pop_nbl())
+        z = (far - near) / (array * (far + near))
+        return z
+        # return 1/torch.pow(far*near, z)
+
 
 class VideoGame:
 

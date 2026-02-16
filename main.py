@@ -107,8 +107,8 @@ if __name__ == '__main__':
             )
             .training(
                 lr=1e-5,
-                train_batch_size=128,
-                minibatch_size=16,
+                train_batch_size=64,
+                minibatch_size=4,
                 num_epochs=3,
                 use_kl_loss=True,
                 clip_param=0.1,

@@ -1,3 +1,4 @@
+R"( 
 Texture2D<float> DepthSRV : register(t0);
 Texture2D<float> LastDepthSRV : register(t1);
 RWTexture2D<float4> VelocityUAV : register(u0);
@@ -43,4 +44,4 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 LastWorldPoint = mul(transpose(LastCamera.Axes), float3(ScreenCoords, 1)) * LastDepth;
     float3 CurrentWorldPoint = mul(transpose(CurrentCamera.Axes), float3(ScreenCoords, 1)) * CurrentDepth;
     VelocityUAV[DTid.xy].xyzw = float4(CurrentWorldPoint - LastWorldPoint, DepthSRV[DTid.xy].r);
-}
+})" 

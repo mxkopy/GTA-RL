@@ -6,12 +6,16 @@
 using Microsoft::WRL::ComPtr;
 using std::string;
 using std::unordered_map;
-using namespace Eigen;
+using Vector3f = Eigen::Vector3f;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Util
 
+
+
 static std::ofstream logfile("dxinterop.log");
+
+#define STRINGIFY(x) #x
 
 #ifndef NDEBUG
 #define LOG(msg) logfile << msg << std::endl
@@ -41,7 +45,6 @@ if(_CUERR != cudaSuccess){\
     LOG(#CALL << " returned error: " << cudaGetErrorString(_CUERR));\
     throw std::system_error(_CUERR, std::system_category());\
 }
-
 
 template<typename T>
 struct MemoryMappedFile
@@ -88,6 +91,30 @@ struct MemoryMappedFile
 };
 
 
+namespace std {
+
+    template<>
+    struct hash<std::pair<UINT, UINT>>
+    {
+        size_t operator()(const std::pair<UINT, UINT>& P) const noexcept
+        {
+            auto L = std::hash<size_t>{}(P.first);
+            auto R = std::hash<size_t>{}(P.second);
+            return L ^ (R << 1);
+        }
+    };
+
+    template <typename T>
+    struct hash<MemoryMappedFile<T>>
+    {
+        size_t operator()(const MemoryMappedFile<T>& F) const noexcept
+        {
+            return std::hash<size_t>(F.File);
+        }
+    };
+}
+
+
 static RECT winRect;
 static void UPDATE_WINDOW_RECT(HWND window) 
 {
@@ -127,7 +154,6 @@ void DEBUG_TEXTURE2D(ComPtr<ID3D11Texture2D> Texture, const char* Name = "DEBUG"
     LOG("Usage:         " << TextureDesc.Usage);
     LOG("");
 }
-
 
 void DEBUG_CONSTANT_BUFFER(ComPtr<ID3D11Buffer> ConstantBuffer, const char* Name = "DEBUG")
 {
@@ -193,143 +219,210 @@ void GetTextureFromView(ComPtr<ViewType> View, D3D11_TEXTURE2D_DESC* TextureDesc
     Texture->GetDesc(TextureDesc);
 }
 
-//struct VelocityBuffer
-//{
-//
-//    inline static ComPtr<ID3D11Buffer> VSConstantBuffer;
-//    inline static ComPtr<ID3D11Buffer> VSConstantStagingBuffer;
-//
-//    inline static ComPtr<ID3D11Buffer> 
-//
-//    Eigen::Matrix3f LastMatrix;
-//    Eigen::Matrix3f CurrentMatrix;
-//
-//};
-
-struct DepthStencilComputeShader
+struct CameraTransforms
 {
-
-    inline static ComPtr<ID3D11ComputeShader> ComputeShader;
-
-    inline static ComPtr<ID3D11Device> Device;
-    inline static ComPtr<ID3D11DeviceContext> DeviceContext;
+    inline static ComPtr<ID3D11Buffer> LastMatrixBuffer;
+    inline static ComPtr<ID3D11Buffer> CurrentMatrixBuffer;
 
     inline static ComPtr<ID3D11Buffer> VSConstantBuffer;
     inline static ComPtr<ID3D11Buffer> VSConstantStagingBuffer;
-    inline static ComPtr<ID3D11Buffer> LastMatrix;
-    inline static ComPtr<ID3D11Buffer> CurrentMatrix;
 
-    inline static ComPtr<ID3D11Texture2D> DepthTexture;
-    inline static ComPtr<ID3D11Texture2D> StencilTexture;
-    inline static ComPtr<ID3D11Texture2D> LastDepthTexture;
-    inline static ComPtr<ID3D11Texture2D> DeltaTexture;
+    inline static const float MAGIC = 0.75;
+    inline static MemoryMappedFile<float> scale = MemoryMappedFile<float>("scale");
 
-    inline static ComPtr<ID3D11ShaderResourceView> DepthSRV;
-    inline static ComPtr<ID3D11ShaderResourceView> StencilSRV;
-    inline static ComPtr<ID3D11ShaderResourceView> LastDepthSRV;
-    inline static ComPtr<ID3D11ShaderResourceView> VertexBufferSRV;
-
-    inline static ComPtr<ID3D11UnorderedAccessView> DepthUAV;
-    inline static ComPtr<ID3D11UnorderedAccessView> StencilUAV;
-    inline static ComPtr<ID3D11UnorderedAccessView> DeltaUAV;
-
-    static void SetupVertexConstantBuffer() 
+    static void SetupVertexConstantBuffer()
     {
-        D3D11_BUFFER_DESC BufferDesc;
+        ComPtr<ID3D11DeviceContext> DeviceContext;
         Device->GetImmediateContext(&DeviceContext);
         DeviceContext->VSGetConstantBuffers(2, 1, &VSConstantBuffer);
+        D3D11_BUFFER_DESC BufferDesc;
         VSConstantBuffer->GetDesc(&BufferDesc);
         BufferDesc.Usage = D3D11_USAGE_STAGING;
-        BufferDesc.BindFlags = 0;
+        BufferDesc.BindFlags = NULL;
         BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
         Device->CreateBuffer(&BufferDesc, NULL, VSConstantStagingBuffer.GetAddressOf());
     }
 
-    static void SetupMatrixBuffer()
+    static void SetupMatrixBuffers()
     {
         D3D11_BUFFER_DESC BufferDesc = { 0 };
-        BufferDesc.ByteWidth = sizeof(float) * 16;
+        BufferDesc.ByteWidth = sizeof(float) * 40;
         BufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        ERR(Device->CreateBuffer(&BufferDesc, NULL, LastMatrix.GetAddressOf()));
-        ERR(Device->CreateBuffer(&BufferDesc, NULL, CurrentMatrix.GetAddressOf()));
+        ERR(Device->CreateBuffer(&BufferDesc, NULL, LastMatrixBuffer.GetAddressOf()));
+        ERR(Device->CreateBuffer(&BufferDesc, NULL, CurrentMatrixBuffer.GetAddressOf()));
     }
 
-    static void UpdateBuffers()
+    
+    struct Ray
     {
+        inline static float NearClip;
+        inline static float FarClip;
+        inline static float SW; // Screen Width
+        inline static float SH; // Screen Height
+        inline static float VW; // Viewport Width
+        inline static float VH; // Viewport Height
+        inline static Eigen::Matrix3f Axes;
+        inline static Eigen::Vector3f P; // Camera Position
+        using  PixelCoord = std::pair<UINT, UINT>;
+        inline static std::unordered_map<PixelCoord, MemoryMappedFile<float>> RayData;
+
+
+        UINT C, R;
+
+        Eigen::Vector3f ComputeDirection() const
+        {
+            float X = 2 * (float(C) / VW) - (SW / VW);
+            float Y = 2 * (float(R) / VH) - (SH / VH);
+            float Z = 1;
+            return Axes * Eigen::Vector3f(X, Y, Z);
+        }
+
+        void ComputeCollision() const
+        {
+            auto V = 1000.0f * ComputeDirection();
+            Vector3 Collision;
+            BOOL Hit;
+            Vector3 Normal;
+            Entity EntityHit;
+            auto RaycastHandle = WORLDPROBE::_CAST_RAY_POINT_TO_POINT(P[0], P[1], P[2], P[0] + V[0], P[1] + V[1], P[2] + V[2], 511, NULL, 7);
+            WORLDPROBE::_GET_RAYCAST_RESULT(RaycastHandle, &Hit, &Collision, &Normal, &EntityHit);
+            float CollisionFloats[3] = { Collision.x, Collision.y, Collision.z };
+            std::memcpy(RayData[PixelCoord(C, R)].File, CollisionFloats, sizeof(CollisionFloats) );
+        }
+
+        Ray(UINT C, UINT R) : C(C), R(R)
+        {
+            PixelCoord Coordinate = { C, R };
+            string Tagname = "Ray" + std::to_string(C) + '_' + std::to_string(R);
+            if (!RayData.contains(Coordinate)) RayData[Coordinate] = MemoryMappedFile<float>(3, Tagname);
+            ComputeCollision();
+        }
+
+        static void Update()
+        {
+            Ray(Ray::SW / 4, Ray::SH / 4);
+            Ray((Ray::SW / 4) + (Ray::SW / 2), Ray::SH / 4);
+            Ray(Ray::SW / 4, (Ray::SH / 4) + (Ray::SH / 2));
+            Ray((Ray::SW / 4) + (Ray::SW / 2), (Ray::SH / 4) + (Ray::SH / 2));
+        }
+    };
+
+    static void Update()
+    {   
+        ComPtr<ID3D11DeviceContext> DeviceContext;
         Device->GetImmediateContext(&DeviceContext);
+
+        // Get VertexShader constants (camera position & orientation, perspective matrix, etc)
         DeviceContext->VSGetConstantBuffers(2, 1, &VSConstantBuffer);
-        DeviceContext->CopyResource(LastMatrix.Get(), CurrentMatrix.Get());
+        // Copy VertexShader constants into CPU-accessible buffer
         DeviceContext->CopyResource(VSConstantStagingBuffer.Get(), VSConstantBuffer.Get());
+        // Update previous matrix
+        DeviceContext->CopyResource(LastMatrixBuffer.Get(), CurrentMatrixBuffer.Get());
         DeviceContext->Flush();
-        D3D11_MAPPED_SUBRESOURCE VSSubresource;
-        D3D11_MAPPED_SUBRESOURCE MatrixSubresource;
-        DeviceContext->Map(VSConstantStagingBuffer.Get(), 0, D3D11_MAP_READ, NULL, &VSSubresource);
-        DeviceContext->Map(CurrentMatrix.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &MatrixSubresource);
-        float* VSData = (float*)VSSubresource.pData;
-        float* MatrixData = (float*)MatrixSubresource.pData;
+
+        // Access VertexShader constants via CPU
+        D3D11_MAPPED_SUBRESOURCE VertexShaderSubresource;
+        D3D11_MAPPED_SUBRESOURCE CurrentMatrixSubresource;
+        DeviceContext->Map(VSConstantStagingBuffer.Get(), 0, D3D11_MAP_READ, NULL, &VertexShaderSubresource);
+        DeviceContext->Map(CurrentMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &CurrentMatrixSubresource);
+        
+        float* VSData = (float*)VertexShaderSubresource.pData;
+        float* MXData = (float*)CurrentMatrixSubresource.pData;
+        
         Eigen::Map<Vector3f> R(VSData + 28);
         Eigen::Map<Vector3f> L(VSData + 32);
         Eigen::Map<Vector3f> D(VSData + 36);
         Eigen::Map<Vector3f> U(VSData + 40);
-        Eigen::Map<Vector3f> X(MatrixData + 0);
-        Eigen::Map<Vector3f> Y(MatrixData + 3);
-        Eigen::Map<Vector3f> Z(MatrixData + 6);
-        // I haven't actually checked whether or not these vectors correspond to the left/right
-        // sides of the view frustrum. Nevertheless the result we want 
-        // where X points right, Y points up, and Z points forward is obtained by
-        X = D.cross(U);
-        Y = R.cross(L);
-        Z = -X.cross(Y);
-        // Something something left-handed coordinate system
+
+        Eigen::Map<Vector3f> X(MXData + 0);
+        Eigen::Map<Vector3f> Y(MXData + 4);
+        Eigen::Map<Vector3f> Z(MXData + 8);
+        Eigen::Map<Vector3f> P(MXData + 12);
+
+        // Update current matrix & other relevant items 
+        X = (R - L).stableNormalized();
+        Y = (U - D).stableNormalized();
+        Z = (R + L).stableNormalized();
+        P = Eigen::Map<Vector3f>(VSData + 12);
+
+        float& ScreenWidth = VSData[60];
+        float& ScreenHeight = VSData[61];
+        float NearClip = CAM::_0xD0082607100D7193();
+        float FarClip = CAM::_0xDFC8CBC606FDB0FC();
+
+        MXData[32] = NearClip;
+        MXData[33] = FarClip;
+        MXData[34] = ScreenWidth;
+        MXData[35] = ScreenHeight;
+        MXData[36] = VSData[20]; // Viewport width (px)
+        MXData[37] = VSData[21]; // Viewport height (px)
+        MXData[38] = scale[0];
+
+        Ray::Axes << X, Y, Z;
+        Ray::P << P;
+        Ray::NearClip = NearClip;
+        Ray::FarClip = FarClip;
+        Ray::SW = ScreenWidth;
+        Ray::SH = ScreenHeight;
+        Ray::VW = VSData[20];
+        Ray::VH = VSData[21];
+        Ray::Update();
+
+        // End CPU access
         DeviceContext->Unmap(VSConstantStagingBuffer.Get(), 0);
-        DeviceContext->Unmap(CurrentMatrix.Get(), 0);
+        DeviceContext->Unmap(LastMatrixBuffer.Get(), 0);
+        DeviceContext->Flush();
     }
+
+    CameraTransforms() = default;
+
+    CameraTransforms(ComPtr<ID3D11Device> Device)
+    {
+        SetupVertexConstantBuffer();
+        SetupMatrixBuffers();
+    }
+
+};
+
+
+struct DepthStencilComputeShader
+{
+    inline static ComPtr<ID3D11ComputeShader> ComputeShader;
+
+    inline static ComPtr<ID3D11Texture2D> LastDepthTexture;
+    inline static ComPtr<ID3D11Texture2D> VelocityDepthTexture;
+
+    inline static ComPtr<ID3D11ShaderResourceView> DepthSRV;
+    inline static ComPtr<ID3D11ShaderResourceView> LastDepthSRV;
+
+    inline static ComPtr<ID3D11UnorderedAccessView> DepthUAV;
+    inline static ComPtr<ID3D11UnorderedAccessView> VelocityDepthUAV;
+
+    inline static CameraTransforms Camera;
 
     void SetupDepthTexture
     (
 
         ComPtr<ID3D11Texture2D>& DepthStencilTexture,
-        D3D11_TEXTURE2D_DESC& DepthTextureDesc
+        D3D11_TEXTURE2D_DESC& DepthStencilTextureDesc
 
     ) {
         D3D11_TEXTURE2D_DESC TextureDesc;
-        TextureDesc.Width = DepthTextureDesc.Width;
-        TextureDesc.Height = DepthTextureDesc.Height;
+        TextureDesc.Width = DepthStencilTextureDesc.Width;
+        TextureDesc.Height = DepthStencilTextureDesc.Height;
         TextureDesc.MipLevels = 1;
         TextureDesc.ArraySize = 1;
-        TextureDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        TextureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
         TextureDesc.SampleDesc.Count = 1;
         TextureDesc.SampleDesc.Quality = 0;
         TextureDesc.Usage = D3D11_USAGE_DEFAULT;
         TextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
         TextureDesc.CPUAccessFlags = 0;
         TextureDesc.MiscFlags = 0;
-        ERR(Device->CreateTexture2D(&TextureDesc, NULL, DepthTexture.GetAddressOf()));
-        ERR(Device->CreateTexture2D(&TextureDesc, NULL, LastDepthTexture.GetAddressOf()));
-    }
-
-    void SetupStencilTexture
-    (
-
-        ComPtr<ID3D11Texture2D>& DepthStencilTexture,
-        D3D11_TEXTURE2D_DESC& DepthTextureDesc
-
-    ) {
-        D3D11_TEXTURE2D_DESC TextureDesc;
-        TextureDesc.Width = DepthTextureDesc.Width;
-        TextureDesc.Height = DepthTextureDesc.Height;
-        TextureDesc.MipLevels = 1;
-        TextureDesc.ArraySize = 1;
-        TextureDesc.Format = DXGI_FORMAT_R8_UINT; // TODO: parameterize this
-        TextureDesc.SampleDesc.Count = 1;
-        TextureDesc.SampleDesc.Quality = 0;
-        TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-        TextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-        TextureDesc.CPUAccessFlags = 0;
-        TextureDesc.MiscFlags = 0;
-        ERR(Device->CreateTexture2D(&DepthTextureDesc, NULL, StencilTexture.GetAddressOf()));
+        ERR(Device->CreateTexture2D(&TextureDesc, NULL, VelocityDepthTexture.GetAddressOf()));
+        ERR(Device->CreateTexture2D(&DepthStencilTextureDesc, NULL, &LastDepthTexture));
     }
 
     void SetupDepthSRV
@@ -345,23 +438,9 @@ struct DepthStencilComputeShader
         SRVDesc.Texture2D.MostDetailedMip = 0;
         SRVDesc.Texture2D.MipLevels = -1;
         ERR(Device->CreateShaderResourceView(DepthStencilTexture.Get(), &SRVDesc, DepthSRV.GetAddressOf()));
-        ERR(Device->CreateShaderResourceView(LastDepthTexture.Get(), NULL, LastDepthSRV.GetAddressOf()));
+        ERR(Device->CreateShaderResourceView(LastDepthTexture.Get(), &SRVDesc, LastDepthSRV.GetAddressOf()));
     }
 
-    void SetupStencilSRV
-    (
-
-        ComPtr<ID3D11Texture2D>& DepthStencilTexture,
-        D3D11_TEXTURE2D_DESC& DepthTextureDesc
-
-    ) {
-        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-        SRVDesc.Format = GetStencilFormatFromDepthStencilFormat(DepthTextureDesc.Format);
-        SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        SRVDesc.Texture2D.MostDetailedMip = 0;
-        SRVDesc.Texture2D.MipLevels = -1;
-        ERR(Device->CreateShaderResourceView(DepthStencilTexture.Get(), &SRVDesc, StencilSRV.GetAddressOf()));
-    }
     
     void SetupTextureUAV
     (
@@ -380,27 +459,14 @@ struct DepthStencilComputeShader
     }
 
 
-    void SetupResources()
+    void SetupResources(ComPtr<ID3D11DepthStencilView>& DepthStencilView)
     {
-        Device->GetImmediateContext(&DeviceContext);
-
-        //SetupVertexConstantBuffer();
-        //SetupMatrixBuffer();
-
-        ComPtr<ID3D11DepthStencilView> DepthStencilView;
-        DeviceContext->OMGetRenderTargets(0, NULL, &DepthStencilView);
-
         ComPtr<ID3D11Texture2D> DepthStencilTexture;
         D3D11_TEXTURE2D_DESC DepthStencilTextureDesc;
         GetTextureFromView(DepthStencilView, DepthStencilTexture, &DepthStencilTextureDesc);
-
         SetupDepthTexture(DepthStencilTexture, DepthStencilTextureDesc);
-        //SetupStencilTexture(DepthStencilTexture, DepthStencilTextureDesc);
         SetupDepthSRV(DepthStencilTexture, DepthStencilTextureDesc);
-        //SetupStencilSRV(DepthStencilTexture, DepthStencilTextureDesc);
-        SetupTextureUAV(DepthUAV, DepthTexture);
-        //SetupTextureUAV(StencilUAV, StencilTexture);
-
+        SetupTextureUAV(VelocityDepthUAV, VelocityDepthTexture);
     }
 
     void CreateComputeShader()
@@ -414,17 +480,8 @@ struct DepthStencilComputeShader
         // then multiply that by the current frame's camera matrix 
 
         const char Shader[] =
-        R"(
-            Texture2D<float> DepthSRV : register(t0);
-
-            RWTexture2D<float> DepthUAV : register(u0);
-
-            [numthreads(32, 32, 1)]
-            void main(uint3 DTid : SV_DispatchThreadID)
-            {
-                DepthUAV[DTid.xy].r = DepthSRV[DTid.xy].r;
-            }
-        )";
+            #include "ComputeShader.hlsl.cppliteral"
+        ;
 
         HRESULT HR = D3DCompile
         (
@@ -448,40 +505,44 @@ struct DepthStencilComputeShader
 
     void RunComputeShader()
     {
-        static const size_t N_SRV = 3;
-        static const size_t N_UAV = 3;
-        //static const size_t N_CBF = 3;
+        static const size_t N_CBF = 2;
+        static const size_t N_SRV = 2;
+        static const size_t N_UAV = 1;
+        ComPtr<ID3D11DeviceContext> DeviceContext;
         Device->GetImmediateContext(&DeviceContext);
-        //UpdateBuffers();
-        D3D11_TEXTURE2D_DESC DepthTextureDesc;
-        DepthTexture->GetDesc(&DepthTextureDesc);
-        //ID3D11Buffer* CBuffers[N_CBF] = { VSConstantBuffer.Get(), CurrentMatrix.Get(), LastMatrix.Get() };
-        ID3D11ShaderResourceView* ShaderResourceViews[N_SRV] = { DepthSRV.Get(), LastDepthSRV.Get(), StencilSRV.Get() };
-        ID3D11UnorderedAccessView* UnorderedAccessViews[N_UAV] = { DepthUAV.Get(), DeltaUAV.Get(), StencilUAV.Get() };
+        Camera.Update();
+        ID3D11Buffer* CBuffers[N_CBF] = { Camera.CurrentMatrixBuffer.Get(), Camera.LastMatrixBuffer.Get() };
+        ID3D11ShaderResourceView* ShaderResourceViews[N_SRV] = { DepthSRV.Get(), LastDepthSRV.Get() };
+        ID3D11UnorderedAccessView* UnorderedAccessViews[N_UAV] = { VelocityDepthUAV.Get() };
         DeviceContext->CSSetShader(ComputeShader.Get(), NULL, NULL);
-        //DeviceContext->CSGetConstantBuffers(0, 3, CBuffers);
-        DeviceContext->CSSetShaderResources(0, 2, ShaderResourceViews);
-        DeviceContext->CSSetUnorderedAccessViews(0, 1, UnorderedAccessViews, NULL);
-        const UINT X = (DepthTextureDesc.Width + 32) / 32;
-        const UINT Y = (DepthTextureDesc.Height + 32) / 32;
-        DeviceContext->Dispatch(X, Y, 1);
+        DeviceContext->CSSetConstantBuffers(0, N_CBF, CBuffers);
+        DeviceContext->CSSetShaderResources(0, N_SRV, ShaderResourceViews);
+        DeviceContext->CSSetUnorderedAccessViews(0, N_UAV, UnorderedAccessViews, NULL);
+        D3D11_TEXTURE2D_DESC DepthTextureDesc;
+        LastDepthTexture->GetDesc(&DepthTextureDesc);
+        DeviceContext->Dispatch((DepthTextureDesc.Width + 32) / 32, (DepthTextureDesc.Height + 32) / 32, 1);
         DeviceContext->Flush();
         DeviceContext->CSSetShader(nullptr, nullptr, 0);
-        //ID3D11Buffer* NullCB[N_CBF] = { nullptr, nullptr, nullptr };
-        ID3D11UnorderedAccessView* NullUAV[N_SRV] = { nullptr, nullptr, nullptr };
-        ID3D11ShaderResourceView* NullSRV[N_UAV] = { nullptr, nullptr, nullptr };
-        DeviceContext->CSSetUnorderedAccessViews(0, 1, NullUAV, nullptr);
-        DeviceContext->CSSetShaderResources(0, 2, NullSRV);
-        //DeviceContext->CSSetConstantBuffers(0, 3, NullCB);
-        DeviceContext->CopyResource(LastDepthTexture.Get(), DepthTexture.Get());
+        ID3D11UnorderedAccessView* NullUAV[N_UAV] = { nullptr };
+        ID3D11Buffer* NullCB[N_CBF] = { nullptr, nullptr };
+        ID3D11ShaderResourceView* NullSRV[N_SRV] = { nullptr, nullptr };
+        DeviceContext->CSSetUnorderedAccessViews(0, N_UAV, NullUAV, nullptr);
+        DeviceContext->CSSetShaderResources(0, N_SRV, NullSRV);
+        DeviceContext->CSSetConstantBuffers(0, N_CBF, NullCB);
+        ComPtr<ID3D11Texture2D> DSVTexture;
+        ComPtr<ID3D11Resource> DSVResource;
+        DepthSRV->GetResource(&DSVResource);
+        ERR(DSVResource.As(&DSVTexture));
+        DeviceContext->CopyResource(LastDepthTexture.Get(), DSVTexture.Get());
+        DeviceContext->Flush();
     }
 
     DepthStencilComputeShader() = default;
-    DepthStencilComputeShader(ComPtr<ID3D11Device> Device)
+    DepthStencilComputeShader(ComPtr<ID3D11DepthStencilView> DepthStencilView) 
     {
-        this -> Device = Device;
-        SetupResources();
+        SetupResources(DepthStencilView);
         CreateComputeShader();
+        DepthStencilComputeShader::Camera = CameraTransforms(Device);
     }
 };
 
@@ -502,6 +563,8 @@ cudaChannelFormatDesc CudaChannelFormatFromDXGIFormat(DXGI_FORMAT Format)
         return { 32, 0, 0, 0, cudaChannelFormatKindFloat };
     case DXGI_FORMAT_R8_UINT:
         return { 8, 0, 0, 0, cudaChannelFormatKindUnsigned };
+    case DXGI_FORMAT_R32G32B32A32_FLOAT:
+        return { 32, 32, 32, 32, cudaChannelFormatKindFloat };
     }
     throw std::system_error(E_NOTIMPL, std::system_category());
 }
@@ -616,6 +679,7 @@ struct IPCCUDAD3D11GraphicsResource : IPCCUDAArray
             CopyFrom(MappedArray);
         }
         CUERR(cudaGraphicsUnmapResources(1, &GraphicsResource));
+        CUERR(cudaDeviceSynchronize());
         WriteInfo();
     }
 
@@ -651,11 +715,10 @@ static void DEBUG_ARROWS
         for (int i = 0; i < NumberOfArrows; i++)
         {
             DebugArrows[i] = MemoryMappedFile<float>(6, "DebugArrow" + std::to_string(i));
-            ArrowColors[i] = MemoryMappedFile<int>(3, "DebugArrowColors" + std::to_string(i));
+            ArrowColors[i] = MemoryMappedFile<int>(4, "DebugArrowColors" + std::to_string(i));
         }
         Initialized = true;
     }
-    
 
     for (int i = 0; i < NumberOfArrows; i++)
     {
@@ -672,7 +735,6 @@ static void DEBUG_ARROWS
             ArrowColors[i][3]
         );
     }
-    return;
 }
 
 static void DEBUG_VERTEXSHADER
@@ -700,7 +762,7 @@ static void DEBUG_VERTEXSHADER
             D3D11_BUFFER_DESC BufferDesc;
             ConstantBuffers[i]->GetDesc(&BufferDesc);
             BufferDesc.Usage = D3D11_USAGE_STAGING;
-            BufferDesc.BindFlags = 0;
+            BufferDesc.BindFlags = NULL;
             BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
             Device->CreateBuffer(&BufferDesc, NULL, &StagingBuffers[i]);
             VSBFiles[i] = MemoryMappedFile<float>(BufferDesc.ByteWidth / sizeof(float), "VSB" + std::to_string(i));
@@ -769,14 +831,15 @@ void ClearDepthStencilViewHook
 ) {
 
     ComPtr<ID3D11DeviceContext> DeviceContext = pDeviceContext;
+    ComPtr<ID3D11DepthStencilView> DepthStencilView = pDepthStencilView;
 
     static ID3D11DepthStencilView* SentinelDSV;
     static ID3D11DepthStencilView* BindDSV;
     static ID3D11DepthStencilView* LastDSV;
-    static ID3D11DepthStencilState* DepthStencilState;
     static D3D11_DEPTH_STENCIL_DESC DepthStencilStateDesc;
     static bool DepthStencilEnabledLastFrame;
 
+    ID3D11DepthStencilState* DepthStencilState;
     DeviceContext->OMGetDepthStencilState(&DepthStencilState, NULL);
     DepthStencilState->GetDesc(&DepthStencilStateDesc);
 
@@ -786,6 +849,8 @@ void ClearDepthStencilViewHook
 
     if (SentinelDSV == nullptr && DepthStencilStateDesc.DepthEnable) SentinelDSV = pDepthStencilView;
     if (BindDSV == nullptr && pDepthStencilView == SentinelDSV && !DepthStencilStateDesc.DepthEnable && !DepthStencilEnabledLastFrame) BindDSV = LastDSV;
+
+    //LOG(pDepthStencilView << " " << )
 
     // After we've got BindDSV we can start setting up all the IPC-related memory
     // For whatever reason, CUDA doesn't support mapping the depth buffer so there's
@@ -800,24 +865,29 @@ void ClearDepthStencilViewHook
     static CudaD3D11TextureArray DeltaArray;
     static DepthStencilComputeShader ComputeShader;
 
-    if (pDepthStencilView == SentinelDSV && !DepthStencilStateDesc.DepthEnable) DEBUG_VERTEXSHADER(Device, DeviceContext);
-
     // 1 - 3
     if(BindDSV != nullptr && pDepthStencilView == BindDSV && CudaArray.Memory == nullptr)
     {
         LOG("setup");
-        ComputeShader = DepthStencilComputeShader(Device);
-        CudaArray = CudaD3D11TextureArray(DepthStencilComputeShader::DepthTexture, "DepthBuffer");
-        //DeltaArray = CudaD3D11TextureArray(DepthStencilComputeShader::DeltaTexture, "DepthDelta");
+        //LaunchDebugger();
+        //DebugBreak();
+        ComputeShader = DepthStencilComputeShader(DepthStencilView);
+        CudaArray = CudaD3D11TextureArray(DepthStencilComputeShader::VelocityDepthTexture, "DepthBuffer");
     }
+
+    static MemoryMappedFile<bool> UpdateSignal = MemoryMappedFile<bool>("RayCastUpdate");
 
     // 4 - 5
     if(pDepthStencilView == SentinelDSV && !DepthStencilStateDesc.DepthEnable && CudaArray.Memory != nullptr)
     {
-        DEBUG_VERTEXSHADER(Device, DeviceContext);
-        ComputeShader.RunComputeShader();
-        CudaArray.Update();
-        //DeltaArray.Update();
+        if (UpdateSignal[0]) {
+            GAMEPLAY::SET_GAME_PAUSED(true);
+            DEBUG_VERTEXSHADER(Device, DeviceContext);
+            ComputeShader.RunComputeShader();
+            CudaArray.Update();
+            GAMEPLAY::SET_GAME_PAUSED(false);
+            UpdateSignal[0] = false;
+        }
     }
 
     LastDSV                      = pDepthStencilView;

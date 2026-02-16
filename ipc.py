@@ -37,8 +37,6 @@ class FLAGS:
     BEGIN_TRAINING = 0
     REQUEST_GAME_STATE = 1
 
-
-
 class Flags:
 
     def __init__(self, n_flags=N_FLAGS, tagname=FLAGS_TAG):
@@ -87,6 +85,33 @@ class Channel:
         self.ipc.seek(offset)
         payload: bytes = self.ipc.read(numbytes)
         return payload
+
+import struct
+class StructuredChannel(Channel):
+
+    PYTHON_TYPE_TO_STRUCT = {
+        bool: '?',
+        int: 'i',
+        float: 'f',
+        bytes: 's',
+        None: 'x'
+    }
+
+    def __init__(self, *types, tagname: str, format=None):
+        if format is None:
+            format = ''.join(StructuredChannel.PYTHON_TYPE_TO_STRUCT[t] for t in types)
+        self.format = f'@{format}'
+        super().__init__(size=struct.calcsize(self.format), tagname=tagname)
+
+    def pop_nbl(self):
+        data = struct.unpack(self.format, super().pop_nbl())
+        if len(self.format) == 2:
+            data = data[0]
+        return data
+
+    def push_nbl(self, *args):
+        super().push_nbl(struct.pack(self.format, *args))
+
 
 class MessageMapped(type):
 
