@@ -2,7 +2,7 @@
 
 ![Test](GTA-RL.gif)
 
-This (in progress!) repo is an attempt at making the streets of Los Santos safer from automotive injury. It uses [RLlib](https://spinningup.openai.com/en/latest/algorithms/ddpg.html) to train a model to avoid crashing a car using reinforcement learning. 
+This (in progress!) repo is an attempt at making the streets of Los Santos safer from automotive injury. It uses [RLlib](https://docs.ray.io/en/latest/rllib/index.html) to train a model to avoid crashing a car using reinforcement learning. 
 
 # How to run
 1. Install ScripthookV, ScripthookVDotNet, and ViGEmBus.
