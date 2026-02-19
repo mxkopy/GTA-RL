@@ -2,7 +2,7 @@
 
 ![Test](GTA-RL.gif)
 
-This (in progress!) repo is an attempt at making the streets of Los Santos safer from automotive injury. It implements Deep Deterministic Policy Gradient a la [OpenAI](https://spinningup.openai.com/en/latest/algorithms/ddpg.html) to train a model to avoid crashing a car. 
+This (in progress!) repo is an attempt at making the streets of Los Santos safer from automotive injury. It uses [RLlib](https://spinningup.openai.com/en/latest/algorithms/ddpg.html) to train a model to avoid crashing a car using reinforcement learning. 
 
 # How to run
 1. Install ScripthookV, ScripthookVDotNet, and ViGEmBus.
@@ -18,3 +18,6 @@ This might not work with anti-aliasing or other post-processing effects, and if 
 
 # Python requirements 
 torch, torchvision, cupy, numpy, protobuf, vgamepad
+
+# Current bugs 
+Protobuffers don't play well with GTA V, so I'm in the process of rewriting the IPC backend to use flatbuffers instead - the project won't work until then. 
