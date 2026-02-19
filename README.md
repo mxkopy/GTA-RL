@@ -16,7 +16,7 @@ This (in progress!) repo is an attempt at making the streets of Los Santos safer
 # Some notes
 This might not work with anti-aliasing or other post-processing effects, and if you resize the window things might break. You might have to experiment to find the right settings for your system. 
 
-This has been done before [a](https://arxiv.org/pdf/1712.01397) [bunch](https://arxiv.org/abs/1608.02192) of times, so I'm trying to do something a little new here. More specifically, I'm more focused on building out a framework for realtime RL in general than the performance of the model. 
+This has been done before [a](https://arxiv.org/pdf/1712.01397) [bunch](https://arxiv.org/abs/1608.02192) of times, so I'm trying to do something a little new here. More specifically, I'm more focused on building out a framework for realtime RL in general than the performance of the model. This means the backend for passing messages between GTA V and the training program is pretty sophisticated (`ipc.py`, `ipc2.py`, `dxinterop/dllmain.cpp`, `dxinterop/ipc.h`) but the RL part is not as much, currently. 
 
 
 # Python requirements 
