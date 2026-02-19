@@ -25,7 +25,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ipc.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\protos\cpp.pb.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -35,8 +38,11 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MainScript.h">
+    <ClCompile Include="..\protos\cpp.pb.cc">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainScript.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -45,8 +51,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="scripthookv_sdk\lib\ScriptHookV.lib">
-      <Filter>Source Files</Filter>
-    </Library>
+    <None Include="vcpkg.json" />
+    <None Include="vcpkg-configuration.json" />
+    <None Include="..\ipc2.py" />
   </ItemGroup>
 </Project>

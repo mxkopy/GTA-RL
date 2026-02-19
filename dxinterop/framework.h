@@ -1,10 +1,8 @@
 #pragma once
 
 //#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-
-#include "all_protos.h"
-
 // Windows Header Files
+
 #include <windows.h>
 #include <string>
 #include <array>
@@ -19,7 +17,6 @@
 #include <format>
 #include <random>
 #include <cstddef>
-
 #include <assert.h>
 #include <dxgi.h>
 #include <d3d11.h>
@@ -31,11 +28,37 @@
 #include <driver_types.h>
 #include <wrl/client.h>
 #include <iomanip>
-#include <Eigen/Core>
-#include <Eigen/SVD>
-#include <Eigen/Geometry>
-
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/SVD>
+#include <eigen3/Eigen/Geometry>
 #include "detours/detours.h"
-#include "scripthookv_sdk/inc/natives.h"
 #include "launch_debugger.h"
+#include "cpp.pb.h"
+#include "natives.h"
+#include "main.h"
+
+static std::ofstream logfile("dxinterop.log");
+
+#ifndef NDEBUG
+#define LOG(msg) logfile << msg << std::endl
+#else
+#define LOG(msg)
+#endif
+
+HRESULT _ERR;
+cudaError_t _CUERR;
+
+#define ERR(CALL)\
+_ERR = CALL;\
+if(_ERR != S_OK){\
+    LOG(#CALL << " returned error: " << _ERR);\
+    throw std::system_error(_ERR, std::system_category());\
+}
+
+#define CUERR(CALL)\
+_CUERR = CALL;\
+if(_CUERR != cudaSuccess){\
+    LOG(#CALL << " returned error: " << cudaGetErrorString(_CUERR));\
+    throw std::system_error(_CUERR, std::system_category());\
+}
 

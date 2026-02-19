@@ -5,8 +5,6 @@ static std::random_device RD;
 static std::mt19937 Gen(RD());
 static std::uniform_real_distribution<float> UniformRandom(0.0f, 1.0f);
 
-
-
 static void ClearTraffic()
 {
 	GAMEPLAY::CLEAR_AREA_OF_VEHICLES(0, 0, 0, 10000.0f, false, false, false, false, false);
@@ -44,7 +42,6 @@ static void Reset(Player Player, Vehicle Vehicle)
 
 	VEHICLE::SET_VEHICLE_FIXED(Vehicle);
 	VEHICLE::SET_VEHICLE_ENGINE_HEALTH(Vehicle, 1000.0f);
-
 }
 
 static void OnTick()

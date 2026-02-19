@@ -1,119 +1,23 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 #include "framework.h"
-#include "scripthookv_sdk/inc/main.h"
+#include "ipc.h"
 
 using Microsoft::WRL::ComPtr;
 using std::string;
 using std::unordered_map;
-using Vector3f = Eigen::Vector3f;
-
+using Eigen::Vector3f;
+using Eigen::Matrix3f;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Util
 
-
-
-static std::ofstream logfile("dxinterop.log");
-
 #define STRINGIFY(x) #x
-
-#ifndef NDEBUG
-#define LOG(msg) logfile << msg << std::endl
-#else
-#define LOG(msg)
-#endif
 
 static ComPtr<IDXGISwapChain> SwapChain;
 static DXGI_SWAP_CHAIN_DESC SwapChainDesc;
 static ComPtr<ID3D11Device> Device;
 static ComPtr<ID3D11DeviceContext> DeviceContext;
 static void** DeviceContextVirtualTable;
-
-HRESULT _ERR;
-cudaError_t _CUERR;
-
-#define ERR(CALL)\
-_ERR = CALL;\
-if(_ERR != S_OK){\
-    LOG(#CALL << " returned error: " << _ERR);\
-    throw std::system_error(_ERR, std::system_category());\
-}
-
-#define CUERR(CALL)\
-_CUERR = CALL;\
-if(_CUERR != cudaSuccess){\
-    LOG(#CALL << " returned error: " << cudaGetErrorString(_CUERR));\
-    throw std::system_error(_CUERR, std::system_category());\
-}
-
-template<typename T>
-struct MemoryMappedFile
-{
-    HANDLE Handle = NULL;
-
-    T* File = nullptr;
-
-    MemoryMappedFile(size_t NumberOfElements, string Filename)
-    {
-        std::wstring t = std::wstring(Filename.begin(), Filename.end());
-        Handle = CreateFileMapping(
-            INVALID_HANDLE_VALUE,
-            NULL,
-            PAGE_READWRITE,
-            0,
-            NumberOfElements * sizeof(T),
-            t.c_str()
-        );
-        File = (T*) MapViewOfFile(Handle, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-    }
-
-    MemoryMappedFile(string Filename) : MemoryMappedFile(1, Filename)
-    {}
-
-    MemoryMappedFile() = default;
-
-    T& operator[](size_t Index)
-    {
-        return File[Index];
-    }
-
-    void Delete()
-    {
-        UnmapViewOfFile(File);
-        CloseHandle(Handle);
-    }
-
-    bool Flush()
-    {
-        return FlushFileBuffers(Handle);
-    }
-
-};
-
-
-namespace std {
-
-    template<>
-    struct hash<std::pair<UINT, UINT>>
-    {
-        size_t operator()(const std::pair<UINT, UINT>& P) const noexcept
-        {
-            auto L = std::hash<size_t>{}(P.first);
-            auto R = std::hash<size_t>{}(P.second);
-            return L ^ (R << 1);
-        }
-    };
-
-    template <typename T>
-    struct hash<MemoryMappedFile<T>>
-    {
-        size_t operator()(const MemoryMappedFile<T>& F) const noexcept
-        {
-            return std::hash<size_t>(F.File);
-        }
-    };
-}
-
 
 static RECT winRect;
 static void UPDATE_WINDOW_RECT(HWND window) 
@@ -219,29 +123,156 @@ void GetTextureFromView(ComPtr<ViewType> View, D3D11_TEXTURE2D_DESC* TextureDesc
     Texture->GetDesc(TextureDesc);
 }
 
+struct VSConstantBuffers
+{
+    VSConstantBuffers() = default;
+
+    inline static StructuredMemory<ByteBuffers> VSMemory{ string("VSConstantBuffers") };
+    inline static ByteBuffers VSBuffers{};
+
+#define MAP_VSB_TO_EIGEN_TYPE(NAME, MAP_TYPE, VSB_INDEX, VSB_OFFSET) \
+    struct { \
+        operator const Eigen::Map<MAP_TYPE> () const { \
+            auto Floats = (float*) VSBuffers.data(VSB_INDEX).data(); \
+            return Eigen::Map<MAP_TYPE>(Floats + VSB_OFFSET); \
+        } \
+    } NAME;
+
+#define MAP_VSB_OFFSET(NAME, VSB_INDEX, VSB_OFFSET) \
+    struct { \
+        operator const float () const { \
+            auto Floats = (float*) VSBuffers.data(VSB_INDEX).data(); \
+            return Floats[VSB_OFFSET]; \
+        } \
+    } NAME;
+
+    MAP_VSB_TO_EIGEN_TYPE(P, Vector3f, 2, 12);
+    MAP_VSB_TO_EIGEN_TYPE(R, Vector3f, 2, 28);
+    MAP_VSB_TO_EIGEN_TYPE(L, Vector3f, 2, 32);
+    MAP_VSB_TO_EIGEN_TYPE(D, Vector3f, 2, 36);
+    MAP_VSB_TO_EIGEN_TYPE(U, Vector3f, 2, 40);
+
+    MAP_VSB_OFFSET(VW, 2, 20);
+    MAP_VSB_OFFSET(VH, 2, 21);
+    MAP_VSB_OFFSET(SW, 2, 60);
+    MAP_VSB_OFFSET(SH, 2, 61);
+
+    template<size_t N>
+    using VSBufferArray = array<ComPtr<ID3D11Buffer>, N>;
+
+    template<size_t Start, size_t N>
+    static void Update(ComPtr<ID3D11DeviceContext> DeviceContext)
+    {
+        array<ID3D11Buffer*, N> Buffers{};
+        DeviceContext->VSGetConstantBuffers(Start, N, Buffers.data());
+
+        static array<ComPtr<ID3D11Buffer>, N> StagingBuffers = {};
+        static array<D3D11_MAPPED_SUBRESOURCE, N> Subresources = {};
+        static bool Initialized = false;
+
+        if (!Initialized)
+        {
+            array<D3D11_BUFFER_DESC, N> BufferDescs = {};
+
+            for (auto i = 0; i < N; i++) {
+                Buffers[i]->GetDesc(&BufferDescs[i]);
+                BufferDescs[i].Usage = D3D11_USAGE_STAGING;
+                BufferDescs[i].BindFlags = NULL;
+                BufferDescs[i].CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+                Device->CreateBuffer(&BufferDescs[i], NULL, StagingBuffers[i].GetAddressOf());
+                i++;
+            }
+            Initialized = true;
+        }
+        
+        VSBuffers.Clear();
+        for (auto i = 0; i < N; i++) DeviceContext->CopyResource(StagingBuffers[i].Get(), Buffers[i]);
+        for (auto i = 0; i < N; i++) DeviceContext->Map(StagingBuffers[i].Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &Subresources[i]);
+        for (auto i = 0; i < N; i++) VSBuffers.set_data(i, Subresources[i].pData, Subresources[i].DepthPitch);
+        for (auto i = 0; i < N; i++) DeviceContext->Unmap(StagingBuffers[N - i - 1].Get(), 0);
+        VSMemory = VSBuffers;
+    }
+
+};
+
+static VSConstantBuffers VSBs{};
+
+static Matrix3f Axes()
+{
+    Matrix3f M;
+    Eigen::Map<Vector3f> R = VSBs.R, L = VSBs.L, D = VSBs.D, U = VSBs.U;
+    auto X = (R - L).stableNormalized();
+    auto Y = (U - D).stableNormalized();
+    auto Z = (R + L).stableNormalized();
+    M << X, Y, Z;
+    return M;
+}
+
+//float NearClip = CAM::_0xD0082607100D7193();
+//float FarClip = CAM::_0xDFC8CBC606FDB0FC();
+
+struct Ray
+{
+    UINT C, R;
+    StructuredMemory<Vec3f> Memory;
+    Vec3f Data{};
+
+    Ray(UINT C, UINT R) : C(C), R(R), Memory("Ray" + std::to_string(C) + "_" + std::to_string(R))
+    {}
+
+    Eigen::Vector3f ComputeDirection() const
+    {
+        float VW = VSBs.VW, VH = VSBs.VH, SW = VSBs.SW, SH = VSBs.SH;
+        float X = 2 * (float(C) / VW) - (SW / VW);
+        float Y = 2 * (float(R) / VH) - (SH / VH);
+        float Z = 1;
+        return Axes() * Eigen::Vector3f(X, Y, Z);
+    }
+
+    static Vector3 Cast(Eigen::Map<Vector3f> P, Vector3f V)
+    {
+        Vector3 Collision;
+        BOOL Hit;
+        Vector3 Normal;
+        Entity EntityHit;
+        auto RaycastHandle = WORLDPROBE::_CAST_RAY_POINT_TO_POINT(P[0], P[1], P[2], P[0] + V[0], P[1] + V[1], P[2] + V[2], 511, NULL, 7);
+        WORLDPROBE::_GET_RAYCAST_RESULT(RaycastHandle, &Hit, &Collision, &Normal, &EntityHit);
+        return Collision;
+    }
+
+    void ComputeCollision()
+    {
+        auto V = 1000.0f * ComputeDirection();
+        auto Collision = Cast(VSBs.P, V);
+        Data.set_x(Collision.x);
+        Data.set_y(Collision.y);
+        Data.set_z(Collision.z);
+        Memory = Data;
+    }
+
+    operator Vector3f () const
+    {
+        return Vector3f(Data.x(), Data.y(), Data.z());
+    }
+
+    static void Update()
+    {
+        float VW = VSBs.VW, VH = VSBs.VH, SW = VSBs.SW, SH = VSBs.SH;
+        static Ray Rays[] = {
+            Ray(SW / 4, SH / 4),
+            Ray((SW / 4) + (SW / 2), SH / 4),
+            Ray(SW / 4, (SH / 4) + (SH / 2)),
+            Ray((SW / 4) + (SW / 2), (SH / 4) + (SH / 2))
+        };
+        for (auto& Ray : Rays) Ray.ComputeCollision();
+    }
+};
+
+
 struct CameraTransforms
 {
     inline static ComPtr<ID3D11Buffer> LastMatrixBuffer;
     inline static ComPtr<ID3D11Buffer> CurrentMatrixBuffer;
-
-    inline static ComPtr<ID3D11Buffer> VSConstantBuffer;
-    inline static ComPtr<ID3D11Buffer> VSConstantStagingBuffer;
-
-    inline static const float MAGIC = 0.75;
-    inline static MemoryMappedFile<float> scale = MemoryMappedFile<float>("scale");
-
-    static void SetupVertexConstantBuffer()
-    {
-        ComPtr<ID3D11DeviceContext> DeviceContext;
-        Device->GetImmediateContext(&DeviceContext);
-        DeviceContext->VSGetConstantBuffers(2, 1, &VSConstantBuffer);
-        D3D11_BUFFER_DESC BufferDesc;
-        VSConstantBuffer->GetDesc(&BufferDesc);
-        BufferDesc.Usage = D3D11_USAGE_STAGING;
-        BufferDesc.BindFlags = NULL;
-        BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-        Device->CreateBuffer(&BufferDesc, NULL, VSConstantStagingBuffer.GetAddressOf());
-    }
 
     static void SetupMatrixBuffers()
     {
@@ -254,135 +285,30 @@ struct CameraTransforms
         ERR(Device->CreateBuffer(&BufferDesc, NULL, CurrentMatrixBuffer.GetAddressOf()));
     }
 
-    
-    struct Ray
-    {
-        inline static float NearClip;
-        inline static float FarClip;
-        inline static float SW; // Screen Width
-        inline static float SH; // Screen Height
-        inline static float VW; // Viewport Width
-        inline static float VH; // Viewport Height
-        inline static Eigen::Matrix3f Axes;
-        inline static Eigen::Vector3f P; // Camera Position
-        using  PixelCoord = std::pair<UINT, UINT>;
-        inline static std::unordered_map<PixelCoord, MemoryMappedFile<float>> RayData;
-
-
-        UINT C, R;
-
-        Eigen::Vector3f ComputeDirection() const
-        {
-            float X = 2 * (float(C) / VW) - (SW / VW);
-            float Y = 2 * (float(R) / VH) - (SH / VH);
-            float Z = 1;
-            return Axes * Eigen::Vector3f(X, Y, Z);
-        }
-
-        void ComputeCollision() const
-        {
-            auto V = 1000.0f * ComputeDirection();
-            Vector3 Collision;
-            BOOL Hit;
-            Vector3 Normal;
-            Entity EntityHit;
-            auto RaycastHandle = WORLDPROBE::_CAST_RAY_POINT_TO_POINT(P[0], P[1], P[2], P[0] + V[0], P[1] + V[1], P[2] + V[2], 511, NULL, 7);
-            WORLDPROBE::_GET_RAYCAST_RESULT(RaycastHandle, &Hit, &Collision, &Normal, &EntityHit);
-            float CollisionFloats[3] = { Collision.x, Collision.y, Collision.z };
-            std::memcpy(RayData[PixelCoord(C, R)].File, CollisionFloats, sizeof(CollisionFloats) );
-        }
-
-        Ray(UINT C, UINT R) : C(C), R(R)
-        {
-            PixelCoord Coordinate = { C, R };
-            string Tagname = "Ray" + std::to_string(C) + '_' + std::to_string(R);
-            if (!RayData.contains(Coordinate)) RayData[Coordinate] = MemoryMappedFile<float>(3, Tagname);
-            ComputeCollision();
-        }
-
-        static void Update()
-        {
-            Ray(Ray::SW / 4, Ray::SH / 4);
-            Ray((Ray::SW / 4) + (Ray::SW / 2), Ray::SH / 4);
-            Ray(Ray::SW / 4, (Ray::SH / 4) + (Ray::SH / 2));
-            Ray((Ray::SW / 4) + (Ray::SW / 2), (Ray::SH / 4) + (Ray::SH / 2));
-        }
-    };
-
-    static void Update()
+    static void Update(ComPtr<ID3D11DeviceContext> DeviceContext)
     {   
-        ComPtr<ID3D11DeviceContext> DeviceContext;
-        Device->GetImmediateContext(&DeviceContext);
+        auto A = Axes();
+        auto P = (Eigen::Map<Vector3f>) VSBs.P;
 
-        // Get VertexShader constants (camera position & orientation, perspective matrix, etc)
-        DeviceContext->VSGetConstantBuffers(2, 1, &VSConstantBuffer);
-        // Copy VertexShader constants into CPU-accessible buffer
-        DeviceContext->CopyResource(VSConstantStagingBuffer.Get(), VSConstantBuffer.Get());
-        // Update previous matrix
         DeviceContext->CopyResource(LastMatrixBuffer.Get(), CurrentMatrixBuffer.Get());
-        DeviceContext->Flush();
 
-        // Access VertexShader constants via CPU
-        D3D11_MAPPED_SUBRESOURCE VertexShaderSubresource;
         D3D11_MAPPED_SUBRESOURCE CurrentMatrixSubresource;
-        DeviceContext->Map(VSConstantStagingBuffer.Get(), 0, D3D11_MAP_READ, NULL, &VertexShaderSubresource);
         DeviceContext->Map(CurrentMatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &CurrentMatrixSubresource);
-        
-        float* VSData = (float*)VertexShaderSubresource.pData;
         float* MXData = (float*)CurrentMatrixSubresource.pData;
-        
-        Eigen::Map<Vector3f> R(VSData + 28);
-        Eigen::Map<Vector3f> L(VSData + 32);
-        Eigen::Map<Vector3f> D(VSData + 36);
-        Eigen::Map<Vector3f> U(VSData + 40);
 
-        Eigen::Map<Vector3f> X(MXData + 0);
-        Eigen::Map<Vector3f> Y(MXData + 4);
-        Eigen::Map<Vector3f> Z(MXData + 8);
-        Eigen::Map<Vector3f> P(MXData + 12);
+        for (int i = 0; i < 3; i++)
+        {
+            MXData[0 + i] = A(0, i);
+            MXData[4 + i] = A(1, i);
+            MXData[8 + i] = A(2, i);
+            MXData[12 + i] = P[i];
+        }
 
-        // Update current matrix & other relevant items 
-        X = (R - L).stableNormalized();
-        Y = (U - D).stableNormalized();
-        Z = (R + L).stableNormalized();
-        P = Eigen::Map<Vector3f>(VSData + 12);
-
-        float& ScreenWidth = VSData[60];
-        float& ScreenHeight = VSData[61];
-        float NearClip = CAM::_0xD0082607100D7193();
-        float FarClip = CAM::_0xDFC8CBC606FDB0FC();
-
-        MXData[32] = NearClip;
-        MXData[33] = FarClip;
-        MXData[34] = ScreenWidth;
-        MXData[35] = ScreenHeight;
-        MXData[36] = VSData[20]; // Viewport width (px)
-        MXData[37] = VSData[21]; // Viewport height (px)
-        MXData[38] = scale[0];
-
-        Ray::Axes << X, Y, Z;
-        Ray::P << P;
-        Ray::NearClip = NearClip;
-        Ray::FarClip = FarClip;
-        Ray::SW = ScreenWidth;
-        Ray::SH = ScreenHeight;
-        Ray::VW = VSData[20];
-        Ray::VH = VSData[21];
-        Ray::Update();
-
-        // End CPU access
-        DeviceContext->Unmap(VSConstantStagingBuffer.Get(), 0);
-        DeviceContext->Unmap(LastMatrixBuffer.Get(), 0);
+        DeviceContext->Unmap(CurrentMatrixBuffer.Get(), 0);
         DeviceContext->Flush();
     }
 
     CameraTransforms() = default;
-
-    CameraTransforms(ComPtr<ID3D11Device> Device)
-    {
-        SetupVertexConstantBuffer();
-        SetupMatrixBuffers();
-    }
 
 };
 
@@ -402,7 +328,7 @@ struct DepthStencilComputeShader
 
     inline static CameraTransforms Camera;
 
-    void SetupDepthTexture
+    static void SetupDepthTexture
     (
 
         ComPtr<ID3D11Texture2D>& DepthStencilTexture,
@@ -425,7 +351,7 @@ struct DepthStencilComputeShader
         ERR(Device->CreateTexture2D(&DepthStencilTextureDesc, NULL, &LastDepthTexture));
     }
 
-    void SetupDepthSRV
+    static void SetupDepthSRV
     (
 
         ComPtr<ID3D11Texture2D>& DepthStencilTexture,
@@ -442,7 +368,7 @@ struct DepthStencilComputeShader
     }
 
     
-    void SetupTextureUAV
+    static void SetupTextureUAV
     (
 
         ComPtr<ID3D11UnorderedAccessView>& UAV,
@@ -459,7 +385,7 @@ struct DepthStencilComputeShader
     }
 
 
-    void SetupResources(ComPtr<ID3D11DepthStencilView>& DepthStencilView)
+    static void SetupResources(ComPtr<ID3D11DepthStencilView>& DepthStencilView)
     {
         ComPtr<ID3D11Texture2D> DepthStencilTexture;
         D3D11_TEXTURE2D_DESC DepthStencilTextureDesc;
@@ -469,7 +395,7 @@ struct DepthStencilComputeShader
         SetupTextureUAV(VelocityDepthUAV, VelocityDepthTexture);
     }
 
-    void CreateComputeShader()
+    static void CreateComputeShader()
     {
         ComPtr<ID3DBlob> ShaderBlob;
         ComPtr<ID3DBlob> ErrorBlob;
@@ -503,14 +429,11 @@ struct DepthStencilComputeShader
         ERR(Device->CreateComputeShader(ShaderBlob->GetBufferPointer(), ShaderBlob->GetBufferSize(), NULL, ComputeShader.GetAddressOf()));
     }
 
-    void RunComputeShader()
+    static void RunComputeShader(ComPtr<ID3D11DeviceContext> DeviceContext)
     {
         static const size_t N_CBF = 2;
         static const size_t N_SRV = 2;
         static const size_t N_UAV = 1;
-        ComPtr<ID3D11DeviceContext> DeviceContext;
-        Device->GetImmediateContext(&DeviceContext);
-        Camera.Update();
         ID3D11Buffer* CBuffers[N_CBF] = { Camera.CurrentMatrixBuffer.Get(), Camera.LastMatrixBuffer.Get() };
         ID3D11ShaderResourceView* ShaderResourceViews[N_SRV] = { DepthSRV.Get(), LastDepthSRV.Get() };
         ID3D11UnorderedAccessView* UnorderedAccessViews[N_UAV] = { VelocityDepthUAV.Get() };
@@ -542,7 +465,6 @@ struct DepthStencilComputeShader
     {
         SetupResources(DepthStencilView);
         CreateComputeShader();
-        DepthStencilComputeShader::Camera = CameraTransforms(Device);
     }
 };
 
@@ -575,71 +497,59 @@ UINT GetBytesPerPixelFromDXGIFormat(DXGI_FORMAT Format)
     return (ChannelFormat.x + ChannelFormat.y + ChannelFormat.z + ChannelFormat.w) / 8;
 }
 
-// Sets up CUDA memory 
-// Creates two anonymous memory mapped files storing metadata & IPC handle respectively
 struct IPCCUDAArray
 {
     inline static unordered_map<string, IPCCUDAArray*> Instances;
 
-    void* Memory = nullptr;
-    cudaChannelFormatDesc                ChannelFormat = {};
-    uint64_t                             BPP = {};
-    uint64_t                             Pitch = {};
-    cudaExtent                           Extent = {};
-    cudaIpcMemHandle_t                   ArrayHandle = {};
+    void* CUDAMemory = nullptr;
+    StructuredMemory<CUDAArrayObject> IPCMemory;
 
-    MemoryMappedFile<uint64_t>           ArrayFormatFile;
-    MemoryMappedFile<cudaIpcMemHandle_t> ArrayHandleFile;
-
-    IPCCUDAArray() = default;
-
-    void Setup
+    IPCCUDAArray
     (
-        cudaChannelFormatDesc InitialChannelFormat, 
-        cudaExtent InitialExtent, 
-        uint64_t InitialBPP,
-        string Tag
-    ) {
-        ChannelFormat = InitialChannelFormat;
-        Extent = InitialExtent;
-        BPP = InitialBPP;
-        CUERR(cudaMallocPitch(&Memory, &Pitch, BPP * Extent.width, Extent.height));
-        CUERR(cudaIpcGetMemHandle(&ArrayHandle, Memory));
-        ArrayFormatFile = MemoryMappedFile<uint64_t>(4, Tag+"Info");
-        ArrayHandleFile = MemoryMappedFile<cudaIpcMemHandle_t>(Tag);
-    }
-
-    IPCCUDAArray(
-        cudaChannelFormatDesc InitialChannelFormat,
-        cudaExtent InitialExtent,
-        uint64_t InitialBPP,
-        string Tag
-    ) {
-        Setup(InitialChannelFormat, InitialExtent, InitialBPP, Tag);
-    }
-
-    void WriteInfo()
+        cudaChannelFormatDesc ChannelFormat,
+        cudaExtent Extent, 
+        uint64_t BPP, 
+        string Tagname
+    ) : IPCMemory(Tagname)
     {
-        CUERR(cudaIpcGetMemHandle(&ArrayHandle, Memory));
-        ArrayHandleFile[0] = ArrayHandle;
-        ArrayFormatFile[0] = (ChannelFormat.x > 0) + (ChannelFormat.y > 0) + (ChannelFormat.z > 0) + (ChannelFormat.w > 0);
-        ArrayFormatFile[1] = BPP;
-        ArrayFormatFile[2] = Pitch;
-        ArrayFormatFile[3] = Extent.height;
-        ArrayHandleFile.Flush();
-        ArrayFormatFile.Flush();
+        uint64_t Pitch;
+        cudaMallocPitch(&CUDAMemory, &Pitch, BPP * Extent.width, Extent.height);
+
+        cudaIpcMemHandle_t Handle;
+        cudaIpcGetMemHandle(&Handle, CUDAMemory);
+
+        CUDAExtent E = {};
+
+        E.set_width(Extent.width);
+        E.set_height(Extent.height);
+        E.set_depth(Extent.depth);
+
+        CUDAChannelFormatDesc CF = {};
+        CF.set_x(ChannelFormat.x);
+        CF.set_y(ChannelFormat.y);
+        CF.set_z(ChannelFormat.z);
+        CF.set_w(ChannelFormat.w);
+        CF.set_f(ChannelFormat.f);
+
+        CUDAArrayObject Data = {};
+        Data.set_handle(&Handle, sizeof(cudaIpcMemHandle_t));
+        Data.set_allocated_formatdesc(&CF);
+        Data.set_pitch(Pitch);
+        Data.set_bpp(BPP);
+        Data.set_allocated_extent(&E);
+
+        IPCMemory = Data;
     }
 
     void CopyFrom(cudaArray_t CudaArray)
     {
-        CUERR(cudaMemcpy2DFromArray(Memory, Pitch, CudaArray, 0, 0, BPP * Extent.width, Extent.height, cudaMemcpyDefault));
+        auto Data = static_cast<CUDAArrayObject>(IPCMemory);
+        CUERR(cudaMemcpy2DFromArray(CUDAMemory, Data.pitch(), CudaArray, 0, 0, Data.bpp() * Data.extent().width(), Data.extent().height(), cudaMemcpyDefault));
     }
 
     virtual void Delete()
     {
-        ArrayHandleFile.Delete();
-        ArrayFormatFile.Delete();
-        cudaFree(Memory);
+        cudaFree(CUDAMemory);
     }
 
     static void DeleteAll()
@@ -651,22 +561,40 @@ struct IPCCUDAArray
 template <typename T>
 struct IPCCUDAD3D11GraphicsResource : IPCCUDAArray
 {
-    cudaGraphicsResource_t GraphicsResource = {};
-    
-    IPCCUDAD3D11GraphicsResource<T>() = default;
+    cudaGraphicsResource_t GraphicsResource;
 
-    IPCCUDAD3D11GraphicsResource(ComPtr<ID3D11Texture2D>& Texture, string Tag)
+    static cudaChannelFormatDesc Format(ComPtr<ID3D11Texture2D>& Texture)
     {
         D3D11_TEXTURE2D_DESC TextureDesc;
         Texture->GetDesc(&TextureDesc);
-        ChannelFormat = CudaChannelFormatFromDXGIFormat(TextureDesc.Format);
-        Extent.width = TextureDesc.Width;
-        Extent.height = TextureDesc.Height;
-        Extent.depth = 1;
-        BPP = GetBytesPerPixelFromDXGIFormat(TextureDesc.Format);
-        // try other cudaGraphicsRegisterFlags here ?
-        CUERR(cudaGraphicsD3D11RegisterResource(&GraphicsResource, Texture.Get(), cudaGraphicsRegisterFlagsNone));
-        Setup(ChannelFormat, Extent, BPP, Tag);
+        return CudaChannelFormatFromDXGIFormat(TextureDesc.Format);
+    }
+
+    static cudaExtent Extent(ComPtr<ID3D11Texture2D>& Texture)
+    {
+        D3D11_TEXTURE2D_DESC TextureDesc;
+        Texture->GetDesc(&TextureDesc);
+        return {
+            .width = TextureDesc.Width,
+            .height = TextureDesc.Height,
+            .depth = 1
+        };
+    }
+
+    static UINT BPP(ComPtr<ID3D11Texture2D>& Texture)
+    {
+        D3D11_TEXTURE2D_DESC TextureDesc;
+        Texture->GetDesc(&TextureDesc);
+        return GetBytesPerPixelFromDXGIFormat(TextureDesc.Format);
+    }
+
+    IPCCUDAD3D11GraphicsResource
+    (
+        ComPtr<T>& D3D11Object, 
+        string Tagname
+    ) : IPCCUDAArray(Format(D3D11Object), Extent(D3D11Object), BPP(D3D11Object), Tagname)
+    {
+        CUERR(cudaGraphicsD3D11RegisterResource(&GraphicsResource, D3D11Object.Get(), cudaGraphicsRegisterFlagsNone)); // try other cudaGraphicsRegisterFlags here ?
     }
 
     void Update()
@@ -680,10 +608,9 @@ struct IPCCUDAD3D11GraphicsResource : IPCCUDAArray
         }
         CUERR(cudaGraphicsUnmapResources(1, &GraphicsResource));
         CUERR(cudaDeviceSynchronize());
-        WriteInfo();
     }
 
-    void Delete() override
+    void Delete()
     {
         IPCCUDAArray::Delete();
         cudaGraphicsUnregisterResource(GraphicsResource);
@@ -700,116 +627,42 @@ static ClearDepthStencilViewFunction ClearDepthStencilView = NULL;
 
 const unsigned int NUM_VSB = 3;
 
-static void DEBUG_ARROWS
-(
-
-    MemoryMappedFile<float> VSB[NUM_VSB]
-
-) {
-    const static int NumberOfArrows = 4;
-    static MemoryMappedFile<float> DebugArrows[NumberOfArrows];
-    static MemoryMappedFile<int> ArrowColors[NumberOfArrows];
-    static bool Initialized = false;
-    if (!Initialized)
-    {
-        for (int i = 0; i < NumberOfArrows; i++)
-        {
-            DebugArrows[i] = MemoryMappedFile<float>(6, "DebugArrow" + std::to_string(i));
-            ArrowColors[i] = MemoryMappedFile<int>(4, "DebugArrowColors" + std::to_string(i));
-        }
-        Initialized = true;
-    }
-
-    for (int i = 0; i < NumberOfArrows; i++)
-    {
-        GRAPHICS::DRAW_LINE(
-            DebugArrows[i][0],
-            DebugArrows[i][1],
-            DebugArrows[i][2],
-            DebugArrows[i][0] + DebugArrows[i][3],
-            DebugArrows[i][1] + DebugArrows[i][4],
-            DebugArrows[i][2] + DebugArrows[i][5],
-            ArrowColors[i][0],
-            ArrowColors[i][1],
-            ArrowColors[i][2],
-            ArrowColors[i][3]
-        );
-    }
-}
-
-static void DEBUG_VERTEXSHADER
-(
-
-    ComPtr<ID3D11Device> Device,
-    ComPtr<ID3D11DeviceContext> DeviceContext
-
-) {
-    const unsigned int N = NUM_VSB;
-
-    static bool Initialized = false;
-    static MemoryMappedFile<float> VSBFiles[N];
-    static MemoryMappedFile<uint64_t> VSBFileLengths[N];
-    static ID3D11Buffer* StagingBuffers[N];
-
-    D3D11_MAPPED_SUBRESOURCE Subresources[N] = {};
-    ID3D11Buffer* ConstantBuffers[N] = {};
-    DeviceContext->VSGetConstantBuffers(0, N, ConstantBuffers);
-
-    if (!Initialized)
-    {
-        for (int i = 0; i < N; i++)
-        {
-            D3D11_BUFFER_DESC BufferDesc;
-            ConstantBuffers[i]->GetDesc(&BufferDesc);
-            BufferDesc.Usage = D3D11_USAGE_STAGING;
-            BufferDesc.BindFlags = NULL;
-            BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-            Device->CreateBuffer(&BufferDesc, NULL, &StagingBuffers[i]);
-            VSBFiles[i] = MemoryMappedFile<float>(BufferDesc.ByteWidth / sizeof(float), "VSB" + std::to_string(i));
-            VSBFileLengths[i] = MemoryMappedFile<uint64_t>("VSB" + std::to_string(i) + "Length");
-        }
-        Initialized = true;
-    }
-
-    for (int i = 0; i < N; i++)
-    {
-        D3D11_BUFFER_DESC BufferDesc, StagingDesc;
-        ConstantBuffers[i]->GetDesc(&BufferDesc);
-        StagingBuffers[i]->GetDesc(&StagingDesc);
-        VSBFileLengths[i][0] = BufferDesc.ByteWidth;
-        VSBFileLengths[i].Flush();
-        if (BufferDesc.ByteWidth != StagingDesc.ByteWidth)
-        {
-            StagingDesc.ByteWidth = BufferDesc.ByteWidth;
-            StagingBuffers[i]->Release();
-            Device->CreateBuffer(&StagingDesc, NULL, &StagingBuffers[i]);
-        }
-    }
-
-    for (int i = 0; i < N; i++)
-    {
-        DeviceContext->CopyResource(StagingBuffers[i], ConstantBuffers[i]);
-        DeviceContext->Flush();
-    }
-
-    for (int i = 0; i < N; i++) 
-    {
-        DeviceContext->Map(StagingBuffers[i], 0, D3D11_MAP_READ, NULL, &Subresources[i]);
-    }
-
-    for (int i = 0; i < N; i++)
-    {
-        memcpy(VSBFiles[i].File, Subresources[i].pData, Subresources[i].DepthPitch);
-    }
-
-    for (int i = 0; i < N; i++) 
-    {
-        DeviceContext->Unmap(StagingBuffers[i], 0);
-    }
-
-    DEBUG_ARROWS(VSBFiles);
-
-}
+//static void DEBUG_ARROWS
+//(
+//
+//    MemoryMappedFile<float> VSB[NUM_VSB]
+//
+//) {
+//    const static int NumberOfArrows = 4;
+//    static MemoryMappedFile<float> DebugArrows[NumberOfArrows];
+//    static MemoryMappedFile<int> ArrowColors[NumberOfArrows];
+//    static bool Initialized = false;
+//    if (!Initialized)
+//    {
+//        for (int i = 0; i < NumberOfArrows; i++)
+//        {
+//            DebugArrows[i] = MemoryMappedFile<float>(6, "DebugArrow" + std::to_string(i));
+//            ArrowColors[i] = MemoryMappedFile<int>(4, "DebugArrowColors" + std::to_string(i));
+//        }
+//        Initialized = true;
+//    }
+//
+//    for (int i = 0; i < NumberOfArrows; i++)
+//    {
+//        GRAPHICS::DRAW_LINE(
+//            DebugArrows[i][0],
+//            DebugArrows[i][1],
+//            DebugArrows[i][2],
+//            DebugArrows[i][0] + DebugArrows[i][3],
+//            DebugArrows[i][1] + DebugArrows[i][4],
+//            DebugArrows[i][2] + DebugArrows[i][5],
+//            ArrowColors[i][0],
+//            ArrowColors[i][1],
+//            ArrowColors[i][2],
+//            ArrowColors[i][3]
+//        );
+//    }
+//}
 
 // Unfortunately there doesn't seem to be a straightforward way to read the depth stencil texture directly into cuda memory.
 // (see the section for cudaGraphicsD3D11RegisterResource in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__D3D11.html)
@@ -861,33 +714,31 @@ void ClearDepthStencilViewHook
     // 3. Allocate CUDA memory & create its IPC memory handle
     // 4. When appropriate, run the compute shader to write to (2) and map & copy (2) to (3) via CUDA
 
-    static CudaD3D11TextureArray CudaArray;
-    static CudaD3D11TextureArray DeltaArray;
     static DepthStencilComputeShader ComputeShader;
+    static CudaD3D11TextureArray* CudaArray;
+    static bool Initialized;
 
     // 1 - 3
-    if(BindDSV != nullptr && pDepthStencilView == BindDSV && CudaArray.Memory == nullptr)
+    if(BindDSV != nullptr && pDepthStencilView == BindDSV && CudaArray == nullptr)
     {
         LOG("setup");
         //LaunchDebugger();
         //DebugBreak();
         ComputeShader = DepthStencilComputeShader(DepthStencilView);
-        CudaArray = CudaD3D11TextureArray(DepthStencilComputeShader::VelocityDepthTexture, "DepthBuffer");
+        CudaArray = new CudaD3D11TextureArray(DepthStencilComputeShader::VelocityDepthTexture, "DepthBuffer");
     }
 
-    static MemoryMappedFile<bool> UpdateSignal = MemoryMappedFile<bool>("RayCastUpdate");
+    //static MemoryMappedFile<bool> UpdateSignal = MemoryMappedFile<bool>("RayCastUpdate");
 
     // 4 - 5
-    if(pDepthStencilView == SentinelDSV && !DepthStencilStateDesc.DepthEnable && CudaArray.Memory != nullptr)
+    if(pDepthStencilView == SentinelDSV && !DepthStencilStateDesc.DepthEnable && CudaArray != nullptr)
     {
-        if (UpdateSignal[0]) {
-            GAMEPLAY::SET_GAME_PAUSED(true);
-            DEBUG_VERTEXSHADER(Device, DeviceContext);
-            ComputeShader.RunComputeShader();
-            CudaArray.Update();
-            GAMEPLAY::SET_GAME_PAUSED(false);
-            UpdateSignal[0] = false;
-        }
+        //GAMEPLAY::SET_GAME_PAUSED(true);
+        VSConstantBuffers::Update<0, 3>(DeviceContext);
+        CameraTransforms::Update(DeviceContext);
+        DepthStencilComputeShader::RunComputeShader(DeviceContext);
+        CudaArray -> Update();
+        //GAMEPLAY::SET_GAME_PAUSED(false);
     }
 
     LastDSV                      = pDepthStencilView;
@@ -917,15 +768,15 @@ static void HookClearDepthStencilView()
 static void presentCallback(void* chain) {
 
     static ComPtr<ID3D10Multithread> MultithreadContext;
-    static MemoryMappedFile<float> NearClipFarClip(2, "NearClipFarClip");
+    //static MemoryMappedFile<float> NearClipFarClip(2, "NearClipFarClip");
 
     GetDeviceAndContextFromSwapChain(chain);
     DidSwapChainUpdate(SwapChainDesc.OutputWindow);
 
     //DeviceContext -> VSGetConstantBuffers(0, )
 
-    NearClipFarClip[0] = CAM::_0xD0082607100D7193(); // NearClip
-    NearClipFarClip[1] = CAM::_0xDFC8CBC606FDB0FC(); // FarClip
+    //NearClipFarClip[0] = CAM::_0xD0082607100D7193(); // NearClip
+    //NearClipFarClip[1] = CAM::_0xDFC8CBC606FDB0FC(); // FarClip
 
     // DX11 will launch an amortized version of ClearDepthStencilView once in a while
     // and for whatever reason we do not want to hook that
@@ -956,7 +807,7 @@ static void presentCallback(void* chain) {
 
 
     // RTV hook related stuff (i.e. the getting displayed pixels)
-    static CudaD3D11TextureArray RenderTargetArray;
+    static CudaD3D11TextureArray* RenderTargetArray;
     static ComPtr<ID3D11RenderTargetView> RenderTargetView;
     static ComPtr<ID3D11Resource> RenderTargetResource;
     static ComPtr<ID3D11Texture2D> RenderTargetTexture;
@@ -966,11 +817,11 @@ static void presentCallback(void* chain) {
     if (RenderTargetTexture == nullptr)
     {
         GetTextureFromView(RenderTargetView, RenderTargetTexture);
-        RenderTargetArray = CudaD3D11TextureArray(RenderTargetTexture, "RGB");
+        RenderTargetArray = new CudaD3D11TextureArray(RenderTargetTexture, "RGB");
     }
     else
     {
-        RenderTargetArray.Update();
+        RenderTargetArray -> Update();
     }
 }
 

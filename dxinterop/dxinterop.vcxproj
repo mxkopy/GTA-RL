@@ -37,27 +37,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -65,14 +65,14 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -103,37 +103,40 @@
     <TargetExt>.asi</TargetExt>
     <OutDir>$(SolutionDir)\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>dxinterop</TargetName>
-    <IncludePath>$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)protos;$(ProjectDir)vcpkg_installed\x64-windows\include;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir)scripthookv_sdk\inc;E:\GTA-RL\dxinterop\vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)scripthookv_sdk\lib;E:\GTA-RL\dxinterop\vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
+    <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
     <TargetExt>.asi</TargetExt>
     <OutDir>$(SolutionDir)\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>dxinterop</TargetName>
-    <IncludePath>$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)protos;$(ProjectDir)vcpkg_installed\x64-windows\include;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir)scripthookv_sdk\inc;E:\GTA-RL\dxinterop\vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)scripthookv_sdk\lib;E:\GTA-RL\dxinterop\vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
+    <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>.asi</TargetExt>
     <OutDir>$(SolutionDir)\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>dxinterop</TargetName>
-    <IncludePath>$(ProjectDir)vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)protos;$(ProjectDir)vcpkg_installed\x64-windows\include;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir)scripthookv_sdk\inc;E:\GTA-RL\dxinterop\vcpkg_installed\x64-windows\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)scripthookv_sdk\lib;E:\GTA-RL\dxinterop\vcpkg_installed\x64-windows\lib;$(LibraryPath)</LibraryPath>
+    <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseMD>false</VcpkgUseMD>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
     <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseMD>false</VcpkgUseMD>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <VcpkgUseStatic>false</VcpkgUseStatic>
+    <VcpkgUseMD>false</VcpkgUseMD>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -188,28 +191,23 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PROTOBUF_USE_DLLS</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(Solutiondir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <AdditionalOptions>
       </AdditionalOptions>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <UseStandardPreprocessor>false</UseStandardPreprocessor>
+      <AdditionalIncludeDirectories>$(SolutionDir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(CoreLibraryDependencies);$(ProjectDir)vcpkg_installed\x64-windows\lib\*.lib;psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);libprotobuf.lib;utf8_range.lib;utf8_validity.lib;abseil_dll.lib;ScriptHookV.lib;cudart.lib;cudadevrt.lib;d3dcompiler.lib;d3d11.lib;detours.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)\build"
+      <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)build"
 if ($(ConfigurationName) == Development -or $(ConfigurationName) == Debug)(
 copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
 )</Command>
@@ -219,6 +217,13 @@ copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E
 type ComputeShader.hlsl &gt;&gt; ComputeShader.hlsl.cppliteral
 echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
     </PreBuildEvent>
+    <CudaCompile />
+    <PreLinkEvent>
+      <Command># cl /c $(SolutionDir)protos\cpp.pb.cc -lprotobuf /Fo:$(OutDir)cpp.pb.obj
+# lib.exe /OUT:$(OutDir)cpp.pb.lib $(OutDir)cpp.pb.obj
+</Command>
+    </PreLinkEvent>
+    <CudaCompile />
     <CudaCompile>
       <Include>%(Include)</Include>
     </CudaCompile>
@@ -229,27 +234,22 @@ echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PROTOBUF_USE_DLLS</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(Solutiondir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <AdditionalOptions>
       </AdditionalOptions>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <UseStandardPreprocessor>false</UseStandardPreprocessor>
+      <AdditionalIncludeDirectories>$(SolutionDir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(CoreLibraryDependencies);$(ProjectDir)vcpkg_installed\x64-windows\lib\*.lib;psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);libprotobuf.lib;utf8_range.lib;utf8_validity.lib;abseil_dll.lib;ScriptHookV.lib;cudart.lib;cudadevrt.lib;d3dcompiler.lib;d3d11.lib;detours.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)\build"
+      <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)build"
 if ($(ConfigurationName) == Development -or $(ConfigurationName) == Debug)(
 copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
 )</Command>
@@ -259,6 +259,12 @@ copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E
 type ComputeShader.hlsl &gt;&gt; ComputeShader.hlsl.cppliteral
 echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
     </PreBuildEvent>
+    <CudaCompile />
+    <PreLinkEvent>
+      <Command># cl /c $(SolutionDir)protos\cpp.pb.cc -lprotobuf /Fo:$(OutDir)cpp.pb.obj
+# lib.exe /OUT:$(OutDir)cpp.pb.lib $(OutDir)cpp.pb.obj
+</Command>
+    </PreLinkEvent>
     <CudaCompile>
       <Include>%(Include)</Include>
     </CudaCompile>
@@ -269,27 +275,22 @@ echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;DXINTEROP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);PROTOBUF_USE_DLLS</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(Solutiondir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <AdditionalOptions>
       </AdditionalOptions>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <UseStandardPreprocessor>false</UseStandardPreprocessor>
+      <AdditionalIncludeDirectories>$(SolutionDir)protos;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>$(CoreLibraryDependencies);$(ProjectDir)vcpkg_installed\x64-windows\lib\*.lib;psapi.lib;d3d11.lib;D3DCompiler.lib;cuda.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);libprotobuf.lib;utf8_range.lib;utf8_validity.lib;abseil_dll.lib;ScriptHookV.lib;cudart.lib;cudadevrt.lib;d3dcompiler.lib;d3d11.lib;detours.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)\build"
+      <Command>copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "$(SolutionDir)build"
 if ($(ConfigurationName) == Development -or $(ConfigurationName) == Debug)(
 copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
 )</Command>
@@ -299,18 +300,42 @@ copy /Y "$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)" "E
 type ComputeShader.hlsl &gt;&gt; ComputeShader.hlsl.cppliteral
 echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
     </PreBuildEvent>
+    <CudaCompile />
+    <PreLinkEvent>
+      <Command># cl /c $(SolutionDir)protos\cpp.pb.cc -lprotobuf /Fo:$(OutDir)cpp.pb.obj
+# lib.exe /OUT:$(OutDir)cpp.pb.lib $(OutDir)cpp.pb.obj
+</Command>
+    </PreLinkEvent>
     <CudaCompile>
       <Include>%(Include)</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\protos\cpp.pb.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="framework.h" />
-    <ClInclude Include="ipc.h" />
+    <ClInclude Include="ipc.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="launch_debugger.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="..\protos\cpp.pb.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Create</PrecompiledHeader>
@@ -345,7 +370,9 @@ echo ^)^" &gt;&gt; ComputeShader.hlsl.cppliteral</Command>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="scripthookv_sdk\lib\ScriptHookV.lib" />
+    <None Include="..\ipc2.py" />
+    <None Include="vcpkg-configuration.json" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,4 +1,0 @@
-
-message Registry {
-repeated string registry = 1;
-}
