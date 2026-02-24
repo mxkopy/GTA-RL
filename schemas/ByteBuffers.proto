@@ -1,0 +1,4 @@
+import "ByteBuffer.proto";
+message ByteBuffers {
+ repeated ByteBuffer data = 1;
+}

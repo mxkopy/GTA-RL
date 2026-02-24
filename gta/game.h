@@ -41,8 +41,15 @@ inline static void ClearWanted()
 inline static void CenterCamera()
 {
 	nativeInit(0x28B022A17B068A3A);
-	nativePush(float(0));
-	nativePush(float(0));
+	nativePush(0);
+	nativePush(0);
+	nativeCall();
+	//CAM::SET_GAMEPLAY_CAM_RELATIVE_HEADING(0);
+	//CAM::SET_GAMEPLAY_CAM_RELATIVE_PITCH(0, 0);
+	nativeInit(0x48608C3464F58AB4);
+	nativePush(0);
+	nativePush(0);
+	nativePush(1);
 	nativeCall();
 }
 

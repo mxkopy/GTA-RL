@@ -1,5 +1,7 @@
+import config
 import sys
 from collections.abc import Iterable
+from ray.rllib.connectors.common.frame_stacking import FrameStacking
 
 def astype(x, T):
     if hasattr(x, '__array__'):    
@@ -89,7 +91,7 @@ if __name__ == '__main__':
             .env_runners(
                 num_env_runners=0,
                 num_gpus_per_env_runner=0.5,
-                # env_to_module_connector=lambda env, spaces, device: Float16Connector()
+                # env_to_module_connector=lambda env, spaces, device: FrameStacking(n_frames=config.n_frames)
             )
             .learners(
                 num_learners=0,
@@ -107,11 +109,12 @@ if __name__ == '__main__':
                 train_batch_size=64,
                 minibatch_size=4,
                 num_epochs=3,
-                use_kl_loss=True,
+                use_kl_loss=False,
                 clip_param=0.1,
                 entropy_coeff=0.001,
                 vf_loss_coeff=1,
-                kl_target=0.003
+                kl_target=0.003,
+                # learner_connector=lambda obs_space, act_space: FrameStacking(num_frames=config.n_frames, as_learner_connector=True)
                 # grad_clip=None
             )
             # .experimental(

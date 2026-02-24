@@ -45,7 +45,7 @@ class VideoState:
 
     def rescale(img: torch.Tensor):
         img = img.squeeze()
-        size = config.observation_space_shape['image'][1:]
+        size = config.image_shape[1:]
         return torch.nn.functional.interpolate(img.unsqueeze(0), size, mode='bilinear', antialias=True).squeeze()
 
     def linearize_depth(array):
@@ -79,7 +79,7 @@ class VideoState:
     def pop():
         velocity, depth = VideoState.pop_depth_and_velocity()
         rgb = VideoState.pop_rgb()
-        img = torch.cat((velocity, depth, rgb))
+        img = torch.cat((depth, rgb))
         return img.cpu()
 
 class VideoGame:
@@ -102,10 +102,11 @@ class VideoGame:
     def observe(self):
         camera_direction, velocity, collided = self.game_state.pop()
         video_state = self.video_state.pop()
+        observation = torch.cat((video_state.reshape(-1), torch.tensor(velocity, device=video_state.device)) )
         reward = VideoGame.reward(camera_direction, velocity, collided)
         terminal = collided == 0
         truncated = False
-        return (video_state, velocity), reward, terminal, truncated
+        return observation.reshape(-1), reward, terminal, truncated
 
 class Environment(Env):
 
@@ -113,10 +114,7 @@ class Environment(Env):
         self.device = 'cuda'
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
-        self.observation_space = Tuple([
-            Box(low=0, high=1, shape=config.observation_space_shape['image']),
-            Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape['velocity'])
-        ])
+        self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape)
 
     def step(self, action):
         self.video_game.act(action)

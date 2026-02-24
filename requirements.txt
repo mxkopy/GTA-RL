@@ -1,0 +1,7 @@
+protobuf
+cupy-cuda12x
+numpy
+ray[rllib]
+gymnasium
+vgamepad
+opencv-python

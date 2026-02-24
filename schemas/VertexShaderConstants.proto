@@ -1,0 +1,6 @@
+
+message VertexShaderConstants {
+ required float nearclip = 1;
+ required float farclip = 2;
+ repeated bytes constant_buffers = 3;
+}

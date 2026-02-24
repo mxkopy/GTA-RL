@@ -36,7 +36,7 @@
 #include "amalgamated.pb.h"
 #include "natives.h"
 
-static std::ofstream logfile("dxinterop.log");
+static std::ofstream logfile("GTA-RL.log");
 
 #ifdef DEBUG
 #define LOG(msg) logfile << msg << std::endl

@@ -1,0 +1,4 @@
+
+message ByteBuffer {
+ required bytes data = 1;
+}

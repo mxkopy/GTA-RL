@@ -55,15 +55,16 @@ def IS_UNION(typehint):
         return False
     return get_origin(typehint) is Union
 
+PARENT_DIR = Path(sys.argv[0]).parent
+PROJECT_DIR = Path('..' if PARENT_DIR == Path('.') else PARENT_DIR / '..').resolve()
+
 # Location of generated .proto files & protoc output
-PROTO_DIR = 'protos'
-FLAT_DIR = 'fbs'
+SCHEMA_DIR = PROJECT_DIR / 'schemas' 
 
 # Compiler locations
-PREFIX = 'E:\\GTA-RL\\dxinterop\\vcpkg_installed\\x64-windows-static-md\\tools'
-
-PROTOC = f'{PREFIX}\\protobuf\\protoc.exe'
-FLATC = f'{PREFIX}\\flatbuffers\\flatc.exe'
+TOOLS_PREFIX = PROJECT_DIR / 'gta' / 'deps' / 'vcpkg_installed' / 'x64-windows-static-md' / 'tools'
+PROTOC = TOOLS_PREFIX / 'protobuf' / 'protoc.exe'
+FLATC = TOOLS_PREFIX / 'flatbuffers' / 'flatc.exe'
 
 # String represenation of python types according to each scheme
 PROTO_TYPES = {
@@ -128,15 +129,15 @@ FLAT_EXT = '{fname}.fbs'
 
 # Arguments to schema compilers
 PROTOC_ARGS = [
-    f'{PROTOC} --proto_path={PROTO_DIR} {PROTO_DIR}/{{clsname}}.proto --python_out={PROTO_DIR}',
+    f'{PROTOC} --proto_path={SCHEMA_DIR} {SCHEMA_DIR}/{{clsname}}.proto --python_out={SCHEMA_DIR}',
     # There's a weird bug with MSVC & protobuffers where including multiple .cc files is not straightforward, since the
     # implementations reuse symbols in the global namespace. https://github.com/protocolbuffers/protobuf/issues/25457
     # The temporary solution is to independently compile an amalgamated proto file specifically for MSVC.
-    f'{PROTOC} --proto_path={PROTO_DIR} {PROTO_DIR}/amalgamated.proto --cpp_out={PROTO_DIR}'
+    f'{PROTOC} --proto_path={SCHEMA_DIR} {SCHEMA_DIR}/amalgamated.proto --cpp_out={SCHEMA_DIR}'
 ]
 
 FLATC_ARGS = [
-    f'{FLATC} --cpp --python -o {FLAT_DIR} -I {FLAT_DIR} {FLAT_DIR}/{{clsname}}.fbs'
+    f'{FLATC} --cpp --python -o {SCHEMA_DIR} -I {SCHEMA_DIR} {SCHEMA_DIR}/{{clsname}}.fbs'
 ]
 
 # Schema-specific hooks
@@ -144,7 +145,6 @@ PROTOBUF_HOOKS = []
 
 if '--flatbuf' in sys.argv:
     COMPILER = FLATC
-    SCHEMA_DIR = FLAT_DIR
     TYPES = FLAT_TYPES
     FIELD = FLAT_FIELD
     INCLUDE = FLAT_INCLUDE
@@ -156,7 +156,6 @@ if '--flatbuf' in sys.argv:
 
 else:
     COMPILER = PROTOC
-    SCHEMA_DIR = PROTO_DIR
     TYPES = PROTO_TYPES
     FIELD = PROTO_FIELD
     INCLUDE = PROTO_INCLUDE
@@ -167,11 +166,11 @@ else:
 
 
 if COMPILE:
-    shutil.rmtree(Path(SCHEMA_DIR), ignore_errors=True)
+    shutil.rmtree(f'{SCHEMA_DIR}.old', ignore_errors=True )
+    shutil.move(Path(SCHEMA_DIR), f'{SCHEMA_DIR}.old')
     os.mkdir(Path(SCHEMA_DIR))
 
-sys.path.append(str(Path(Path.cwd(), SCHEMA_DIR)))
-
+sys.path.append(str(SCHEMA_DIR))
 
 class Serializable(type):
 

@@ -83,21 +83,27 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Development|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -209,9 +215,8 @@
       <AdditionalDependencies>%(AdditionalDependencies);$(ProjectDir)gta\deps\vcpkg_installed\x64-windows-static-md\debug\lib\*.lib;ScriptHookV.lib;detours.lib;cudart.lib;cudadevrt.lib;d3dcompiler.lib;d3d11.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)gta\build"
-copy /Y "$(TargetPath)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
-</Command>
+      <Command>copy /Y "$(TargetPath)" $(GameDir)
+copy /Y "$(TargetPath)" "$(SolutionDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>echo R^"^( &gt; gta\ComputeShader.hlsl.cppliteral
@@ -250,9 +255,8 @@ echo ^)^" &gt;&gt; gta\ComputeShader.hlsl.cppliteral</Command>
       <AdditionalDependencies>%(AdditionalDependencies);$(ProjectDir)gta\deps\vcpkg_installed\x64-windows-static-md\lib\*.lib;ScriptHookV.lib;detours.lib;cudart.lib;cudadevrt.lib;d3dcompiler.lib;d3d11.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)gta\build"
-copy /Y "$(TargetPath)" "E:\SteamLibrary\steamapps\common\Grand Theft Auto V"
-</Command>
+      <Command>copy /Y "$(TargetPath)" $(GameDir)
+copy /Y "$(TargetPath)" "$(SolutionDir)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>echo R^"^( &gt; gta\ComputeShader.hlsl.cppliteral
@@ -313,6 +317,7 @@ echo ^)^" &gt;&gt; gta\ComputeShader.hlsl.cppliteral</Command>
     <ClInclude Include="gta\framework.h" />
     <ClInclude Include="gta\game.h" />
     <ClInclude Include="gta\ipc.h" />
+    <ClInclude Include="gta\keyboard.h" />
     <ClInclude Include="gta\launch_debugger.h" />
     <ClInclude Include="gta\vertexbuffers.h" />
     <ClInclude Include="schemas\amalgamated.pb.h" />

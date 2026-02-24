@@ -1,0 +1,5 @@
+
+message Payload {
+ required string typename = 1;
+ required bytes data = 2;
+}

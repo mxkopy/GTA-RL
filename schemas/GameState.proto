@@ -1,0 +1,6 @@
+import "Vec3f.proto";
+message GameState {
+ required Vec3f camera_direction = 1;
+ required Vec3f velocity = 2;
+ required bool collided = 3;
+}

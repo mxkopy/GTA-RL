@@ -1,5 +1,6 @@
 import numpy as np
 from ipc import Serializable
+from typing import Optional
 
 class Vec3f(metaclass=Serializable):
     x: np.float32
@@ -34,3 +35,9 @@ class GameState(metaclass=Serializable):
     camera_direction: Vec3f
     velocity: Vec3f
     collided: bool
+
+class KeyboardState(metaclass=Serializable):
+    w: Optional[bool]
+    a: Optional[bool]
+    s: Optional[bool]
+    d: Optional[bool]
