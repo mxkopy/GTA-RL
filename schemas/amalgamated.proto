@@ -1,0 +1,70 @@
+
+
+message ByteBuffer {
+ required bytes data = 1;
+}
+
+
+message ByteBuffers {
+ repeated ByteBuffer data = 1;
+}
+
+
+message Payload {
+ required string typename = 1;
+ required bytes data = 2;
+}
+
+
+message Vec3f {
+ required float x = 1;
+ required float y = 2;
+ required float z = 3;
+}
+
+
+message CUDAExtent {
+ required int64 width = 1;
+ required int64 height = 2;
+ required int64 depth = 3;
+}
+
+
+message CUDAChannelFormatDesc {
+ required uint32 x = 1;
+ required uint32 y = 2;
+ required uint32 z = 3;
+ required uint32 w = 4;
+ required uint32 f = 5;
+}
+
+
+message CUDAArrayObject {
+ required bytes handle = 1;
+ required CUDAChannelFormatDesc format = 2;
+ required uint64 bpp = 3;
+ required uint64 pitch = 4;
+ required CUDAExtent extent = 5;
+}
+
+
+message VertexShaderConstants {
+ required float nearclip = 1;
+ required float farclip = 2;
+ repeated bytes constant_buffers = 3;
+}
+
+
+message GameState {
+ required Vec3f camera_direction = 1;
+ required Vec3f velocity = 2;
+ required bool collided = 3;
+}
+
+
+message KeyboardState {
+ optional bool w = 1;
+ optional bool a = 2;
+ optional bool s = 3;
+ optional bool d = 4;
+}

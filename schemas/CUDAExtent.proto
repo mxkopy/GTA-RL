@@ -1,0 +1,6 @@
+
+message CUDAExtent {
+ required int64 width = 1;
+ required int64 height = 2;
+ required int64 depth = 3;
+}
