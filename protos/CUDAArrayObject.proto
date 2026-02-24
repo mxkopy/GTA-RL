@@ -1,9 +1,0 @@
-import "CUDAChannelFormatDesc.proto";
-import "CUDAExtent.proto";
-message CUDAArrayObject {
-optional bytes handle = 1;
-optional CUDAChannelFormatDesc formatDesc = 2;
-optional uint64 bpp = 3;
-optional uint64 pitch = 4;
-optional CUDAExtent extent = 5;
-}

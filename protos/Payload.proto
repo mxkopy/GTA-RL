@@ -1,5 +1,0 @@
-
-message Payload {
-optional string typename = 1;
-optional bytes data = 2;
-}

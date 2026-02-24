@@ -1,0 +1,20 @@
+{
+  "name": "dxinterop",
+  "version": "0.1",
+  "dependencies": [
+    "detours",
+    "eigen3",
+    "protobuf",
+    "flatbuffers"
+  ],
+  "overrides": [
+    {
+      "name": "protobuf",
+      "version": "6.33.4"
+    },
+    {
+      "name": "flatbuffers",
+      "version": "25.12.19"
+    }
+  ]
+}
