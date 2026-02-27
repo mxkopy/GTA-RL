@@ -11,13 +11,10 @@ from ray.rllib.core.rl_module.apis import TARGET_NETWORK_ACTION_DIST_INPUTS, Val
 
 
 def unflatten_batch(flattened):
-    # batches = flattened.shape[0]
-    # torch.nn.ZeroPad2d(  )
-    
-    flat_images = flattened[..., config.n_frames * prod(config.image_shape):]
-    flat_velocities = flattened[..., -config.n_frames*prod(config.velocity_shape):]
+    flat_images = flattened[..., :config.n_frames * prod(config.image_shape)]
+    flat_velocities = flattened[..., config.n_frames * prod(config.image_shape):]
     images = flat_images.reshape(-1, config.n_frames, *config.image_shape)
-    velocities = flat_velocities.reshape(-1, config.n_frames, prod(config.velocity_shape))
+    velocities = flat_velocities.reshape(-1, config.n_frames, *config.velocity_shape)
     return images, velocities
 
 class VisualModel(nn.Module):

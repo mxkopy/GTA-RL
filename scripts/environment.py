@@ -56,7 +56,6 @@ class VideoState:
 
     @staticmethod
     def pop_rgb():
-        VideoState.init_cuda_arrays()
         img = VideoState.CUDAArrays['RGB']
         img = img.permute(2, 0, 1).unsqueeze(0).to(dtype=torch.float32)
         img = img / 255
@@ -65,8 +64,7 @@ class VideoState:
         return img
 
     @staticmethod
-    def pop_depth_and_velocity():
-        VideoState.init_cuda_arrays()
+    def pop_velocity_and_depth():
         depthinfo = VideoState.CUDAArrays['Depth']
         # near, far = unpack('@2f', VideoState.nearclipfarclip.pop_nbl())
         velocity_and_depth = depthinfo.squeeze().permute(2, 0, 1)
@@ -77,7 +75,7 @@ class VideoState:
 
     @staticmethod
     def pop():
-        velocity, depth = VideoState.pop_depth_and_velocity()
+        velocity, depth = VideoState.pop_velocity_and_depth()
         rgb = VideoState.pop_rgb()
         img = torch.cat((depth, rgb))
         return img.cpu()

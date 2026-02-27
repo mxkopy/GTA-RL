@@ -10,7 +10,7 @@ VideoState.init_cuda_arrays()
 
 while True:
     keypress = cv2.waitKey(1)
-    velocity, depth = VideoState.pop_depth_and_velocity()
+    velocity, depth = VideoState.pop_velocity_and_depth()
     # velocity = (velocity / velocity.square().sum(dim=0).sqrt().max()).permute(1, 2, 0)
     # velocity = torch.square(velocity).sum(dim=0).sqrt()
     # velocity = velocity / velocity.max()
