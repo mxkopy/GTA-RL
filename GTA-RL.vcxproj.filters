@@ -23,13 +23,16 @@
     <ClInclude Include="gta\launch_debugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gta\vertexbuffers.h">
+    <ClInclude Include="gta\vertex_buffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="schemas\amalgamated.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gta\keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gta\dx11_cuda_ipc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

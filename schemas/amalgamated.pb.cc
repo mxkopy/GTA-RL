@@ -247,7 +247,7 @@ struct GameStateDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GameStateDefaultTypeInternal _GameState_default_instance_;
 
-inline constexpr CUDAArrayObject::Impl_::Impl_(
+inline constexpr CUDAPitchedArrayObject::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
         handle_(
@@ -255,28 +255,27 @@ inline constexpr CUDAArrayObject::Impl_::Impl_(
             ::_pbi::ConstantInitialized()),
         format_{nullptr},
         extent_{nullptr},
-        bpp_{::uint64_t{0u}},
         pitch_{::uint64_t{0u}} {}
 
 template <typename>
-PROTOBUF_CONSTEXPR CUDAArrayObject::CUDAArrayObject(::_pbi::ConstantInitialized)
+PROTOBUF_CONSTEXPR CUDAPitchedArrayObject::CUDAPitchedArrayObject(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(CUDAArrayObject_class_data_.base()),
+    : ::google::protobuf::Message(CUDAPitchedArrayObject_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(::_pbi::ConstantInitialized()) {
 }
-struct CUDAArrayObjectDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR CUDAArrayObjectDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~CUDAArrayObjectDefaultTypeInternal() {}
+struct CUDAPitchedArrayObjectDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR CUDAPitchedArrayObjectDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~CUDAPitchedArrayObjectDefaultTypeInternal() {}
   union {
-    CUDAArrayObject _instance;
+    CUDAPitchedArrayObject _instance;
   };
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CUDAArrayObjectDefaultTypeInternal _CUDAArrayObject_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CUDAPitchedArrayObjectDefaultTypeInternal _CUDAPitchedArrayObject_default_instance_;
 
 inline constexpr ByteBuffers::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -358,17 +357,15 @@ const ::uint32_t
         3,
         4,
         0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::CUDAArrayObject, _impl_._has_bits_),
-        8, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::CUDAArrayObject, _impl_.handle_),
-        PROTOBUF_FIELD_OFFSET(::CUDAArrayObject, _impl_.format_),
-        PROTOBUF_FIELD_OFFSET(::CUDAArrayObject, _impl_.bpp_),
-        PROTOBUF_FIELD_OFFSET(::CUDAArrayObject, _impl_.pitch_),
-        PROTOBUF_FIELD_OFFSET(::CUDAArrayObject, _impl_.extent_),
+        PROTOBUF_FIELD_OFFSET(::CUDAPitchedArrayObject, _impl_._has_bits_),
+        7, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::CUDAPitchedArrayObject, _impl_.handle_),
+        PROTOBUF_FIELD_OFFSET(::CUDAPitchedArrayObject, _impl_.format_),
+        PROTOBUF_FIELD_OFFSET(::CUDAPitchedArrayObject, _impl_.pitch_),
+        PROTOBUF_FIELD_OFFSET(::CUDAPitchedArrayObject, _impl_.extent_),
         0,
         1,
         3,
-        4,
         2,
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_._has_bits_),
@@ -409,10 +406,10 @@ static const ::_pbi::MigrationSchema
         {17, sizeof(::Vec3f)},
         {26, sizeof(::CUDAExtent)},
         {35, sizeof(::CUDAChannelFormatDesc)},
-        {48, sizeof(::CUDAArrayObject)},
-        {61, sizeof(::VertexShaderConstants)},
-        {70, sizeof(::GameState)},
-        {79, sizeof(::KeyboardState)},
+        {48, sizeof(::CUDAPitchedArrayObject)},
+        {59, sizeof(::VertexShaderConstants)},
+        {68, sizeof(::GameState)},
+        {77, sizeof(::KeyboardState)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::_ByteBuffer_default_instance_._instance,
@@ -421,7 +418,7 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::_Vec3f_default_instance_._instance,
     &::_CUDAExtent_default_instance_._instance,
     &::_CUDAChannelFormatDesc_default_instance_._instance,
-    &::_CUDAArrayObject_default_instance_._instance,
+    &::_CUDAPitchedArrayObject_default_instance_._instance,
     &::_VertexShaderConstants_default_instance_._instance,
     &::_GameState_default_instance_._instance,
     &::_KeyboardState_default_instance_._instance,
@@ -435,23 +432,22 @@ const char descriptor_table_protodef_amalgamated_2eproto[] ABSL_ATTRIBUTE_SECTIO
     "\002(\002\022\t\n\001z\030\003 \002(\002\":\n\nCUDAExtent\022\r\n\005width\030\001 "
     "\002(\003\022\016\n\006height\030\002 \002(\003\022\r\n\005depth\030\003 \002(\003\"N\n\025CU"
     "DAChannelFormatDesc\022\t\n\001x\030\001 \002(\r\022\t\n\001y\030\002 \002("
-    "\r\022\t\n\001z\030\003 \002(\r\022\t\n\001w\030\004 \002(\r\022\t\n\001f\030\005 \002(\r\"\202\001\n\017C"
-    "UDAArrayObject\022\016\n\006handle\030\001 \002(\014\022&\n\006format"
-    "\030\002 \002(\0132\026.CUDAChannelFormatDesc\022\013\n\003bpp\030\003 "
-    "\002(\004\022\r\n\005pitch\030\004 \002(\004\022\033\n\006extent\030\005 \002(\0132\013.CUD"
-    "AExtent\"T\n\025VertexShaderConstants\022\020\n\010near"
-    "clip\030\001 \002(\002\022\017\n\007farclip\030\002 \002(\002\022\030\n\020constant_"
-    "buffers\030\003 \003(\014\"Y\n\tGameState\022 \n\020camera_dir"
-    "ection\030\001 \002(\0132\006.Vec3f\022\030\n\010velocity\030\002 \002(\0132\006"
-    ".Vec3f\022\020\n\010collided\030\003 \002(\010\";\n\rKeyboardStat"
-    "e\022\t\n\001w\030\001 \001(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030"
-    "\004 \001(\010"
+    "\r\022\t\n\001z\030\003 \002(\r\022\t\n\001w\030\004 \002(\r\022\t\n\001f\030\005 \002(\r\"|\n\026CU"
+    "DAPitchedArrayObject\022\016\n\006handle\030\001 \002(\014\022&\n\006"
+    "format\030\002 \002(\0132\026.CUDAChannelFormatDesc\022\r\n\005"
+    "pitch\030\003 \002(\004\022\033\n\006extent\030\004 \002(\0132\013.CUDAExtent"
+    "\"T\n\025VertexShaderConstants\022\020\n\010nearclip\030\001 "
+    "\002(\002\022\017\n\007farclip\030\002 \002(\002\022\030\n\020constant_buffers"
+    "\030\003 \003(\014\"Y\n\tGameState\022 \n\020camera_direction\030"
+    "\001 \002(\0132\006.Vec3f\022\030\n\010velocity\030\002 \002(\0132\006.Vec3f\022"
+    "\020\n\010collided\030\003 \002(\010\";\n\rKeyboardState\022\t\n\001w\030"
+    "\001 \001(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
 };
 static ::absl::once_flag descriptor_table_amalgamated_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_amalgamated_2eproto = {
     false,
     false,
-    685,
+    678,
     descriptor_table_protodef_amalgamated_2eproto,
     "amalgamated.proto",
     &descriptor_table_amalgamated_2eproto_once,
@@ -2301,43 +2297,43 @@ void CUDAChannelFormatDesc::InternalSwap(CUDAChannelFormatDesc* PROTOBUF_RESTRIC
 }
 // ===================================================================
 
-class CUDAArrayObject::_Internal {
+class CUDAPitchedArrayObject::_Internal {
  public:
   using HasBits =
-      decltype(::std::declval<CUDAArrayObject>()._impl_._has_bits_);
+      decltype(::std::declval<CUDAPitchedArrayObject>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_._has_bits_);
+      8 * PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_._has_bits_);
   static bool MissingRequiredFields(const HasBits& has_bits) {
-    return ((has_bits[0] & 0x0000001f) ^ 0x0000001f) != 0;
+    return ((has_bits[0] & 0x0000000f) ^ 0x0000000f) != 0;
   }
 };
 
-CUDAArrayObject::CUDAArrayObject(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+CUDAPitchedArrayObject::CUDAPitchedArrayObject(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CUDAArrayObject_class_data_.base()) {
+    : ::google::protobuf::Message(arena, CUDAPitchedArrayObject_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
-  // @@protoc_insertion_point(arena_constructor:CUDAArrayObject)
+  // @@protoc_insertion_point(arena_constructor:CUDAPitchedArrayObject)
 }
-PROTOBUF_NDEBUG_INLINE CUDAArrayObject::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CUDAPitchedArrayObject::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    [[maybe_unused]] const ::CUDAArrayObject& from_msg)
+    [[maybe_unused]] const ::CUDAPitchedArrayObject& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         handle_(arena, from.handle_) {}
 
-CUDAArrayObject::CUDAArrayObject(
+CUDAPitchedArrayObject::CUDAPitchedArrayObject(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const CUDAArrayObject& from)
+    const CUDAPitchedArrayObject& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, CUDAArrayObject_class_data_.base()) {
+    : ::google::protobuf::Message(arena, CUDAPitchedArrayObject_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  CUDAArrayObject* const _this = this;
+  CUDAPitchedArrayObject* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
@@ -2349,23 +2345,17 @@ CUDAArrayObject::CUDAArrayObject(
   _impl_.extent_ = (CheckHasBit(cached_has_bits, 0x00000004U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.extent_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char*>(&_impl_) +
-               offsetof(Impl_, bpp_),
-           reinterpret_cast<const char*>(&from._impl_) +
-               offsetof(Impl_, bpp_),
-           offsetof(Impl_, pitch_) -
-               offsetof(Impl_, bpp_) +
-               sizeof(Impl_::pitch_));
+  _impl_.pitch_ = from._impl_.pitch_;
 
-  // @@protoc_insertion_point(copy_constructor:CUDAArrayObject)
+  // @@protoc_insertion_point(copy_constructor:CUDAPitchedArrayObject)
 }
-PROTOBUF_NDEBUG_INLINE CUDAArrayObject::Impl_::Impl_(
+PROTOBUF_NDEBUG_INLINE CUDAPitchedArrayObject::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         handle_(arena) {}
 
-inline void CUDAArrayObject::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+inline void CUDAPitchedArrayObject::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, format_),
@@ -2374,12 +2364,12 @@ inline void CUDAArrayObject::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
                offsetof(Impl_, format_) +
                sizeof(Impl_::pitch_));
 }
-CUDAArrayObject::~CUDAArrayObject() {
-  // @@protoc_insertion_point(destructor:CUDAArrayObject)
+CUDAPitchedArrayObject::~CUDAPitchedArrayObject() {
+  // @@protoc_insertion_point(destructor:CUDAPitchedArrayObject)
   SharedDtor(*this);
 }
-inline void CUDAArrayObject::SharedDtor(MessageLite& self) {
-  CUDAArrayObject& this_ = static_cast<CUDAArrayObject&>(self);
+inline void CUDAPitchedArrayObject::SharedDtor(MessageLite& self) {
+  CUDAPitchedArrayObject& this_ = static_cast<CUDAPitchedArrayObject&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -2391,104 +2381,95 @@ inline void CUDAArrayObject::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-inline void* PROTOBUF_NONNULL CUDAArrayObject::PlacementNew_(
+inline void* PROTOBUF_NONNULL CUDAPitchedArrayObject::PlacementNew_(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) CUDAArrayObject(arena);
+  return ::new (mem) CUDAPitchedArrayObject(arena);
 }
-constexpr auto CUDAArrayObject::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CUDAArrayObject),
-                                            alignof(CUDAArrayObject));
+constexpr auto CUDAPitchedArrayObject::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CUDAPitchedArrayObject),
+                                            alignof(CUDAPitchedArrayObject));
 }
-constexpr auto CUDAArrayObject::InternalGenerateClassData_() {
+constexpr auto CUDAPitchedArrayObject::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
-          &_CUDAArrayObject_default_instance_._instance,
+          &_CUDAPitchedArrayObject_default_instance_._instance,
           &_table_.header,
           nullptr,  // OnDemandRegisterArenaDtor
-          CUDAArrayObject::IsInitializedImpl,
-          &CUDAArrayObject::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<CUDAArrayObject>(),
+          CUDAPitchedArrayObject::IsInitializedImpl,
+          &CUDAPitchedArrayObject::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<CUDAPitchedArrayObject>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &CUDAArrayObject::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<CUDAArrayObject>(), &CUDAArrayObject::ByteSizeLong,
-              &CUDAArrayObject::_InternalSerialize,
+          &CUDAPitchedArrayObject::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<CUDAPitchedArrayObject>(), &CUDAPitchedArrayObject::ByteSizeLong,
+              &CUDAPitchedArrayObject::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_._cached_size_),
+          PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_._cached_size_),
           false,
       },
-      &CUDAArrayObject::kDescriptorMethods,
+      &CUDAPitchedArrayObject::kDescriptorMethods,
       &descriptor_table_amalgamated_2eproto,
       nullptr,  // tracker
   };
 }
 
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull CUDAArrayObject_class_data_ =
-        CUDAArrayObject::InternalGenerateClassData_();
+    ::google::protobuf::internal::ClassDataFull CUDAPitchedArrayObject_class_data_ =
+        CUDAPitchedArrayObject::InternalGenerateClassData_();
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-CUDAArrayObject::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&CUDAArrayObject_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(CUDAArrayObject_class_data_.tc_table);
-  return CUDAArrayObject_class_data_.base();
+CUDAPitchedArrayObject::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&CUDAPitchedArrayObject_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(CUDAPitchedArrayObject_class_data_.tc_table);
+  return CUDAPitchedArrayObject_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 5, 2, 0, 2>
-CUDAArrayObject::_table_ = {
+const ::_pbi::TcParseTable<2, 4, 2, 0, 2>
+CUDAPitchedArrayObject::_table_ = {
   {
-    PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_._has_bits_),
+    PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_._has_bits_),
     0, // no _extensions_
-    5, 56,  // max_field_number, fast_idx_mask
+    4, 24,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967264,  // skipmap
+    4294967280,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    5,  // num_field_entries
+    4,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    CUDAArrayObject_class_data_.base(),
+    CUDAPitchedArrayObject_class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::CUDAArrayObject>(),  // to_prefetch
+    ::_pbi::TcParser::GetTable<::CUDAPitchedArrayObject>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
+    // required .CUDAExtent extent = 4;
+    {::_pbi::TcParser::FastMtS1,
+     {34, 2, 1,
+      PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.extent_)}},
     // required bytes handle = 1;
     {::_pbi::TcParser::FastBS1,
      {10, 0, 0,
-      PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.handle_)}},
+      PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.handle_)}},
     // required .CUDAChannelFormatDesc format = 2;
     {::_pbi::TcParser::FastMtS1,
      {18, 1, 0,
-      PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.format_)}},
-    // required uint64 bpp = 3;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(CUDAArrayObject, _impl_.bpp_), 3>(),
+      PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.format_)}},
+    // required uint64 pitch = 3;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(CUDAPitchedArrayObject, _impl_.pitch_), 3>(),
      {24, 3, 0,
-      PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.bpp_)}},
-    // required uint64 pitch = 4;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(CUDAArrayObject, _impl_.pitch_), 4>(),
-     {32, 4, 0,
-      PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.pitch_)}},
-    // required .CUDAExtent extent = 5;
-    {::_pbi::TcParser::FastMtS1,
-     {42, 2, 1,
-      PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.extent_)}},
-    {::_pbi::TcParser::MiniParse, {}},
-    {::_pbi::TcParser::MiniParse, {}},
+      PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.pitch_)}},
   }}, {{
     65535, 65535
   }}, {{
     // required bytes handle = 1;
-    {PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.handle_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.handle_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
     // required .CUDAChannelFormatDesc format = 2;
-    {PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.format_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-    // required uint64 bpp = 3;
-    {PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.bpp_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
-    // required uint64 pitch = 4;
-    {PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.pitch_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
-    // required .CUDAExtent extent = 5;
-    {PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.extent_), _Internal::kHasBitsOffset + 2, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.format_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    // required uint64 pitch = 3;
+    {PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.pitch_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
+    // required .CUDAExtent extent = 4;
+    {PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.extent_), _Internal::kHasBitsOffset + 2, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
       {::_pbi::TcParser::GetTable<::CUDAChannelFormatDesc>()},
@@ -2497,8 +2478,8 @@ CUDAArrayObject::_table_ = {
   {{
   }},
 };
-PROTOBUF_NOINLINE void CUDAArrayObject::Clear() {
-// @@protoc_insertion_point(message_clear_start:CUDAArrayObject)
+PROTOBUF_NOINLINE void CUDAPitchedArrayObject::Clear() {
+// @@protoc_insertion_point(message_clear_start:CUDAPitchedArrayObject)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -2518,30 +2499,26 @@ PROTOBUF_NOINLINE void CUDAArrayObject::Clear() {
       _impl_.extent_->Clear();
     }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000018U)) {
-    ::memset(&_impl_.bpp_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.pitch_) -
-        reinterpret_cast<char*>(&_impl_.bpp_)) + sizeof(_impl_.pitch_));
-  }
+  _impl_.pitch_ = ::uint64_t{0u};
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CUDAArrayObject::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL CUDAPitchedArrayObject::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
-  const CUDAArrayObject& this_ = static_cast<const CUDAArrayObject&>(base);
+  const CUDAPitchedArrayObject& this_ = static_cast<const CUDAPitchedArrayObject&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* PROTOBUF_NONNULL CUDAArrayObject::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL CUDAPitchedArrayObject::_InternalSerialize(
     ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-  const CUDAArrayObject& this_ = *this;
+  const CUDAPitchedArrayObject& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  // @@protoc_insertion_point(serialize_to_array_start:CUDAArrayObject)
+  // @@protoc_insertion_point(serialize_to_array_start:CUDAPitchedArrayObject)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -2559,24 +2536,17 @@ PROTOBUF_NOINLINE void CUDAArrayObject::Clear() {
         stream);
   }
 
-  // required uint64 bpp = 3;
+  // required uint64 pitch = 3;
   if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
-        3, this_._internal_bpp(), target);
+        3, this_._internal_pitch(), target);
   }
 
-  // required uint64 pitch = 4;
-  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
-        4, this_._internal_pitch(), target);
-  }
-
-  // required .CUDAExtent extent = 5;
+  // required .CUDAExtent extent = 4;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, *this_._impl_.extent_, this_._impl_.extent_->GetCachedSize(), target,
+        4, *this_._impl_.extent_, this_._impl_.extent_->GetCachedSize(), target,
         stream);
   }
 
@@ -2585,18 +2555,18 @@ PROTOBUF_NOINLINE void CUDAArrayObject::Clear() {
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
             this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:CUDAArrayObject)
+  // @@protoc_insertion_point(serialize_to_array_end:CUDAPitchedArrayObject)
   return target;
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t CUDAArrayObject::ByteSizeLong(const MessageLite& base) {
-  const CUDAArrayObject& this_ = static_cast<const CUDAArrayObject&>(base);
+::size_t CUDAPitchedArrayObject::ByteSizeLong(const MessageLite& base) {
+  const CUDAPitchedArrayObject& this_ = static_cast<const CUDAPitchedArrayObject&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
-::size_t CUDAArrayObject::ByteSizeLong() const {
-  const CUDAArrayObject& this_ = *this;
+::size_t CUDAPitchedArrayObject::ByteSizeLong() const {
+  const CUDAPitchedArrayObject& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  // @@protoc_insertion_point(message_byte_size_start:CUDAArrayObject)
+  // @@protoc_insertion_point(message_byte_size_start:CUDAPitchedArrayObject)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
@@ -2605,7 +2575,7 @@ PROTOBUF_NOINLINE void CUDAArrayObject::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     // required bytes handle = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
@@ -2616,18 +2586,13 @@ PROTOBUF_NOINLINE void CUDAArrayObject::Clear() {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.format_);
     }
-    // required .CUDAExtent extent = 5;
+    // required .CUDAExtent extent = 4;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.extent_);
     }
-    // required uint64 bpp = 3;
+    // required uint64 pitch = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
-          this_._internal_bpp());
-    }
-    // required uint64 pitch = 4;
-    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
           this_._internal_pitch());
     }
@@ -2636,22 +2601,22 @@ PROTOBUF_NOINLINE void CUDAArrayObject::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void CUDAArrayObject::MergeImpl(::google::protobuf::MessageLite& to_msg,
+void CUDAPitchedArrayObject::MergeImpl(::google::protobuf::MessageLite& to_msg,
                             const ::google::protobuf::MessageLite& from_msg) {
    auto* const _this =
-      static_cast<CUDAArrayObject*>(&to_msg);
-  auto& from = static_cast<const CUDAArrayObject&>(from_msg);
+      static_cast<CUDAPitchedArrayObject*>(&to_msg);
+  auto& from = static_cast<const CUDAPitchedArrayObject&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   ::google::protobuf::Arena* arena = _this->GetArena();
-  // @@protoc_insertion_point(class_specific_merge_from_start:CUDAArrayObject)
+  // @@protoc_insertion_point(class_specific_merge_from_start:CUDAPitchedArrayObject)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _this->_internal_set_handle(from._internal_handle());
     }
@@ -2672,9 +2637,6 @@ void CUDAArrayObject::MergeImpl(::google::protobuf::MessageLite& to_msg,
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.bpp_ = from._impl_.bpp_;
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       _this->_impl_.pitch_ = from._impl_.pitch_;
     }
   }
@@ -2683,16 +2645,16 @@ void CUDAArrayObject::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void CUDAArrayObject::CopyFrom(const CUDAArrayObject& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:CUDAArrayObject)
+void CUDAPitchedArrayObject::CopyFrom(const CUDAPitchedArrayObject& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:CUDAPitchedArrayObject)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-PROTOBUF_NOINLINE bool CUDAArrayObject::IsInitializedImpl(
+PROTOBUF_NOINLINE bool CUDAPitchedArrayObject::IsInitializedImpl(
     const MessageLite& msg) {
-  auto& this_ = static_cast<const CUDAArrayObject&>(msg);
+  auto& this_ = static_cast<const CUDAPitchedArrayObject&>(msg);
   if (_Internal::MissingRequiredFields(this_._impl_._has_bits_)) {
     return false;
   }
@@ -2705,7 +2667,7 @@ PROTOBUF_NOINLINE bool CUDAArrayObject::IsInitializedImpl(
   return true;
 }
 
-void CUDAArrayObject::InternalSwap(CUDAArrayObject* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void CUDAPitchedArrayObject::InternalSwap(CUDAPitchedArrayObject* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
@@ -2713,14 +2675,14 @@ void CUDAArrayObject::InternalSwap(CUDAArrayObject* PROTOBUF_RESTRICT PROTOBUF_N
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.handle_, &other->_impl_.handle_, arena);
   ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.pitch_)
-      + sizeof(CUDAArrayObject::_impl_.pitch_)
-      - PROTOBUF_FIELD_OFFSET(CUDAArrayObject, _impl_.format_)>(
+      PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.pitch_)
+      + sizeof(CUDAPitchedArrayObject::_impl_.pitch_)
+      - PROTOBUF_FIELD_OFFSET(CUDAPitchedArrayObject, _impl_.format_)>(
           reinterpret_cast<char*>(&_impl_.format_),
           reinterpret_cast<char*>(&other->_impl_.format_));
 }
 
-::google::protobuf::Metadata CUDAArrayObject::GetMetadata() const {
+::google::protobuf::Metadata CUDAPitchedArrayObject::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================

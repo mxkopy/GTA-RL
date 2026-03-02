@@ -29,7 +29,7 @@ class GameState:
 
 class VideoState:
 
-    VertexShaderConstantsMemory = StructuredMemory('VSConstantBuffers')
+    VertexShaderConstantsMemory = StructuredMemory('VSConstants')
     
     CUDAArrays = {
         'Depth': None,
@@ -77,8 +77,8 @@ class VideoState:
     def pop():
         velocity, depth = VideoState.pop_velocity_and_depth()
         rgb = VideoState.pop_rgb()
-        img = torch.cat((depth, rgb))
-        return img.cpu()
+        # img = torch.cat((depth, rgb))
+        return depth.cpu()
 
 class VideoGame:
 
@@ -95,16 +95,15 @@ class VideoGame:
         if collided:
             return -10
         else:
-            return np.dot(np.array(camera_direction), np.array(velocity))
+            return np.dot(np.array(camera_direction), np.array(velocity)) - 0.01
 
     def observe(self):
         camera_direction, velocity, collided = self.game_state.pop()
         video_state = self.video_state.pop()
         observation = torch.cat((video_state.reshape(-1), torch.tensor(velocity, device=video_state.device)) )
         reward = VideoGame.reward(camera_direction, velocity, collided)
-        terminal = collided == 0
-        truncated = False
-        return observation.reshape(*config.observation_space_shape), reward, terminal, truncated
+        terminal = collided
+        return observation.reshape(*config.observation_space_shape), reward, terminal
 
 class Environment(Env):
 
@@ -114,6 +113,9 @@ class Environment(Env):
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
         self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=(config.n_frames, *config.observation_space_shape))
         self.last_n_frames = []
+        self.horizon = float('inf')
+        if conf is not None and 'horizon' in conf:
+            self.horizon = conf['horizon']
 
     def stack_observation(self, observation):
         if config.n_frames <= 1:
@@ -122,9 +124,11 @@ class Environment(Env):
         return torch.stack(self.last_n_frames, dim=0)
 
     def step(self, action):
+        self.t += 1
         self.video_game.act(action)
-        observation, reward, terminal, truncated = self.video_game.observe()
+        observation, reward, terminal = self.video_game.observe()
         observation = self.stack_observation(observation)
+        truncated = self.t >= self.horizon
         print(f"{action[0]: >10.5f} {action[1]: >10.5f} {action[2]: >10.5f} | {str(reward)[0:5]}")
         return (
             observation,
@@ -135,6 +139,7 @@ class Environment(Env):
         )
 
     def reset(self, *args, **kwargs):
+        self.t = 0
         obs = self.video_game.observe()[0]
         self.last_n_frames = [torch.zeros_like(obs) for _ in range(config.n_frames)]
         obs = self.stack_observation(obs)

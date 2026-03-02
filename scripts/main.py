@@ -34,7 +34,8 @@ if __name__ == '__main__':
                 num_gpus_per_learner=0.5,
             )
             .environment(
-                env=Environment
+                env=Environment,
+                # env_config={'horizon': 64}
             )
             .rl_module(
                 rl_module_spec=RLModuleSpec(module_class=Model)

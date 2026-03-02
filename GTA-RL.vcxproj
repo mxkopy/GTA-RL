@@ -63,7 +63,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v145</PlatformToolset>
@@ -314,12 +313,15 @@ echo ^)^" &gt;&gt; gta\ComputeShader.hlsl.cppliteral</Command>
     <CudaLink />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="gta\dx11_cuda_ipc.h" />
     <ClInclude Include="gta\framework.h" />
     <ClInclude Include="gta\game.h" />
     <ClInclude Include="gta\ipc.h" />
-    <ClInclude Include="gta\keyboard.h" />
+    <ClInclude Include="gta\keyboard.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="gta\launch_debugger.h" />
-    <ClInclude Include="gta\vertexbuffers.h" />
+    <ClInclude Include="gta\vertex_buffers.h" />
     <ClInclude Include="schemas\amalgamated.pb.h" />
   </ItemGroup>
   <ItemGroup>

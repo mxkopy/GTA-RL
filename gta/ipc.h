@@ -156,7 +156,7 @@ struct Flags: MemoryMap
 
 	void WaitUntil(int Flag, bool Value)
 	{
-		while (GetFlag(Flag) != Value) Sleep(1);
+		while (GetFlag(Flag) != Value);
 	}
 };
 

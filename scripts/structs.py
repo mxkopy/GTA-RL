@@ -19,10 +19,9 @@ class CUDAChannelFormatDesc(metaclass=Serializable):
     w: np.uint32
     f: np.uint32
 
-class CUDAArrayObject(metaclass=Serializable):
+class CUDAPitchedArrayObject(metaclass=Serializable):
     handle: bytes
     format: CUDAChannelFormatDesc
-    bpp: np.uint64
     pitch: np.uint64
     extent: CUDAExtent
 

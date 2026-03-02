@@ -1,7 +1,7 @@
 from math import prod
 
-n_frames = 2
-image_shape = (4, 360, 640)
+n_frames = 1
+image_shape = (1, 360, 640)
 velocity_shape = (3,)
 observation_space_shape = (prod(image_shape) + prod(velocity_shape),)
 action_space_shape = (3,)
