@@ -1,7 +1,5 @@
 import config
 import sys
-from ray.rllib.connectors.common.frame_stacking import FrameStacking
-
 
 if __name__ == '__main__':
 
@@ -15,9 +13,6 @@ if __name__ == '__main__':
         from environment import Environment, VideoState
         from ipc import Flags
         from model import Model
-        # from ray.rllib.connectors.learner.frame_stacking import FrameStackingLearner
-        # from ray.rllib.connectors.env_to_module.frame_stacking import FrameStackingEnvToModule
-        # from ray.rllib.connectors.common.frame_stacking import FrameStacking
 
         algorithm = (
             PPOConfig()
@@ -33,7 +28,6 @@ if __name__ == '__main__':
             .env_runners(
                 num_env_runners=0,
                 num_gpus_per_env_runner=0.5,
-                # env_to_module_connector=lambda env, spaces, device: FrameStacking(n_frames=config.n_frames)
             )
             .learners(
                 num_learners=0,
@@ -55,8 +49,6 @@ if __name__ == '__main__':
                 entropy_coeff=0.001,
                 vf_loss_coeff=1,
                 kl_target=0.003,
-                # grad_clip=None,
-                # learner_connector=lambda obs_space, act_space: FrameStacking(num_frames=config.n_frames, as_learner_connector=True),
             )
             .build_algo()
         )

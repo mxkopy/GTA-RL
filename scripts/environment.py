@@ -104,7 +104,7 @@ class VideoGame:
         reward = VideoGame.reward(camera_direction, velocity, collided)
         terminal = collided == 0
         truncated = False
-        return observation.reshape(-1), reward, terminal, truncated
+        return observation.reshape(*config.observation_space_shape), reward, terminal, truncated
 
 class Environment(Env):
 
@@ -112,11 +112,19 @@ class Environment(Env):
         self.device = 'cuda'
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
-        self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape)
+        self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=(config.n_frames, *config.observation_space_shape))
+        self.last_n_frames = []
+
+    def stack_observation(self, observation):
+        if config.n_frames <= 1:
+            return observation.unsqueeze(0)
+        self.last_n_frames = [observation] + self.last_n_frames[:-1]
+        return torch.stack(self.last_n_frames, dim=0)
 
     def step(self, action):
         self.video_game.act(action)
         observation, reward, terminal, truncated = self.video_game.observe()
+        observation = self.stack_observation(observation)
         print(f"{action[0]: >10.5f} {action[1]: >10.5f} {action[2]: >10.5f} | {str(reward)[0:5]}")
         return (
             observation,
@@ -127,5 +135,7 @@ class Environment(Env):
         )
 
     def reset(self, *args, **kwargs):
-        obs = self.video_game.observe()[0], {"env_state": "reset"}
-        return obs
+        obs = self.video_game.observe()[0]
+        self.last_n_frames = [torch.zeros_like(obs) for _ in range(config.n_frames)]
+        obs = self.stack_observation(obs)
+        return obs, {"env_state" : "reset"}

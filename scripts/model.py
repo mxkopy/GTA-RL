@@ -11,10 +11,10 @@ from ray.rllib.core.rl_module.apis import TARGET_NETWORK_ACTION_DIST_INPUTS, Val
 
 
 def unflatten_batch(flattened):
-    flat_images = flattened[..., :config.n_frames * prod(config.image_shape)]
-    flat_velocities = flattened[..., config.n_frames * prod(config.image_shape):]
-    images = flat_images.reshape(-1, config.n_frames, *config.image_shape)
-    velocities = flat_velocities.reshape(-1, config.n_frames, *config.velocity_shape)
+    flat_images = flattened[..., :prod(config.image_shape)]
+    flat_velocities = flattened[..., prod(config.image_shape):]
+    images = flat_images.reshape(-1, *config.image_shape)
+    velocities = flat_velocities.reshape(-1, *config.velocity_shape)
     return images, velocities
 
 class VisualModel(nn.Module):
@@ -44,8 +44,9 @@ class VisualModel(nn.Module):
             nn.Linear(config.visual_embedding_size, config.visual_embedding_size)        
         )
 
-    def forward(self, img):
-        return self.model(img)
+    # input is of shape (..., n_frames)
+    def forward(self, images):
+        return self.model(images)
     
 class Embedding(nn.Module):
 
@@ -106,17 +107,23 @@ class Model(TorchRLModule, ValueFunctionAPI):
         self.actor = Actor()
         self.critic = Critic()
 
+    def compute_embeddings(self, batch: Dict[str, Any]):
+        images, velocities = unflatten_batch(batch[Columns.OBS])
+        image_features = self.visual(images)
+        embeddings = self.embedding(image_features, velocities)
+        return embeddings
+
     @override(ValueFunctionAPI)
     def compute_values(self, batch: Dict[str, Any], embeddings: Optional[Any] = None, **kwargs):
         if embeddings is None:
             images, velocities = unflatten_batch(batch[Columns.OBS])
-            images = self.visual(images.reshape(-1, *config.image_shape))
+            images = self.visual(images)
             embeddings = self.embedding(images, velocities)
         return self.critic(embeddings)
     
     def compute_embeddings_and_logits(self, batch):
         images, velocities = unflatten_batch(batch[Columns.OBS])
-        vis = self.visual(images.reshape(-1, *config.image_shape))
+        vis = self.visual(images)
         embeddings = self.embedding(vis, velocities)
         logits = self.actor(embeddings)
         return (
