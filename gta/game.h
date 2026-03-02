@@ -40,12 +40,6 @@ inline static void CenterCamera()
 	CAM::SET_GAMEPLAY_CAM_RELATIVE_PITCH(-10.0f, 1.0f);
 }
 
-inline static void ResetPlayerDrivingPosition(Vector3 Position, float Heading)
-{
-	auto V = _VEHICLE;
-	ENTITY::SET_ENTITY_COORDS(V, Position.x, Position.y, Position.z, false, false, false, true);
-	ENTITY::SET_ENTITY_HEADING(V, Heading);
-}
 
 // It's better to just not think about it
 inline static void InitializePlayerDrivingPosition(Vector3 Position)
@@ -61,6 +55,14 @@ inline static void InitializePlayerDrivingPosition(Vector3 Position)
 	while (!STREAMING::HAS_MODEL_LOADED(ENTITY_XF)) WAIT(0);
 	PED::SET_PED_INTO_VEHICLE(_PED, VEHICLE::CREATE_VEHICLE(ENTITY_XF, Position.x, Position.y, Position.z, Heading, true, false), -1);
 	//STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(ENTITY_XF);
+}
+
+inline static void ResetPlayerDrivingPosition(Vector3 Position, float Heading)
+{
+	auto V = _VEHICLE;
+	ENTITY::SET_ENTITY_COORDS(V, Position.x, Position.y, Position.z, false, false, false, true);
+	ENTITY::SET_ENTITY_HEADING(V, Heading);
+	VEHICLE::SET_VEHICLE_FIXED(V);
 }
 
 inline static void Reset()
@@ -92,6 +94,9 @@ void OnTick()
 		GameState.mutable_velocity()->set_x(Velocity.x);
 		GameState.mutable_velocity()->set_y(Velocity.y);
 		GameState.mutable_velocity()->set_z(Velocity.z);
+		
+		if (FLAGS.GetFlag(UNSTUCK)) FLAGS.SetFlag(REQUEST_GAME_STATE, true);
+		
 		GameStateMemory = GameState;
 
 		if (Collided) Reset();

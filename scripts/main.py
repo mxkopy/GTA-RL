@@ -1,4 +1,3 @@
-import config
 import sys
 
 if __name__ == '__main__':
@@ -13,6 +12,9 @@ if __name__ == '__main__':
         from environment import Environment, VideoState
         from ipc import Flags
         from model import Model
+
+        TRAIN_BATCH_SIZE = 128
+        MINIBATCH_SIZE = 32
 
         algorithm = (
             PPOConfig()
@@ -35,15 +37,22 @@ if __name__ == '__main__':
             )
             .environment(
                 env=Environment,
-                # env_config={'horizon': 64}
+                # env_config={'horizon': 256}
             )
             .rl_module(
-                rl_module_spec=RLModuleSpec(module_class=Model)
+                rl_module_spec=RLModuleSpec(
+                    module_class=Model,
+                    observation_space=Environment().observation_space,
+                    action_space=Environment().action_space,
+                    model_config={
+                        'max_seq_len': MINIBATCH_SIZE,
+                    }
+                )
             )
             .training(
                 lr=1e-5,
-                train_batch_size=64,
-                minibatch_size=4,
+                train_batch_size=TRAIN_BATCH_SIZE,
+                minibatch_size=MINIBATCH_SIZE,
                 num_epochs=3,
                 use_kl_loss=False,
                 clip_param=0.1,
@@ -53,8 +62,9 @@ if __name__ == '__main__':
             )
             .build_algo()
         )
+        flags = Flags()
         print("Waiting for script to load")
-        Flags().wait_until(Flags.BEGIN_TRAINING, True)
+        flags.wait_until(Flags.BEGIN_TRAINING, True)
         print("Script loaded")
         VideoState.init_cuda_arrays()
         while True:
@@ -75,12 +85,8 @@ if __name__ == '__main__':
         else:
             Flags.debug()
 
-    if sys.argv[1] == 'fix':
+    if sys.argv[1] == 'unstuck':
         from ipc import Flags
-        Flags.debug(Flags.BEGIN_TRAINING, False)
-        Flags.debug(Flags.REQUEST_GAME_STATE, True)
-
-    if sys.argv[1] == 'reset':
-        from ipc import Flags
-        Flags.debug(Flags.BEGIN_TRAINING, True)
-        Flags.debug(Flags.REQUEST_GAME_STATE, False)
+        flags = Flags()
+        flags.set_flag(Flags.UNSTUCK, not flags.get_flag(Flags.UNSTUCK))
+        flags.set_flag(Flags.REQUEST_GAME_STATE, 1)

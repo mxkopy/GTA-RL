@@ -1,8 +1,5 @@
 import mmap
 import time
-import threading
-import shelve
-import collections
 import importlib
 import numpy as np
 import os
@@ -22,12 +19,12 @@ from google.protobuf.descriptor import FieldDescriptor
 # Metadata should include the memory address, device, and other relevant information (shape, dtype, etc) as a protobuffer
 # On top of registry, should provide a 'retriever' class that provides a view of the data
 
-# Global relevant for the serialization scheme
+# Globals relevant to the serialization scheme
 FMT_SIZE_T = '@N'
 SIZEOF_SIZE_T = calcsize(FMT_SIZE_T)
 IPC_SLEEP_DURATION = 0
 
-# Whether or not to compile serialization schema
+# Whether or not to compile schemas
 COMPILE = '--compile' in sys.argv
 
 # Useful type hint functions to use when compiling flat/protobuffers 
@@ -388,11 +385,12 @@ class Flags:
         pass
 
     FLAGS_TAGNAME = "Flags"
-    N_FLAGS = 2
+    N_FLAGS = 3
     IPC_SLEEP_DURATION = 1e-3
 
     BEGIN_TRAINING: FLAG = 0
     REQUEST_GAME_STATE: FLAG = 1
+    UNSTUCK: FLAG = 2
 
     def __init__(self, n_flags=N_FLAGS, tagname=FLAGS_TAGNAME):
         self.flags = mmap.mmap(-1, -(n_flags // -8), tagname)
@@ -431,9 +429,10 @@ class Flags:
             print(f'{fieldname}: {flags.get_flag(getattr(Flags, fieldname))}')
 
 
-# Memory with a specific synchronization pattern.
-# By default, assume all flags are set to 0.
-#  
+# Memory with a specific synchronized access pattern.
+#
+# Assume all flags are set to 0 at initialization:
+#
 # When requesting game data: 
 #   set the request flag to 1. 
 #   wait until the flag is 0

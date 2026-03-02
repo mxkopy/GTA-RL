@@ -11,6 +11,7 @@ from ray.rllib.core.rl_module.apis import TARGET_NETWORK_ACTION_DIST_INPUTS, Val
 
 
 def unflatten_batch(flattened):
+    flattened = flattened.reshape(-1, prod(config.observation_space_shape) // config.n_frames)
     flat_images = flattened[..., :prod(config.image_shape)]
     flat_velocities = flattened[..., prod(config.image_shape):]
     images = flat_images.reshape(-1, *config.image_shape)
@@ -39,34 +40,37 @@ class VisualModel(nn.Module):
             nn.MaxPool2d(2, 1, padding=1),
             nn.AdaptiveAvgPool2d(1),
             nn.Flatten(),
-            nn.Linear(512, config.visual_embedding_size),
+            nn.Linear(512, config.num_visual_features),
             nn.ReLU(),
-            nn.Linear(config.visual_embedding_size, config.visual_embedding_size)        
+            nn.Linear(config.num_visual_features, config.num_visual_features)        
         )
 
-    # input is of shape (..., n_frames)
     def forward(self, images):
         return self.model(images)
-    
+
+
+
+
 class Embedding(nn.Module):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.hidden_size = (config.visual_embedding_size + prod(config.velocity_shape)) * config.n_frames
         self.embedding = nn.Sequential(
-            nn.Linear(self.hidden_size, config.embedding_size),
+            nn.Linear(config.hidden_size, config.embedding_size),
             nn.ReLU(),
             nn.Linear(config.embedding_size, config.embedding_size),
             nn.ReLU(),
             nn.Linear(config.embedding_size, config.embedding_size),
         )
 
-    def forward(self, visual_embedding, velocity):
-        visual_embedding = visual_embedding.reshape(-1, config.n_frames * config.visual_embedding_size)
-        velocity = velocity.reshape(-1, config.n_frames * np.prod(config.velocity_shape))
-        features = torch.cat((visual_embedding, velocity), dim=1)
-        return self.embedding(features)
-    
+    def forward(self, hidden_features):
+        return self.embedding(hidden_features)
+
+
+
+# TODO: Add LSTM nn.Module to encapsulate the ugliness in Model.compute_embeddings_and_state_outs
+
+
 class Actor(nn.Module):
 
     def __init__(self, **kwargs):
@@ -81,6 +85,8 @@ class Actor(nn.Module):
 
     def forward(self, embedding):
         return self.actor(embedding)
+
+
 
 class Critic(nn.Module):
 
@@ -98,50 +104,60 @@ class Critic(nn.Module):
         return self.value(embedding)
 
 
+
 class Model(TorchRLModule, ValueFunctionAPI):
      
     @override(TorchRLModule)
-    def setup(self, **kwargs):
+    def setup(self):
         self.visual = VisualModel()
+        self.lstm = torch.nn.LSTM(config.hidden_size, config.hidden_size, num_layers=1, batch_first=True)
         self.embedding = Embedding()
         self.actor = Actor()
         self.critic = Critic()
 
-    def compute_embeddings(self, batch: Dict[str, Any]):
+    @override(TorchRLModule)
+    def get_initial_state(self) -> Any:
+        return {
+            "h": np.zeros(shape=(self.lstm.num_layers, self.lstm.hidden_size), dtype=np.float32),
+            "c": np.zeros(shape=(self.lstm.num_layers, self.lstm.hidden_size), dtype=np.float32)
+        }
+
+    @staticmethod
+    def concat_features(visual_features, velocities):
+        visual_features = visual_features.reshape(-1, config.n_frames * config.num_visual_features)
+        velocities = velocities.reshape(-1, config.n_frames * np.prod(config.velocity_shape))
+        return torch.cat((visual_features, velocities), dim=-1)
+
+    def compute_embeddings_and_state_outs(self, batch: Dict[str, Any]):
         images, velocities = unflatten_batch(batch[Columns.OBS])
         image_features = self.visual(images)
-        embeddings = self.embedding(image_features, velocities)
-        return embeddings
+        hidden_features = self.concat_features(image_features, velocities)
+        h, c = batch[Columns.STATE_IN]['h'], batch[Columns.STATE_IN]['c']
+        # The hidden states are shaped (batch, numlayers, x), but lstms take the batch second for hidden states
+        h, c = torch.transpose(h, 0, 1), torch.transpose(c, 0, 1)
+        # embeddings will have a shape of the form (batch_size * num_batches, embedding_size)
+        # Hence embeddings.shape[-2] // batch_size is the size of the batch dimension
+        # Since everything gets padded up to max_seq_len we really want minibatch_size == max_seq_len in the AlgorithmConfig
+        hidden_features = hidden_features.reshape(-(hidden_features.shape[-2] // -self.model_config['max_seq_len']), -1, hidden_features.shape[-1])
+        hidden_features, (h, c) = self.lstm(hidden_features, (h, c))
+        h, c = torch.transpose(h, 0, 1), torch.transpose(c, 0, 1)
+        embeddings = self.embedding(hidden_features)
+        return embeddings, {'h': h, 'c': c}
 
     @override(ValueFunctionAPI)
     def compute_values(self, batch: Dict[str, Any], embeddings: Optional[Any] = None, **kwargs):
         if embeddings is None:
-            images, velocities = unflatten_batch(batch[Columns.OBS])
-            images = self.visual(images)
-            embeddings = self.embedding(images, velocities)
-        return self.critic(embeddings)
-    
-    def compute_embeddings_and_logits(self, batch):
-        images, velocities = unflatten_batch(batch[Columns.OBS])
-        vis = self.visual(images)
-        embeddings = self.embedding(vis, velocities)
-        logits = self.actor(embeddings)
-        return (
-            embeddings,
-            logits
-        )
+            embeddings, _ = self.compute_embeddings_and_state_outs(batch)
+        values = self.critic(embeddings)
+        return values.reshape(*batch[Columns.LOSS_MASK].shape)
     
     @override(TorchRLModule)
     def _forward(self, batch, **kwargs):
-        _, logits = self.compute_embeddings_and_logits(batch)
+        embeddings, states_out = self.compute_embeddings_and_state_outs(batch)
+        logits = self.actor(embeddings)
+        logits = logits.reshape(-(logits.shape[-2] // -self.model_config['max_seq_len']), -1, logits.shape[-1])
         return {
             Columns.ACTION_DIST_INPUTS: logits,
-        }
-
-    @override(TorchRLModule)
-    def _forward_train(self, batch, **kwargs):
-        embeddings, logits = self.compute_embeddings_and_logits(batch)
-        return {
-            Columns.ACTION_DIST_INPUTS: logits,
-            Columns.EMBEDDINGS: embeddings,
+            Columns.STATE_OUT: states_out,
+            Columns.EMBEDDINGS: embeddings
         }

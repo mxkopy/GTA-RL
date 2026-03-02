@@ -1,12 +1,6 @@
 import torch
-import random
 import config
-import torchvision
-import math
-import mmap
-import cupy
 import numpy as np
-import structs
 from struct import unpack
 from ipc import Flags, StructuredMemory, RequestLockedMemory
 from cuda_ipc import CUDAArray
@@ -103,7 +97,7 @@ class VideoGame:
         observation = torch.cat((video_state.reshape(-1), torch.tensor(velocity, device=video_state.device)) )
         reward = VideoGame.reward(camera_direction, velocity, collided)
         terminal = collided
-        return observation.reshape(*config.observation_space_shape), reward, terminal
+        return observation, reward, terminal
 
 class Environment(Env):
 
@@ -111,7 +105,7 @@ class Environment(Env):
         self.device = 'cuda'
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
-        self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=(config.n_frames, *config.observation_space_shape))
+        self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape)
         self.last_n_frames = []
         self.horizon = float('inf')
         if conf is not None and 'horizon' in conf:
@@ -119,9 +113,9 @@ class Environment(Env):
 
     def stack_observation(self, observation):
         if config.n_frames <= 1:
-            return observation.unsqueeze(0)
+            return observation.reshape(-1)
         self.last_n_frames = [observation] + self.last_n_frames[:-1]
-        return torch.stack(self.last_n_frames, dim=0)
+        return torch.stack(self.last_n_frames, dim=0).reshape(-1)
 
     def step(self, action):
         self.t += 1

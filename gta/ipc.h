@@ -128,10 +128,15 @@ struct Memory: MemoryMap
 	}
 };
 
+
+#define BEGIN_TRAINING 0
+#define REQUEST_GAME_STATE 1
+#define UNSTUCK 2
+
 struct Flags: MemoryMap
 {
 	#define FLAGS_TAGNAME "Flags"
-	#define N_FLAGS 2
+	#define N_FLAGS 3
 
 	Flags() : MemoryMap(FLAGS_TAGNAME, (N_FLAGS + CHAR_BIT - 1) / CHAR_BIT) {};
 
@@ -188,9 +193,6 @@ struct StructuredMemory : Memory
 		return Message;
 	}
 };
-
-#define BEGIN_TRAINING 0
-#define REQUEST_GAME_STATE 1
 
 template<std::derived_from<Message> T, size_t RequestFlag>
 struct RequestLockedMemory : StructuredMemory<T>
