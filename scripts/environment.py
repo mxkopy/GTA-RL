@@ -125,7 +125,7 @@ class Environment(Env):
         observation, reward, terminal = self.video_game.observe()
         observation = self.stack_observation(observation)
         truncated = self.t >= self.horizon
-        print(f"{action[0]: >10.5f} {action[1]: >10.5f} {action[2]: >10.5f} | {str(reward)[0:5]}")
+        print(f"{action[0]: >10.5f} {action[1]: >10.5f} | {str(reward)[0:5]}")
         return (
             observation,
             reward,
