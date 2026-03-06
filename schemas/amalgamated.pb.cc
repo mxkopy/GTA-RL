@@ -220,6 +220,36 @@ struct ByteBufferDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ByteBufferDefaultTypeInternal _ByteBuffer_default_instance_;
 
+inline constexpr RayCast::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : _cached_size_{0},
+        collision_{nullptr},
+        position_{nullptr},
+        x_{0},
+        y_{0},
+        nearclip_{0},
+        farclip_{0} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR RayCast::RayCast(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(RayCast_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct RayCastDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR RayCastDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~RayCastDefaultTypeInternal() {}
+  union {
+    RayCast _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 RayCastDefaultTypeInternal _RayCast_default_instance_;
+
 inline constexpr GameState::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
@@ -335,6 +365,30 @@ const ::uint32_t
         1,
         2,
         0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::RayCast, _impl_._has_bits_),
+        9, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::RayCast, _impl_.x_),
+        PROTOBUF_FIELD_OFFSET(::RayCast, _impl_.y_),
+        PROTOBUF_FIELD_OFFSET(::RayCast, _impl_.collision_),
+        PROTOBUF_FIELD_OFFSET(::RayCast, _impl_.position_),
+        PROTOBUF_FIELD_OFFSET(::RayCast, _impl_.nearclip_),
+        PROTOBUF_FIELD_OFFSET(::RayCast, _impl_.farclip_),
+        2,
+        3,
+        0,
+        1,
+        4,
+        5,
+        0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_._has_bits_),
+        6, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_.nearclip_),
+        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_.farclip_),
+        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_.constant_buffers_),
+        1,
+        2,
+        0,
+        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::CUDAExtent, _impl_._has_bits_),
         6, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::CUDAExtent, _impl_.width_),
@@ -368,15 +422,6 @@ const ::uint32_t
         3,
         2,
         0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_._has_bits_),
-        6, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_.nearclip_),
-        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_.farclip_),
-        PROTOBUF_FIELD_OFFSET(::VertexShaderConstants, _impl_.constant_buffers_),
-        1,
-        2,
-        0,
-        0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::GameState, _impl_._has_bits_),
         6, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::GameState, _impl_.forward_direction_),
@@ -404,22 +449,24 @@ static const ::_pbi::MigrationSchema
         {5, sizeof(::ByteBuffers)},
         {10, sizeof(::Payload)},
         {17, sizeof(::Vec3f)},
-        {26, sizeof(::CUDAExtent)},
-        {35, sizeof(::CUDAChannelFormatDesc)},
-        {48, sizeof(::CUDAPitchedArrayObject)},
-        {59, sizeof(::VertexShaderConstants)},
-        {68, sizeof(::GameState)},
-        {77, sizeof(::KeyboardState)},
+        {26, sizeof(::RayCast)},
+        {41, sizeof(::VertexShaderConstants)},
+        {50, sizeof(::CUDAExtent)},
+        {59, sizeof(::CUDAChannelFormatDesc)},
+        {72, sizeof(::CUDAPitchedArrayObject)},
+        {83, sizeof(::GameState)},
+        {92, sizeof(::KeyboardState)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::_ByteBuffer_default_instance_._instance,
     &::_ByteBuffers_default_instance_._instance,
     &::_Payload_default_instance_._instance,
     &::_Vec3f_default_instance_._instance,
+    &::_RayCast_default_instance_._instance,
+    &::_VertexShaderConstants_default_instance_._instance,
     &::_CUDAExtent_default_instance_._instance,
     &::_CUDAChannelFormatDesc_default_instance_._instance,
     &::_CUDAPitchedArrayObject_default_instance_._instance,
-    &::_VertexShaderConstants_default_instance_._instance,
     &::_GameState_default_instance_._instance,
     &::_KeyboardState_default_instance_._instance,
 };
@@ -429,31 +476,34 @@ const char descriptor_table_protodef_amalgamated_2eproto[] ABSL_ATTRIBUTE_SECTIO
     "a\030\001 \002(\014\"(\n\013ByteBuffers\022\031\n\004data\030\001 \003(\0132\013.B"
     "yteBuffer\")\n\007Payload\022\020\n\010typename\030\001 \002(\t\022\014"
     "\n\004data\030\002 \002(\014\"(\n\005Vec3f\022\t\n\001x\030\001 \002(\002\022\t\n\001y\030\002 "
-    "\002(\002\022\t\n\001z\030\003 \002(\002\":\n\nCUDAExtent\022\r\n\005width\030\001 "
-    "\002(\003\022\016\n\006height\030\002 \002(\003\022\r\n\005depth\030\003 \002(\003\"N\n\025CU"
-    "DAChannelFormatDesc\022\t\n\001x\030\001 \002(\r\022\t\n\001y\030\002 \002("
-    "\r\022\t\n\001z\030\003 \002(\r\022\t\n\001w\030\004 \002(\r\022\t\n\001f\030\005 \002(\r\"|\n\026CU"
-    "DAPitchedArrayObject\022\016\n\006handle\030\001 \002(\014\022&\n\006"
-    "format\030\002 \002(\0132\026.CUDAChannelFormatDesc\022\r\n\005"
-    "pitch\030\003 \002(\004\022\033\n\006extent\030\004 \002(\0132\013.CUDAExtent"
-    "\"T\n\025VertexShaderConstants\022\020\n\010nearclip\030\001 "
-    "\002(\002\022\017\n\007farclip\030\002 \002(\002\022\030\n\020constant_buffers"
-    "\030\003 \003(\014\"Z\n\tGameState\022!\n\021forward_direction"
-    "\030\001 \002(\0132\006.Vec3f\022\030\n\010velocity\030\002 \002(\0132\006.Vec3f"
-    "\022\020\n\010collided\030\003 \002(\010\";\n\rKeyboardState\022\t\n\001w"
-    "\030\001 \001(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
+    "\002(\002\022\t\n\001z\030\003 \002(\002\"w\n\007RayCast\022\t\n\001x\030\001 \002(\002\022\t\n\001"
+    "y\030\002 \002(\002\022\031\n\tcollision\030\003 \002(\0132\006.Vec3f\022\030\n\010po"
+    "sition\030\004 \002(\0132\006.Vec3f\022\020\n\010nearclip\030\005 \002(\002\022\017"
+    "\n\007farclip\030\006 \002(\002\"T\n\025VertexShaderConstants"
+    "\022\020\n\010nearclip\030\001 \002(\002\022\017\n\007farclip\030\002 \002(\002\022\030\n\020c"
+    "onstant_buffers\030\003 \003(\014\":\n\nCUDAExtent\022\r\n\005w"
+    "idth\030\001 \002(\003\022\016\n\006height\030\002 \002(\003\022\r\n\005depth\030\003 \002("
+    "\003\"N\n\025CUDAChannelFormatDesc\022\t\n\001x\030\001 \002(\r\022\t\n"
+    "\001y\030\002 \002(\r\022\t\n\001z\030\003 \002(\r\022\t\n\001w\030\004 \002(\r\022\t\n\001f\030\005 \002("
+    "\r\"|\n\026CUDAPitchedArrayObject\022\016\n\006handle\030\001 "
+    "\002(\014\022&\n\006format\030\002 \002(\0132\026.CUDAChannelFormatD"
+    "esc\022\r\n\005pitch\030\003 \002(\004\022\033\n\006extent\030\004 \002(\0132\013.CUD"
+    "AExtent\"Z\n\tGameState\022!\n\021forward_directio"
+    "n\030\001 \002(\0132\006.Vec3f\022\030\n\010velocity\030\002 \002(\0132\006.Vec3"
+    "f\022\020\n\010collided\030\003 \002(\010\";\n\rKeyboardState\022\t\n\001"
+    "w\030\001 \001(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
 };
 static ::absl::once_flag descriptor_table_amalgamated_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_amalgamated_2eproto = {
     false,
     false,
-    679,
+    800,
     descriptor_table_protodef_amalgamated_2eproto,
     "amalgamated.proto",
     &descriptor_table_amalgamated_2eproto_once,
     nullptr,
     0,
-    10,
+    11,
     schemas,
     file_default_instances,
     TableStruct_amalgamated_2eproto::offsets,
@@ -1625,6 +1675,773 @@ void Vec3f::InternalSwap(Vec3f* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 // ===================================================================
 
+class RayCast::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<RayCast>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(RayCast, _impl_._has_bits_);
+  static bool MissingRequiredFields(const HasBits& has_bits) {
+    return ((has_bits[0] & 0x0000003f) ^ 0x0000003f) != 0;
+  }
+};
+
+RayCast::RayCast(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, RayCast_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:RayCast)
+}
+PROTOBUF_NDEBUG_INLINE RayCast::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::RayCast& from_msg)
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0} {}
+
+RayCast::RayCast(
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const RayCast& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, RayCast_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  RayCast* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  _impl_.collision_ = (CheckHasBit(cached_has_bits, 0x00000001U))
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.collision_)
+                : nullptr;
+  _impl_.position_ = (CheckHasBit(cached_has_bits, 0x00000002U))
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.position_)
+                : nullptr;
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, x_),
+           reinterpret_cast<const char*>(&from._impl_) +
+               offsetof(Impl_, x_),
+           offsetof(Impl_, farclip_) -
+               offsetof(Impl_, x_) +
+               sizeof(Impl_::farclip_));
+
+  // @@protoc_insertion_point(copy_constructor:RayCast)
+}
+PROTOBUF_NDEBUG_INLINE RayCast::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+      : _cached_size_{0} {}
+
+inline void RayCast::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, collision_),
+           0,
+           offsetof(Impl_, farclip_) -
+               offsetof(Impl_, collision_) +
+               sizeof(Impl_::farclip_));
+}
+RayCast::~RayCast() {
+  // @@protoc_insertion_point(destructor:RayCast)
+  SharedDtor(*this);
+}
+inline void RayCast::SharedDtor(MessageLite& self) {
+  RayCast& this_ = static_cast<RayCast&>(self);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.collision_;
+  delete this_._impl_.position_;
+  this_._impl_.~Impl_();
+}
+
+inline void* PROTOBUF_NONNULL RayCast::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) RayCast(arena);
+}
+constexpr auto RayCast::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(RayCast),
+                                            alignof(RayCast));
+}
+constexpr auto RayCast::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_RayCast_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          RayCast::IsInitializedImpl,
+          &RayCast::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<RayCast>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &RayCast::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<RayCast>(), &RayCast::ByteSizeLong,
+              &RayCast::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(RayCast, _impl_._cached_size_),
+          false,
+      },
+      &RayCast::kDescriptorMethods,
+      &descriptor_table_amalgamated_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull RayCast_class_data_ =
+        RayCast::InternalGenerateClassData_();
+
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+RayCast::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&RayCast_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(RayCast_class_data_.tc_table);
+  return RayCast_class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<3, 6, 2, 0, 2>
+RayCast::_table_ = {
+  {
+    PROTOBUF_FIELD_OFFSET(RayCast, _impl_._has_bits_),
+    0, // no _extensions_
+    6, 56,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967232,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    6,  // num_field_entries
+    2,  // num_aux_entries
+    offsetof(decltype(_table_), aux_entries),
+    RayCast_class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::RayCast>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    {::_pbi::TcParser::MiniParse, {}},
+    // required float x = 1;
+    {::_pbi::TcParser::FastF32S1,
+     {13, 2, 0,
+      PROTOBUF_FIELD_OFFSET(RayCast, _impl_.x_)}},
+    // required float y = 2;
+    {::_pbi::TcParser::FastF32S1,
+     {21, 3, 0,
+      PROTOBUF_FIELD_OFFSET(RayCast, _impl_.y_)}},
+    // required .Vec3f collision = 3;
+    {::_pbi::TcParser::FastMtS1,
+     {26, 0, 0,
+      PROTOBUF_FIELD_OFFSET(RayCast, _impl_.collision_)}},
+    // required .Vec3f position = 4;
+    {::_pbi::TcParser::FastMtS1,
+     {34, 1, 1,
+      PROTOBUF_FIELD_OFFSET(RayCast, _impl_.position_)}},
+    // required float nearclip = 5;
+    {::_pbi::TcParser::FastF32S1,
+     {45, 4, 0,
+      PROTOBUF_FIELD_OFFSET(RayCast, _impl_.nearclip_)}},
+    // required float farclip = 6;
+    {::_pbi::TcParser::FastF32S1,
+     {53, 5, 0,
+      PROTOBUF_FIELD_OFFSET(RayCast, _impl_.farclip_)}},
+    {::_pbi::TcParser::MiniParse, {}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // required float x = 1;
+    {PROTOBUF_FIELD_OFFSET(RayCast, _impl_.x_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    // required float y = 2;
+    {PROTOBUF_FIELD_OFFSET(RayCast, _impl_.y_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    // required .Vec3f collision = 3;
+    {PROTOBUF_FIELD_OFFSET(RayCast, _impl_.collision_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    // required .Vec3f position = 4;
+    {PROTOBUF_FIELD_OFFSET(RayCast, _impl_.position_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    // required float nearclip = 5;
+    {PROTOBUF_FIELD_OFFSET(RayCast, _impl_.nearclip_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    // required float farclip = 6;
+    {PROTOBUF_FIELD_OFFSET(RayCast, _impl_.farclip_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+  }},
+  {{
+      {::_pbi::TcParser::GetTable<::Vec3f>()},
+      {::_pbi::TcParser::GetTable<::Vec3f>()},
+  }},
+  {{
+  }},
+};
+PROTOBUF_NOINLINE void RayCast::Clear() {
+// @@protoc_insertion_point(message_clear_start:RayCast)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      ABSL_DCHECK(_impl_.collision_ != nullptr);
+      _impl_.collision_->Clear();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      ABSL_DCHECK(_impl_.position_ != nullptr);
+      _impl_.position_->Clear();
+    }
+  }
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003cU)) {
+    ::memset(&_impl_.x_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.farclip_) -
+        reinterpret_cast<char*>(&_impl_.x_)) + sizeof(_impl_.farclip_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL RayCast::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+  const RayCast& this_ = static_cast<const RayCast&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::uint8_t* PROTOBUF_NONNULL RayCast::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  const RayCast& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(serialize_to_array_start:RayCast)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = this_._impl_._has_bits_[0];
+  // required float x = 1;
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(
+        1, this_._internal_x(), target);
+  }
+
+  // required float y = 2;
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(
+        2, this_._internal_y(), target);
+  }
+
+  // required .Vec3f collision = 3;
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, *this_._impl_.collision_, this_._impl_.collision_->GetCachedSize(), target,
+        stream);
+  }
+
+  // required .Vec3f position = 4;
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        4, *this_._impl_.position_, this_._impl_.position_->GetCachedSize(), target,
+        stream);
+  }
+
+  // required float nearclip = 5;
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(
+        5, this_._internal_nearclip(), target);
+  }
+
+  // required float farclip = 6;
+  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(
+        6, this_._internal_farclip(), target);
+  }
+
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:RayCast)
+  return target;
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t RayCast::ByteSizeLong(const MessageLite& base) {
+  const RayCast& this_ = static_cast<const RayCast&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::size_t RayCast::ByteSizeLong() const {
+  const RayCast& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  // @@protoc_insertion_point(message_byte_size_start:RayCast)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += ::absl::popcount(0x0000003cU & cached_has_bits) * 5;
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    // required .Vec3f collision = 3;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      total_size += 1 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.collision_);
+    }
+    // required .Vec3f position = 4;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      total_size += 1 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.position_);
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+
+void RayCast::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<RayCast*>(&to_msg);
+  auto& from = static_cast<const RayCast&>(from_msg);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    from.CheckHasBitConsistency();
+  }
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  // @@protoc_insertion_point(class_specific_merge_from_start:RayCast)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      ABSL_DCHECK(from._impl_.collision_ != nullptr);
+      if (_this->_impl_.collision_ == nullptr) {
+        _this->_impl_.collision_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.collision_);
+      } else {
+        _this->_impl_.collision_->MergeFrom(*from._impl_.collision_);
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      ABSL_DCHECK(from._impl_.position_ != nullptr);
+      if (_this->_impl_.position_ == nullptr) {
+        _this->_impl_.position_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.position_);
+      } else {
+        _this->_impl_.position_->MergeFrom(*from._impl_.position_);
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      _this->_impl_.x_ = from._impl_.x_;
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      _this->_impl_.y_ = from._impl_.y_;
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      _this->_impl_.nearclip_ = from._impl_.nearclip_;
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+      _this->_impl_.farclip_ = from._impl_.farclip_;
+    }
+  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+}
+
+void RayCast::CopyFrom(const RayCast& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:RayCast)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+PROTOBUF_NOINLINE bool RayCast::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const RayCast&>(msg);
+  if (_Internal::MissingRequiredFields(this_._impl_._has_bits_)) {
+    return false;
+  }
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+    if (!this_._impl_.collision_->IsInitialized()) return false;
+  }
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
+    if (!this_._impl_.position_->IsInitialized()) return false;
+  }
+  return true;
+}
+
+void RayCast::InternalSwap(RayCast* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+  using ::std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(RayCast, _impl_.farclip_)
+      + sizeof(RayCast::_impl_.farclip_)
+      - PROTOBUF_FIELD_OFFSET(RayCast, _impl_.collision_)>(
+          reinterpret_cast<char*>(&_impl_.collision_),
+          reinterpret_cast<char*>(&other->_impl_.collision_));
+}
+
+::google::protobuf::Metadata RayCast::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
+class VertexShaderConstants::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<VertexShaderConstants>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_._has_bits_);
+  static bool MissingRequiredFields(const HasBits& has_bits) {
+    return ((has_bits[0] & 0x00000006) ^ 0x00000006) != 0;
+  }
+};
+
+VertexShaderConstants::VertexShaderConstants(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, VertexShaderConstants_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:VertexShaderConstants)
+}
+PROTOBUF_NDEBUG_INLINE VertexShaderConstants::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::VertexShaderConstants& from_msg)
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        constant_buffers_{visibility, arena, from.constant_buffers_} {}
+
+VertexShaderConstants::VertexShaderConstants(
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const VertexShaderConstants& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, VertexShaderConstants_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  VertexShaderConstants* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, nearclip_),
+           reinterpret_cast<const char*>(&from._impl_) +
+               offsetof(Impl_, nearclip_),
+           offsetof(Impl_, farclip_) -
+               offsetof(Impl_, nearclip_) +
+               sizeof(Impl_::farclip_));
+
+  // @@protoc_insertion_point(copy_constructor:VertexShaderConstants)
+}
+PROTOBUF_NDEBUG_INLINE VertexShaderConstants::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+      : _cached_size_{0},
+        constant_buffers_{visibility, arena} {}
+
+inline void VertexShaderConstants::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, nearclip_),
+           0,
+           offsetof(Impl_, farclip_) -
+               offsetof(Impl_, nearclip_) +
+               sizeof(Impl_::farclip_));
+}
+VertexShaderConstants::~VertexShaderConstants() {
+  // @@protoc_insertion_point(destructor:VertexShaderConstants)
+  SharedDtor(*this);
+}
+inline void VertexShaderConstants::SharedDtor(MessageLite& self) {
+  VertexShaderConstants& this_ = static_cast<VertexShaderConstants&>(self);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
+}
+
+inline void* PROTOBUF_NONNULL VertexShaderConstants::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) VertexShaderConstants(arena);
+}
+constexpr auto VertexShaderConstants::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.constant_buffers_) +
+          decltype(VertexShaderConstants::_impl_.constant_buffers_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(VertexShaderConstants), alignof(VertexShaderConstants), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&VertexShaderConstants::PlacementNew_,
+                                 sizeof(VertexShaderConstants),
+                                 alignof(VertexShaderConstants));
+  }
+}
+constexpr auto VertexShaderConstants::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_VertexShaderConstants_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          VertexShaderConstants::IsInitializedImpl,
+          &VertexShaderConstants::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<VertexShaderConstants>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &VertexShaderConstants::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<VertexShaderConstants>(), &VertexShaderConstants::ByteSizeLong,
+              &VertexShaderConstants::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_._cached_size_),
+          false,
+      },
+      &VertexShaderConstants::kDescriptorMethods,
+      &descriptor_table_amalgamated_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull VertexShaderConstants_class_data_ =
+        VertexShaderConstants::InternalGenerateClassData_();
+
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+VertexShaderConstants::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&VertexShaderConstants_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(VertexShaderConstants_class_data_.tc_table);
+  return VertexShaderConstants_class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<2, 3, 0, 0, 2>
+VertexShaderConstants::_table_ = {
+  {
+    PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_._has_bits_),
+    0, // no _extensions_
+    3, 24,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967288,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    3,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    VertexShaderConstants_class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::VertexShaderConstants>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    {::_pbi::TcParser::MiniParse, {}},
+    // required float nearclip = 1;
+    {::_pbi::TcParser::FastF32S1,
+     {13, 1, 0,
+      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.nearclip_)}},
+    // required float farclip = 2;
+    {::_pbi::TcParser::FastF32S1,
+     {21, 2, 0,
+      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.farclip_)}},
+    // repeated bytes constant_buffers = 3;
+    {::_pbi::TcParser::FastBR1,
+     {26, 0, 0,
+      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.constant_buffers_)}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // required float nearclip = 1;
+    {PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.nearclip_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    // required float farclip = 2;
+    {PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.farclip_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    // repeated bytes constant_buffers = 3;
+    {PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.constant_buffers_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kBytes | ::_fl::kRepSString)},
+  }},
+  // no aux_entries
+  {{
+  }},
+};
+PROTOBUF_NOINLINE void VertexShaderConstants::Clear() {
+// @@protoc_insertion_point(message_clear_start:VertexShaderConstants)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    _impl_.constant_buffers_.Clear();
+  }
+  if (BatchCheckHasBit(cached_has_bits, 0x00000006U)) {
+    ::memset(&_impl_.nearclip_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.farclip_) -
+        reinterpret_cast<char*>(&_impl_.nearclip_)) + sizeof(_impl_.farclip_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL VertexShaderConstants::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+  const VertexShaderConstants& this_ = static_cast<const VertexShaderConstants&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::uint8_t* PROTOBUF_NONNULL VertexShaderConstants::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  const VertexShaderConstants& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(serialize_to_array_start:VertexShaderConstants)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = this_._impl_._has_bits_[0];
+  // required float nearclip = 1;
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(
+        1, this_._internal_nearclip(), target);
+  }
+
+  // required float farclip = 2;
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteFloatToArray(
+        2, this_._internal_farclip(), target);
+  }
+
+  // repeated bytes constant_buffers = 3;
+  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    for (int i = 0, n = this_._internal_constant_buffers_size(); i < n; ++i) {
+      const auto& s = this_._internal_constant_buffers().Get(i);
+      target = stream->WriteBytes(3, s, target);
+    }
+  }
+
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:VertexShaderConstants)
+  return target;
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t VertexShaderConstants::ByteSizeLong(const MessageLite& base) {
+  const VertexShaderConstants& this_ = static_cast<const VertexShaderConstants&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::size_t VertexShaderConstants::ByteSizeLong() const {
+  const VertexShaderConstants& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  // @@protoc_insertion_point(message_byte_size_start:VertexShaderConstants)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  total_size += ::absl::popcount(0x00000006U & cached_has_bits) * 5;
+   {
+    // repeated bytes constant_buffers = 3;
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      total_size +=
+          1 * ::google::protobuf::internal::FromIntSize(this_._internal_constant_buffers().size());
+      for (int i = 0, n = this_._internal_constant_buffers().size(); i < n; ++i) {
+        total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
+            this_._internal_constant_buffers().Get(i));
+      }
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+
+void VertexShaderConstants::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<VertexShaderConstants*>(&to_msg);
+  auto& from = static_cast<const VertexShaderConstants&>(from_msg);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    from.CheckHasBitConsistency();
+  }
+  ::google::protobuf::Arena* arena = _this->GetArena();
+  // @@protoc_insertion_point(class_specific_merge_from_start:VertexShaderConstants)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      _this->_internal_mutable_constant_buffers()->InternalMergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
+          from._internal_constant_buffers());
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      _this->_impl_.nearclip_ = from._impl_.nearclip_;
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      _this->_impl_.farclip_ = from._impl_.farclip_;
+    }
+  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+}
+
+void VertexShaderConstants::CopyFrom(const VertexShaderConstants& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:VertexShaderConstants)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+PROTOBUF_NOINLINE bool VertexShaderConstants::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const VertexShaderConstants&>(msg);
+  if (_Internal::MissingRequiredFields(this_._impl_._has_bits_)) {
+    return false;
+  }
+  return true;
+}
+
+void VertexShaderConstants::InternalSwap(VertexShaderConstants* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+  using ::std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.constant_buffers_.InternalSwap(&other->_impl_.constant_buffers_);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.farclip_)
+      + sizeof(VertexShaderConstants::_impl_.farclip_)
+      - PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.nearclip_)>(
+          reinterpret_cast<char*>(&_impl_.nearclip_),
+          reinterpret_cast<char*>(&other->_impl_.nearclip_));
+}
+
+::google::protobuf::Metadata VertexShaderConstants::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
 class CUDAExtent::_Internal {
  public:
   using HasBits =
@@ -2683,356 +3500,6 @@ void CUDAPitchedArrayObject::InternalSwap(CUDAPitchedArrayObject* PROTOBUF_RESTR
 }
 
 ::google::protobuf::Metadata CUDAPitchedArrayObject::GetMetadata() const {
-  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
-}
-// ===================================================================
-
-class VertexShaderConstants::_Internal {
- public:
-  using HasBits =
-      decltype(::std::declval<VertexShaderConstants>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_._has_bits_);
-  static bool MissingRequiredFields(const HasBits& has_bits) {
-    return ((has_bits[0] & 0x00000006) ^ 0x00000006) != 0;
-  }
-};
-
-VertexShaderConstants::VertexShaderConstants(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, VertexShaderConstants_class_data_.base()) {
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  SharedCtor(arena);
-  // @@protoc_insertion_point(arena_constructor:VertexShaderConstants)
-}
-PROTOBUF_NDEBUG_INLINE VertexShaderConstants::Impl_::Impl_(
-    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    [[maybe_unused]] const ::VertexShaderConstants& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0},
-        constant_buffers_{visibility, arena, from.constant_buffers_} {}
-
-VertexShaderConstants::VertexShaderConstants(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const VertexShaderConstants& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, VertexShaderConstants_class_data_.base()) {
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  VertexShaderConstants* const _this = this;
-  (void)_this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char*>(&_impl_) +
-               offsetof(Impl_, nearclip_),
-           reinterpret_cast<const char*>(&from._impl_) +
-               offsetof(Impl_, nearclip_),
-           offsetof(Impl_, farclip_) -
-               offsetof(Impl_, nearclip_) +
-               sizeof(Impl_::farclip_));
-
-  // @@protoc_insertion_point(copy_constructor:VertexShaderConstants)
-}
-PROTOBUF_NDEBUG_INLINE VertexShaderConstants::Impl_::Impl_(
-    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        constant_buffers_{visibility, arena} {}
-
-inline void VertexShaderConstants::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&_impl_) +
-               offsetof(Impl_, nearclip_),
-           0,
-           offsetof(Impl_, farclip_) -
-               offsetof(Impl_, nearclip_) +
-               sizeof(Impl_::farclip_));
-}
-VertexShaderConstants::~VertexShaderConstants() {
-  // @@protoc_insertion_point(destructor:VertexShaderConstants)
-  SharedDtor(*this);
-}
-inline void VertexShaderConstants::SharedDtor(MessageLite& self) {
-  VertexShaderConstants& this_ = static_cast<VertexShaderConstants&>(self);
-  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
-    this_.CheckHasBitConsistency();
-  }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
-  this_._impl_.~Impl_();
-}
-
-inline void* PROTOBUF_NONNULL VertexShaderConstants::PlacementNew_(
-    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
-  return ::new (mem) VertexShaderConstants(arena);
-}
-constexpr auto VertexShaderConstants::InternalNewImpl_() {
-  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
-      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.constant_buffers_) +
-          decltype(VertexShaderConstants::_impl_.constant_buffers_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-  });
-  if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(
-        sizeof(VertexShaderConstants), alignof(VertexShaderConstants), *arena_bits);
-  } else {
-    return ::google::protobuf::internal::MessageCreator(&VertexShaderConstants::PlacementNew_,
-                                 sizeof(VertexShaderConstants),
-                                 alignof(VertexShaderConstants));
-  }
-}
-constexpr auto VertexShaderConstants::InternalGenerateClassData_() {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &_VertexShaderConstants_default_instance_._instance,
-          &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
-          VertexShaderConstants::IsInitializedImpl,
-          &VertexShaderConstants::MergeImpl,
-          ::google::protobuf::Message::GetNewImpl<VertexShaderConstants>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          &VertexShaderConstants::SharedDtor,
-          ::google::protobuf::Message::GetClearImpl<VertexShaderConstants>(), &VertexShaderConstants::ByteSizeLong,
-              &VertexShaderConstants::_InternalSerialize,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_._cached_size_),
-          false,
-      },
-      &VertexShaderConstants::kDescriptorMethods,
-      &descriptor_table_amalgamated_2eproto,
-      nullptr,  // tracker
-  };
-}
-
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull VertexShaderConstants_class_data_ =
-        VertexShaderConstants::InternalGenerateClassData_();
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-VertexShaderConstants::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&VertexShaderConstants_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(VertexShaderConstants_class_data_.tc_table);
-  return VertexShaderConstants_class_data_.base();
-}
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 0, 0, 2>
-VertexShaderConstants::_table_ = {
-  {
-    PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_._has_bits_),
-    0, // no _extensions_
-    3, 24,  // max_field_number, fast_idx_mask
-    offsetof(decltype(_table_), field_lookup_table),
-    4294967288,  // skipmap
-    offsetof(decltype(_table_), field_entries),
-    3,  // num_field_entries
-    0,  // num_aux_entries
-    offsetof(decltype(_table_), field_names),  // no aux_entries
-    VertexShaderConstants_class_data_.base(),
-    nullptr,  // post_loop_handler
-    ::_pbi::TcParser::GenericFallback,  // fallback
-    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-    ::_pbi::TcParser::GetTable<::VertexShaderConstants>(),  // to_prefetch
-    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  }, {{
-    {::_pbi::TcParser::MiniParse, {}},
-    // required float nearclip = 1;
-    {::_pbi::TcParser::FastF32S1,
-     {13, 1, 0,
-      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.nearclip_)}},
-    // required float farclip = 2;
-    {::_pbi::TcParser::FastF32S1,
-     {21, 2, 0,
-      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.farclip_)}},
-    // repeated bytes constant_buffers = 3;
-    {::_pbi::TcParser::FastBR1,
-     {26, 0, 0,
-      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.constant_buffers_)}},
-  }}, {{
-    65535, 65535
-  }}, {{
-    // required float nearclip = 1;
-    {PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.nearclip_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
-    // required float farclip = 2;
-    {PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.farclip_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
-    // repeated bytes constant_buffers = 3;
-    {PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.constant_buffers_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kBytes | ::_fl::kRepSString)},
-  }},
-  // no aux_entries
-  {{
-  }},
-};
-PROTOBUF_NOINLINE void VertexShaderConstants::Clear() {
-// @@protoc_insertion_point(message_clear_start:VertexShaderConstants)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.constant_buffers_.Clear();
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000006U)) {
-    ::memset(&_impl_.nearclip_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.farclip_) -
-        reinterpret_cast<char*>(&_impl_.nearclip_)) + sizeof(_impl_.farclip_));
-  }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
-}
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL VertexShaderConstants::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
-    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
-  const VertexShaderConstants& this_ = static_cast<const VertexShaderConstants&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* PROTOBUF_NONNULL VertexShaderConstants::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
-    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-  const VertexShaderConstants& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
-    this_.CheckHasBitConsistency();
-  }
-  // @@protoc_insertion_point(serialize_to_array_start:VertexShaderConstants)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
-
-  cached_has_bits = this_._impl_._has_bits_[0];
-  // required float nearclip = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteFloatToArray(
-        1, this_._internal_nearclip(), target);
-  }
-
-  // required float farclip = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteFloatToArray(
-        2, this_._internal_farclip(), target);
-  }
-
-  // repeated bytes constant_buffers = 3;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    for (int i = 0, n = this_._internal_constant_buffers_size(); i < n; ++i) {
-      const auto& s = this_._internal_constant_buffers().Get(i);
-      target = stream->WriteBytes(3, s, target);
-    }
-  }
-
-  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:VertexShaderConstants)
-  return target;
-}
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t VertexShaderConstants::ByteSizeLong(const MessageLite& base) {
-  const VertexShaderConstants& this_ = static_cast<const VertexShaderConstants&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::size_t VertexShaderConstants::ByteSizeLong() const {
-  const VertexShaderConstants& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  // @@protoc_insertion_point(message_byte_size_start:VertexShaderConstants)
-  ::size_t total_size = 0;
-
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
-
-  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
-  cached_has_bits = this_._impl_._has_bits_[0];
-  total_size += ::absl::popcount(0x00000006U & cached_has_bits) * 5;
-   {
-    // repeated bytes constant_buffers = 3;
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      total_size +=
-          1 * ::google::protobuf::internal::FromIntSize(this_._internal_constant_buffers().size());
-      for (int i = 0, n = this_._internal_constant_buffers().size(); i < n; ++i) {
-        total_size += ::google::protobuf::internal::WireFormatLite::BytesSize(
-            this_._internal_constant_buffers().Get(i));
-      }
-    }
-  }
-  return this_.MaybeComputeUnknownFieldsSize(total_size,
-                                             &this_._impl_._cached_size_);
-}
-
-void VertexShaderConstants::MergeImpl(::google::protobuf::MessageLite& to_msg,
-                            const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this =
-      static_cast<VertexShaderConstants*>(&to_msg);
-  auto& from = static_cast<const VertexShaderConstants&>(from_msg);
-  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
-    from.CheckHasBitConsistency();
-  }
-  ::google::protobuf::Arena* arena = _this->GetArena();
-  // @@protoc_insertion_point(class_specific_merge_from_start:VertexShaderConstants)
-  ABSL_DCHECK_NE(&from, _this);
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
-
-  cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_constant_buffers()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_constant_buffers());
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.nearclip_ = from._impl_.nearclip_;
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.farclip_ = from._impl_.farclip_;
-    }
-  }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-}
-
-void VertexShaderConstants::CopyFrom(const VertexShaderConstants& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:VertexShaderConstants)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-PROTOBUF_NOINLINE bool VertexShaderConstants::IsInitializedImpl(
-    const MessageLite& msg) {
-  auto& this_ = static_cast<const VertexShaderConstants&>(msg);
-  if (_Internal::MissingRequiredFields(this_._impl_._has_bits_)) {
-    return false;
-  }
-  return true;
-}
-
-void VertexShaderConstants::InternalSwap(VertexShaderConstants* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
-  using ::std::swap;
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.constant_buffers_.InternalSwap(&other->_impl_.constant_buffers_);
-  ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.farclip_)
-      + sizeof(VertexShaderConstants::_impl_.farclip_)
-      - PROTOBUF_FIELD_OFFSET(VertexShaderConstants, _impl_.nearclip_)>(
-          reinterpret_cast<char*>(&_impl_.nearclip_),
-          reinterpret_cast<char*>(&other->_impl_.nearclip_));
-}
-
-::google::protobuf::Metadata VertexShaderConstants::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // ===================================================================

@@ -6,7 +6,6 @@ class CUDAArray:
 
     @staticmethod
     def get_dtype(metadata: CUDAPitchedArrayObject):
-        print(metadata)
         if metadata.format.f == 1:
             return cupy.uint8
         if metadata.format.f == 2:

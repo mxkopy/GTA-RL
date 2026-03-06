@@ -385,12 +385,13 @@ class Flags:
         pass
 
     FLAGS_TAGNAME = "Flags"
-    N_FLAGS = 3
+    N_FLAGS = 4
     IPC_SLEEP_DURATION = 1e-3
 
     BEGIN_TRAINING: FLAG = 0
     REQUEST_GAME_STATE: FLAG = 1
     UNSTUCK: FLAG = 2
+    RAYCASTS: FLAG = 3
 
     def __init__(self, n_flags=N_FLAGS, tagname=FLAGS_TAGNAME):
         self.flags = mmap.mmap(-1, -(n_flags // -8), tagname)

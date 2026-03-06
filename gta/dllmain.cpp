@@ -227,11 +227,6 @@ struct DepthStencilComputeShader
         ComPtr<ID3DBlob> ShaderBlob;
         ComPtr<ID3DBlob> ErrorBlob;
 
-        // Velocity buffer implementation:
-        // 
-        // Multiply the pixel NDCs by the inverse of the previous frame's camera matrix, 
-        // then multiply that by the current frame's camera matrix 
-
         const char Shader[] =
             #include "ComputeShader.hlsl.cppliteral"
         ;
@@ -411,7 +406,12 @@ void ClearDepthStencilViewHook
         CameraTransforms::Update(DeviceContext);
         DepthStencilComputeShader::RunComputeShader(DeviceContext);
         CUDADepthArray.Update();
-        //GAMEPLAY::SET_GAME_PAUSED(false);
+        //if (FLAGS.GetFlag(BEGIN_TRAINING))
+        //{
+        //    Ray::Update();
+        //    FLAGS.SetFlag(RAYCASTS, true);
+        //    FLAGS.WaitUntil(RAYCASTS, false);
+        //}
     }
 
     LastDSV                      = pDepthStencilView;

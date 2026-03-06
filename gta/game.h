@@ -72,7 +72,6 @@ inline static void Reset()
 }
 
 static Flags FLAGS;
-static mutex StateMutex;
 
 void OnTick()
 {

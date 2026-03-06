@@ -7,6 +7,19 @@ class Vec3f(metaclass=Serializable):
     y: np.float32
     z: np.float32
 
+class RayCast(metaclass=Serializable):
+    x: np.float32
+    y: np.float32
+    collision: Vec3f
+    position: Vec3f
+    nearclip: np.float32
+    farclip: np.float32
+
+class VertexShaderConstants(metaclass=Serializable):
+    nearclip: np.float32
+    farclip: np.float32
+    constant_buffers: list[bytes]
+
 class CUDAExtent(metaclass=Serializable):
     width: int
     height: int
@@ -24,11 +37,6 @@ class CUDAPitchedArrayObject(metaclass=Serializable):
     format: CUDAChannelFormatDesc
     pitch: np.uint64
     extent: CUDAExtent
-
-class VertexShaderConstants(metaclass=Serializable):
-    nearclip: np.float32
-    farclip: np.float32
-    constant_buffers: list[bytes]
 
 class GameState(metaclass=Serializable):
     forward_direction: Vec3f

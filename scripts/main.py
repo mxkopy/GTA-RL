@@ -66,6 +66,11 @@ if __name__ == '__main__':
         )
         if MODEL_PATH.exists():
             algorithm.load_checkpoint(str(MODEL_PATH))
+            # fix for https://github.com/ray-project/ray/issues/51560
+            def betas_tensor_to_float(learner):
+                param_grp = next(iter(learner._optimizer_parameters.keys())).param_groups[0]
+                param_grp["betas"] = tuple(beta.item() for beta in param_grp["betas"])
+            algorithm.learner_group.foreach_learner(betas_tensor_to_float)
         flags = Flags()
         print("Waiting for script to load")
         flags.wait_until(Flags.BEGIN_TRAINING, True)
@@ -94,4 +99,4 @@ if __name__ == '__main__':
         from ipc import Flags
         flags = Flags()
         flags.set_flag(Flags.UNSTUCK, not flags.get_flag(Flags.UNSTUCK))
-        flags.set_flag(Flags.REQUEST_GAME_STATE, 1)
+        flags.set_flag(Flags.REQUEST_GAME_STATE, True)

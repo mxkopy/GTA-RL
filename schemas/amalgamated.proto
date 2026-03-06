@@ -23,6 +23,23 @@ message Vec3f {
 }
 
 
+message RayCast {
+ required float x = 1;
+ required float y = 2;
+ required Vec3f collision = 3;
+ required Vec3f position = 4;
+ required float nearclip = 5;
+ required float farclip = 6;
+}
+
+
+message VertexShaderConstants {
+ required float nearclip = 1;
+ required float farclip = 2;
+ repeated bytes constant_buffers = 3;
+}
+
+
 message CUDAExtent {
  required int64 width = 1;
  required int64 height = 2;
@@ -44,13 +61,6 @@ message CUDAPitchedArrayObject {
  required CUDAChannelFormatDesc format = 2;
  required uint64 pitch = 3;
  required CUDAExtent extent = 4;
-}
-
-
-message VertexShaderConstants {
- required float nearclip = 1;
- required float farclip = 2;
- repeated bytes constant_buffers = 3;
 }
 
 
