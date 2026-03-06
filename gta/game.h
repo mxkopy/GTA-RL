@@ -72,6 +72,7 @@ inline static void Reset()
 }
 
 static Flags FLAGS;
+static mutex StateMutex;
 
 void OnTick()
 {
@@ -88,9 +89,9 @@ void OnTick()
 		auto Forward = ENTITY::GET_ENTITY_FORWARD_VECTOR(VEHICLE);
 
 		GameState.set_collided(Collided);
-		GameState.mutable_camera_direction()->set_x(Forward.x);
-		GameState.mutable_camera_direction()->set_y(Forward.y);
-		GameState.mutable_camera_direction()->set_z(Forward.z);
+		GameState.mutable_forward_direction()->set_x(Forward.x);
+		GameState.mutable_forward_direction()->set_y(Forward.y);
+		GameState.mutable_forward_direction()->set_z(Forward.z);
 		GameState.mutable_velocity()->set_x(Velocity.x);
 		GameState.mutable_velocity()->set_y(Velocity.y);
 		GameState.mutable_velocity()->set_z(Velocity.z);

@@ -10,11 +10,13 @@ if __name__ == '__main__':
         from ray.rllib.core.rl_module.rl_module import RLModuleSpec
         from ray.rllib.algorithms.ppo import PPOConfig
         from environment import Environment, VideoState
-        from ipc import Flags
+        from ipc import Flags, PROJECT_DIR
         from model import Model
+        from pathlib import Path
 
         TRAIN_BATCH_SIZE = 128
         MINIBATCH_SIZE = 32
+        MODEL_PATH = Path(PROJECT_DIR) / 'driver.ckpt'
 
         algorithm = (
             PPOConfig()
@@ -50,7 +52,7 @@ if __name__ == '__main__':
                 )
             )
             .training(
-                lr=1e-5,
+                lr=1e-3,
                 train_batch_size=TRAIN_BATCH_SIZE,
                 minibatch_size=MINIBATCH_SIZE,
                 num_epochs=3,
@@ -62,6 +64,8 @@ if __name__ == '__main__':
             )
             .build_algo()
         )
+        if MODEL_PATH.exists():
+            algorithm.load_checkpoint(str(MODEL_PATH))
         flags = Flags()
         print("Waiting for script to load")
         flags.wait_until(Flags.BEGIN_TRAINING, True)
@@ -70,7 +74,8 @@ if __name__ == '__main__':
         while True:
             gc.collect()
             torch.cuda.empty_cache()
-            algorithm.train()
+            results = algorithm.train()
+            algorithm.save_checkpoint(str(MODEL_PATH))
 
     if sys.argv[1] == 'debug':
         from ipc import Flags

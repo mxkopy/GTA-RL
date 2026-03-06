@@ -1825,23 +1825,23 @@ class GameState final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kCameraDirectionFieldNumber = 1,
+    kForwardDirectionFieldNumber = 1,
     kVelocityFieldNumber = 2,
     kCollidedFieldNumber = 3,
   };
-  // required .Vec3f camera_direction = 1;
-  bool has_camera_direction() const;
-  void clear_camera_direction() ;
-  const ::Vec3f& camera_direction() const;
-  [[nodiscard]] ::Vec3f* PROTOBUF_NULLABLE release_camera_direction();
-  ::Vec3f* PROTOBUF_NONNULL mutable_camera_direction();
-  void set_allocated_camera_direction(::Vec3f* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_camera_direction(::Vec3f* PROTOBUF_NULLABLE value);
-  ::Vec3f* PROTOBUF_NULLABLE unsafe_arena_release_camera_direction();
+  // required .Vec3f forward_direction = 1;
+  bool has_forward_direction() const;
+  void clear_forward_direction() ;
+  const ::Vec3f& forward_direction() const;
+  [[nodiscard]] ::Vec3f* PROTOBUF_NULLABLE release_forward_direction();
+  ::Vec3f* PROTOBUF_NONNULL mutable_forward_direction();
+  void set_allocated_forward_direction(::Vec3f* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_forward_direction(::Vec3f* PROTOBUF_NULLABLE value);
+  ::Vec3f* PROTOBUF_NULLABLE unsafe_arena_release_forward_direction();
 
   private:
-  const ::Vec3f& _internal_camera_direction() const;
-  ::Vec3f* PROTOBUF_NONNULL _internal_mutable_camera_direction();
+  const ::Vec3f& _internal_forward_direction() const;
+  ::Vec3f* PROTOBUF_NONNULL _internal_mutable_forward_direction();
 
   public:
   // required .Vec3f velocity = 2;
@@ -1896,7 +1896,7 @@ class GameState final : public ::google::protobuf::Message
         const GameState& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::Vec3f* PROTOBUF_NULLABLE camera_direction_;
+    ::Vec3f* PROTOBUF_NULLABLE forward_direction_;
     ::Vec3f* PROTOBUF_NULLABLE velocity_;
     bool collided_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3413,47 +3413,47 @@ VertexShaderConstants::_internal_mutable_constant_buffers() {
 
 // GameState
 
-// required .Vec3f camera_direction = 1;
-inline bool GameState::has_camera_direction() const {
+// required .Vec3f forward_direction = 1;
+inline bool GameState::has_forward_direction() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
-  PROTOBUF_ASSUME(!value || _impl_.camera_direction_ != nullptr);
+  PROTOBUF_ASSUME(!value || _impl_.forward_direction_ != nullptr);
   return value;
 }
-inline void GameState::clear_camera_direction() {
+inline void GameState::clear_forward_direction() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.camera_direction_ != nullptr) _impl_.camera_direction_->Clear();
+  if (_impl_.forward_direction_ != nullptr) _impl_.forward_direction_->Clear();
   ClearHasBit(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline const ::Vec3f& GameState::_internal_camera_direction() const {
+inline const ::Vec3f& GameState::_internal_forward_direction() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::Vec3f* p = _impl_.camera_direction_;
+  const ::Vec3f* p = _impl_.forward_direction_;
   return p != nullptr ? *p : reinterpret_cast<const ::Vec3f&>(::_Vec3f_default_instance_);
 }
-inline const ::Vec3f& GameState::camera_direction() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:GameState.camera_direction)
-  return _internal_camera_direction();
+inline const ::Vec3f& GameState::forward_direction() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:GameState.forward_direction)
+  return _internal_forward_direction();
 }
-inline void GameState::unsafe_arena_set_allocated_camera_direction(
+inline void GameState::unsafe_arena_set_allocated_forward_direction(
     ::Vec3f* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.camera_direction_);
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.forward_direction_);
   }
-  _impl_.camera_direction_ = reinterpret_cast<::Vec3f*>(value);
+  _impl_.forward_direction_ = reinterpret_cast<::Vec3f*>(value);
   if (value != nullptr) {
     SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:GameState.camera_direction)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:GameState.forward_direction)
 }
-inline ::Vec3f* PROTOBUF_NULLABLE GameState::release_camera_direction() {
+inline ::Vec3f* PROTOBUF_NULLABLE GameState::release_forward_direction() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  ::Vec3f* released = _impl_.camera_direction_;
-  _impl_.camera_direction_ = nullptr;
+  ::Vec3f* released = _impl_.forward_direction_;
+  _impl_.forward_direction_ = nullptr;
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
     auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
@@ -3467,35 +3467,35 @@ inline ::Vec3f* PROTOBUF_NULLABLE GameState::release_camera_direction() {
   }
   return released;
 }
-inline ::Vec3f* PROTOBUF_NULLABLE GameState::unsafe_arena_release_camera_direction() {
+inline ::Vec3f* PROTOBUF_NULLABLE GameState::unsafe_arena_release_forward_direction() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:GameState.camera_direction)
+  // @@protoc_insertion_point(field_release:GameState.forward_direction)
 
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  ::Vec3f* temp = _impl_.camera_direction_;
-  _impl_.camera_direction_ = nullptr;
+  ::Vec3f* temp = _impl_.forward_direction_;
+  _impl_.forward_direction_ = nullptr;
   return temp;
 }
-inline ::Vec3f* PROTOBUF_NONNULL GameState::_internal_mutable_camera_direction() {
+inline ::Vec3f* PROTOBUF_NONNULL GameState::_internal_mutable_forward_direction() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.camera_direction_ == nullptr) {
+  if (_impl_.forward_direction_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::Vec3f>(GetArena());
-    _impl_.camera_direction_ = reinterpret_cast<::Vec3f*>(p);
+    _impl_.forward_direction_ = reinterpret_cast<::Vec3f*>(p);
   }
-  return _impl_.camera_direction_;
+  return _impl_.forward_direction_;
 }
-inline ::Vec3f* PROTOBUF_NONNULL GameState::mutable_camera_direction()
+inline ::Vec3f* PROTOBUF_NONNULL GameState::mutable_forward_direction()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  ::Vec3f* _msg = _internal_mutable_camera_direction();
-  // @@protoc_insertion_point(field_mutable:GameState.camera_direction)
+  ::Vec3f* _msg = _internal_mutable_forward_direction();
+  // @@protoc_insertion_point(field_mutable:GameState.forward_direction)
   return _msg;
 }
-inline void GameState::set_allocated_camera_direction(::Vec3f* PROTOBUF_NULLABLE value) {
+inline void GameState::set_allocated_forward_direction(::Vec3f* PROTOBUF_NULLABLE value) {
   ::google::protobuf::Arena* message_arena = GetArena();
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.camera_direction_);
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.forward_direction_);
   }
 
   if (value != nullptr) {
@@ -3508,8 +3508,8 @@ inline void GameState::set_allocated_camera_direction(::Vec3f* PROTOBUF_NULLABLE
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
 
-  _impl_.camera_direction_ = reinterpret_cast<::Vec3f*>(value);
-  // @@protoc_insertion_point(field_set_allocated:GameState.camera_direction)
+  _impl_.forward_direction_ = reinterpret_cast<::Vec3f*>(value);
+  // @@protoc_insertion_point(field_set_allocated:GameState.forward_direction)
 }
 
 // required .Vec3f velocity = 2;

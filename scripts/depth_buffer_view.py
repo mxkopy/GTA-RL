@@ -1,5 +1,4 @@
 import cv2
-import torch
 from environment import VideoState
 
 # from graphics_test import RayCasts, DebugArrows, ShaderVars

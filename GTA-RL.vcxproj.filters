@@ -32,7 +32,10 @@
     <ClInclude Include="gta\keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gta\dx11_cuda_ipc.h">
+    <ClInclude Include="gta\cuda_ipc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gta\graphics_debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

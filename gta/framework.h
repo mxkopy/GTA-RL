@@ -8,6 +8,7 @@
 #include <array>
 #include <span>
 #include <vector>
+#include <set>
 #include <unordered_map>
 #include <type_traits>
 #include <system_error>
@@ -17,6 +18,7 @@
 #include <format>
 #include <random>
 #include <cstddef>
+#include <mutex>
 #include <assert.h>
 #include <dxgi.h>
 #include <d3d11.h>
@@ -36,9 +38,8 @@
 #include "amalgamated.pb.h"
 #include "natives.h"
 
-static std::ofstream logfile("GTA-RL.log");
-
 #ifdef DEBUG
+static std::ofstream logfile("GTA-RL.log");
 #define LOG(msg) logfile << msg << std::endl
 #else
 #define LOG(msg)
@@ -61,12 +62,13 @@ if(_CUERR != cudaSuccess){\
     throw std::system_error(_CUERR, std::system_category());\
 }
 
-
 using Microsoft::WRL::ComPtr;
 using std::string;
+using std::set;
 using std::unordered_map;
 using Eigen::Vector3f;
 using Eigen::Matrix3f;
+using std::mutex;
 
 static ComPtr<IDXGISwapChain> SwapChain;
 static DXGI_SWAP_CHAIN_DESC SwapChainDesc;

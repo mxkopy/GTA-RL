@@ -223,7 +223,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
 inline constexpr GameState::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
-        camera_direction_{nullptr},
+        forward_direction_{nullptr},
         velocity_{nullptr},
         collided_{false} {}
 
@@ -379,7 +379,7 @@ const ::uint32_t
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::GameState, _impl_._has_bits_),
         6, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::GameState, _impl_.camera_direction_),
+        PROTOBUF_FIELD_OFFSET(::GameState, _impl_.forward_direction_),
         PROTOBUF_FIELD_OFFSET(::GameState, _impl_.velocity_),
         PROTOBUF_FIELD_OFFSET(::GameState, _impl_.collided_),
         0,
@@ -438,16 +438,16 @@ const char descriptor_table_protodef_amalgamated_2eproto[] ABSL_ATTRIBUTE_SECTIO
     "pitch\030\003 \002(\004\022\033\n\006extent\030\004 \002(\0132\013.CUDAExtent"
     "\"T\n\025VertexShaderConstants\022\020\n\010nearclip\030\001 "
     "\002(\002\022\017\n\007farclip\030\002 \002(\002\022\030\n\020constant_buffers"
-    "\030\003 \003(\014\"Y\n\tGameState\022 \n\020camera_direction\030"
-    "\001 \002(\0132\006.Vec3f\022\030\n\010velocity\030\002 \002(\0132\006.Vec3f\022"
-    "\020\n\010collided\030\003 \002(\010\";\n\rKeyboardState\022\t\n\001w\030"
-    "\001 \001(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
+    "\030\003 \003(\014\"Z\n\tGameState\022!\n\021forward_direction"
+    "\030\001 \002(\0132\006.Vec3f\022\030\n\010velocity\030\002 \002(\0132\006.Vec3f"
+    "\022\020\n\010collided\030\003 \002(\010\";\n\rKeyboardState\022\t\n\001w"
+    "\030\001 \001(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
 };
 static ::absl::once_flag descriptor_table_amalgamated_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_amalgamated_2eproto = {
     false,
     false,
-    678,
+    679,
     descriptor_table_protodef_amalgamated_2eproto,
     "amalgamated.proto",
     &descriptor_table_amalgamated_2eproto_once,
@@ -3078,8 +3078,8 @@ GameState::GameState(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.camera_direction_ = (CheckHasBit(cached_has_bits, 0x00000001U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.camera_direction_)
+  _impl_.forward_direction_ = (CheckHasBit(cached_has_bits, 0x00000001U))
+                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.forward_direction_)
                 : nullptr;
   _impl_.velocity_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.velocity_)
@@ -3096,10 +3096,10 @@ PROTOBUF_NDEBUG_INLINE GameState::Impl_::Impl_(
 inline void GameState::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char*>(&_impl_) +
-               offsetof(Impl_, camera_direction_),
+               offsetof(Impl_, forward_direction_),
            0,
            offsetof(Impl_, collided_) -
-               offsetof(Impl_, camera_direction_) +
+               offsetof(Impl_, forward_direction_) +
                sizeof(Impl_::collided_));
 }
 GameState::~GameState() {
@@ -3113,7 +3113,7 @@ inline void GameState::SharedDtor(MessageLite& self) {
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
-  delete this_._impl_.camera_direction_;
+  delete this_._impl_.forward_direction_;
   delete this_._impl_.velocity_;
   this_._impl_.~Impl_();
 }
@@ -3181,10 +3181,10 @@ GameState::_table_ = {
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
-    // required .Vec3f camera_direction = 1;
+    // required .Vec3f forward_direction = 1;
     {::_pbi::TcParser::FastMtS1,
      {10, 0, 0,
-      PROTOBUF_FIELD_OFFSET(GameState, _impl_.camera_direction_)}},
+      PROTOBUF_FIELD_OFFSET(GameState, _impl_.forward_direction_)}},
     // required .Vec3f velocity = 2;
     {::_pbi::TcParser::FastMtS1,
      {18, 1, 1,
@@ -3196,8 +3196,8 @@ GameState::_table_ = {
   }}, {{
     65535, 65535
   }}, {{
-    // required .Vec3f camera_direction = 1;
-    {PROTOBUF_FIELD_OFFSET(GameState, _impl_.camera_direction_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+    // required .Vec3f forward_direction = 1;
+    {PROTOBUF_FIELD_OFFSET(GameState, _impl_.forward_direction_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // required .Vec3f velocity = 2;
     {PROTOBUF_FIELD_OFFSET(GameState, _impl_.velocity_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // required bool collided = 3;
@@ -3220,8 +3220,8 @@ PROTOBUF_NOINLINE void GameState::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      ABSL_DCHECK(_impl_.camera_direction_ != nullptr);
-      _impl_.camera_direction_->Clear();
+      ABSL_DCHECK(_impl_.forward_direction_ != nullptr);
+      _impl_.forward_direction_->Clear();
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(_impl_.velocity_ != nullptr);
@@ -3252,10 +3252,10 @@ PROTOBUF_NOINLINE void GameState::Clear() {
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // required .Vec3f camera_direction = 1;
+  // required .Vec3f forward_direction = 1;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        1, *this_._impl_.camera_direction_, this_._impl_.camera_direction_->GetCachedSize(), target,
+        1, *this_._impl_.forward_direction_, this_._impl_.forward_direction_->GetCachedSize(), target,
         stream);
   }
 
@@ -3300,10 +3300,10 @@ PROTOBUF_NOINLINE void GameState::Clear() {
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += static_cast<bool>(0x00000004U & cached_has_bits) * 2;
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
-    // required .Vec3f camera_direction = 1;
+    // required .Vec3f forward_direction = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.camera_direction_);
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.forward_direction_);
     }
     // required .Vec3f velocity = 2;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -3332,11 +3332,11 @@ void GameState::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      ABSL_DCHECK(from._impl_.camera_direction_ != nullptr);
-      if (_this->_impl_.camera_direction_ == nullptr) {
-        _this->_impl_.camera_direction_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.camera_direction_);
+      ABSL_DCHECK(from._impl_.forward_direction_ != nullptr);
+      if (_this->_impl_.forward_direction_ == nullptr) {
+        _this->_impl_.forward_direction_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.forward_direction_);
       } else {
-        _this->_impl_.camera_direction_->MergeFrom(*from._impl_.camera_direction_);
+        _this->_impl_.forward_direction_->MergeFrom(*from._impl_.forward_direction_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -3370,7 +3370,7 @@ PROTOBUF_NOINLINE bool GameState::IsInitializedImpl(
     return false;
   }
   if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
-    if (!this_._impl_.camera_direction_->IsInitialized()) return false;
+    if (!this_._impl_.forward_direction_->IsInitialized()) return false;
   }
   if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
     if (!this_._impl_.velocity_->IsInitialized()) return false;
@@ -3385,9 +3385,9 @@ void GameState::InternalSwap(GameState* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(GameState, _impl_.collided_)
       + sizeof(GameState::_impl_.collided_)
-      - PROTOBUF_FIELD_OFFSET(GameState, _impl_.camera_direction_)>(
-          reinterpret_cast<char*>(&_impl_.camera_direction_),
-          reinterpret_cast<char*>(&other->_impl_.camera_direction_));
+      - PROTOBUF_FIELD_OFFSET(GameState, _impl_.forward_direction_)>(
+          reinterpret_cast<char*>(&_impl_.forward_direction_),
+          reinterpret_cast<char*>(&other->_impl_.forward_direction_));
 }
 
 ::google::protobuf::Metadata GameState::GetMetadata() const {

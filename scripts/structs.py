@@ -31,7 +31,7 @@ class VertexShaderConstants(metaclass=Serializable):
     constant_buffers: list[bytes]
 
 class GameState(metaclass=Serializable):
-    camera_direction: Vec3f
+    forward_direction: Vec3f
     velocity: Vec3f
     collided: bool
 

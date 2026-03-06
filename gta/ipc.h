@@ -4,9 +4,9 @@
 #include <cstring>
 #include <iostream>
 #include <climits>
-//#include "cpp.pb.h"
 #include "google/protobuf/message.h"
 #include "launch_debugger.h"
+#include <immintrin.h>
 
 using std::string;
 using std::wstring;
@@ -16,6 +16,8 @@ using std::byte;
 using std::string_view;
 using google::protobuf::Message;
 
+// Wrapper around Windows' memory-mapping methods
+// Exposes pointer to memory mapped region as `void* Bytes`
 struct MemoryMap
 {
 	string Tagname;
@@ -77,6 +79,9 @@ struct MemoryMap
 
 };
 
+
+// Memory mapped vector of bytes
+// The first 16 bytes of shared memory hold its capacity and length, which are now accessible to other programs
 struct Memory: MemoryMap
 {
 	static const size_t HEAD_LENGTH = 2 * sizeof(size_t);
@@ -129,6 +134,7 @@ struct Memory: MemoryMap
 };
 
 
+// Synchronization bitflags
 #define BEGIN_TRAINING 0
 #define REQUEST_GAME_STATE 1
 #define UNSTUCK 2
@@ -161,11 +167,12 @@ struct Flags: MemoryMap
 
 	void WaitUntil(int Flag, bool Value)
 	{
-		while (GetFlag(Flag) != Value);
+		while (GetFlag(Flag) != Value) _mm_pause();
 	}
 };
 
 // TODO: add some sort of assertion that the deserialized typename is the actual type's name
+// A memory region that contains a protobuf object
 template<std::derived_from<Message> T>
 struct StructuredMemory : Memory
 {
@@ -194,6 +201,8 @@ struct StructuredMemory : Memory
 	}
 };
 
+// A memory region containing a protobuf object with a specific synchronized access pattern 
+// See scripts/ipc.py
 template<std::derived_from<Message> T, size_t RequestFlag>
 struct RequestLockedMemory : StructuredMemory<T>
 {

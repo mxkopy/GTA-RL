@@ -126,6 +126,7 @@ class Model(TorchRLModule, ValueFunctionAPI):
     def concat_features(visual_features, velocities):
         visual_features = visual_features.reshape(-1, config.n_frames * config.num_visual_features)
         velocities = velocities.reshape(-1, config.n_frames * np.prod(config.velocity_shape))
+        velocities = torch.zeros_like(velocities)
         return torch.cat((visual_features, velocities), dim=-1)
 
     def compute_embeddings_and_state_outs(self, batch: Dict[str, Any]):

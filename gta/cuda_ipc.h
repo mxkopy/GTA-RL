@@ -3,7 +3,7 @@
 #include "framework.h"
 #include "ipc.h"
 
-using std::set;
+// Classes for sharing GPU data across processes
 
 cudaChannelFormatDesc CudaChannelFormatFromDXGIFormat(DXGI_FORMAT Format)
 {

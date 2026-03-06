@@ -15,7 +15,7 @@ class GameState:
     def pop():
         state = GameState.GameStateMemory.data
         return (
-            (state.camera_direction.x, state.camera_direction.y, state.camera_direction.z),
+            (state.forward_direction.x, state.forward_direction.y, state.forward_direction.z),
             (state.velocity.x, state.velocity.y, state.velocity.z),
             state.collided
         )
@@ -36,12 +36,14 @@ class VideoState:
         for name in CUDAArrays:
             if CUDAArrays[name] is None:
                 CUDAArrays[name] = torch.from_dlpack(CUDAArray(name).data)
-
+    
+    @staticmethod
     def rescale(img: torch.Tensor):
         img = img.squeeze()
         size = config.image_shape[1:]
         return torch.nn.functional.interpolate(img.unsqueeze(0), size, mode='bilinear', antialias=True).squeeze()
 
+    @staticmethod
     def linearize_depth(array):
         VS = VideoState.VertexShaderConstantsMemory.data
         n, f = VS.nearclip, VS.farclip
@@ -85,17 +87,17 @@ class VideoGame:
     def act(self, action: tuple):
         self.virtual_controller.update(action)
 
-    def reward(camera_direction, velocity, collided):
+    def reward(forward_direction, velocity, collided):
         if collided:
             return -10
         else:
-            return np.dot(np.array(camera_direction), np.array(velocity)) - 0.01
+            return np.dot(np.array(forward_direction), np.array(velocity)) - 0.01
 
     def observe(self):
-        camera_direction, velocity, collided = self.game_state.pop()
+        forward_direction, velocity, collided = self.game_state.pop()
         video_state = self.video_state.pop()
         observation = torch.cat((video_state.reshape(-1), torch.tensor(velocity, device=video_state.device)) )
-        reward = VideoGame.reward(camera_direction, velocity, collided)
+        reward = VideoGame.reward(forward_direction, velocity, collided)
         terminal = collided
         return observation, reward, terminal
 

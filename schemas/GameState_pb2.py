@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 import Vec3f_pb2 as Vec3f__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fGameState.proto\x1a\x0bVec3f.proto\"Y\n\tGameState\x12 \n\x10\x63\x61mera_direction\x18\x01 \x02(\x0b\x32\x06.Vec3f\x12\x18\n\x08velocity\x18\x02 \x02(\x0b\x32\x06.Vec3f\x12\x10\n\x08\x63ollided\x18\x03 \x02(\x08')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fGameState.proto\x1a\x0bVec3f.proto\"Z\n\tGameState\x12!\n\x11\x66orward_direction\x18\x01 \x02(\x0b\x32\x06.Vec3f\x12\x18\n\x08velocity\x18\x02 \x02(\x0b\x32\x06.Vec3f\x12\x10\n\x08\x63ollided\x18\x03 \x02(\x08')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,5 +33,5 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'GameState_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_GAMESTATE']._serialized_start=32
-  _globals['_GAMESTATE']._serialized_end=121
+  _globals['_GAMESTATE']._serialized_end=122
 # @@protoc_insertion_point(module_scope)
