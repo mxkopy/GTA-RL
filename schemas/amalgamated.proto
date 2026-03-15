@@ -65,9 +65,8 @@ message CUDAPitchedArrayObject {
 
 
 message GameState {
- required Vec3f forward_direction = 1;
- required Vec3f velocity = 2;
- required bool collided = 3;
+ required bool collided = 1;
+ required double reward = 2;
 }
 
 

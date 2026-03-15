@@ -1,5 +1,5 @@
-import "CUDAExtent.proto";
 import "CUDAChannelFormatDesc.proto";
+import "CUDAExtent.proto";
 message CUDAPitchedArrayObject {
  required bytes handle = 1;
  required CUDAChannelFormatDesc format = 2;

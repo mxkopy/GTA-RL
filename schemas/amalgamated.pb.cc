@@ -137,6 +137,32 @@ struct KeyboardStateDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 KeyboardStateDefaultTypeInternal _KeyboardState_default_instance_;
 
+inline constexpr GameState::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : _cached_size_{0},
+        reward_{0},
+        collided_{false} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR GameState::GameState(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(GameState_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct GameStateDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR GameStateDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~GameStateDefaultTypeInternal() {}
+  union {
+    GameState _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GameStateDefaultTypeInternal _GameState_default_instance_;
+
 inline constexpr CUDAExtent::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
@@ -249,33 +275,6 @@ struct RayCastDefaultTypeInternal {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 RayCastDefaultTypeInternal _RayCast_default_instance_;
-
-inline constexpr GameState::Impl_::Impl_(
-    ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        forward_direction_{nullptr},
-        velocity_{nullptr},
-        collided_{false} {}
-
-template <typename>
-PROTOBUF_CONSTEXPR GameState::GameState(::_pbi::ConstantInitialized)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(GameState_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(::_pbi::ConstantInitialized()) {
-}
-struct GameStateDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR GameStateDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
-  ~GameStateDefaultTypeInternal() {}
-  union {
-    GameState _instance;
-  };
-};
-
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GameStateDefaultTypeInternal _GameState_default_instance_;
 
 inline constexpr CUDAPitchedArrayObject::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -423,13 +422,11 @@ const ::uint32_t
         2,
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::GameState, _impl_._has_bits_),
-        6, // hasbit index offset
-        PROTOBUF_FIELD_OFFSET(::GameState, _impl_.forward_direction_),
-        PROTOBUF_FIELD_OFFSET(::GameState, _impl_.velocity_),
+        5, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::GameState, _impl_.collided_),
-        0,
+        PROTOBUF_FIELD_OFFSET(::GameState, _impl_.reward_),
         1,
-        2,
+        0,
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::KeyboardState, _impl_._has_bits_),
         7, // hasbit index offset
@@ -455,7 +452,7 @@ static const ::_pbi::MigrationSchema
         {59, sizeof(::CUDAChannelFormatDesc)},
         {72, sizeof(::CUDAPitchedArrayObject)},
         {83, sizeof(::GameState)},
-        {92, sizeof(::KeyboardState)},
+        {90, sizeof(::KeyboardState)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::_ByteBuffer_default_instance_._instance,
@@ -488,16 +485,15 @@ const char descriptor_table_protodef_amalgamated_2eproto[] ABSL_ATTRIBUTE_SECTIO
     "\r\"|\n\026CUDAPitchedArrayObject\022\016\n\006handle\030\001 "
     "\002(\014\022&\n\006format\030\002 \002(\0132\026.CUDAChannelFormatD"
     "esc\022\r\n\005pitch\030\003 \002(\004\022\033\n\006extent\030\004 \002(\0132\013.CUD"
-    "AExtent\"Z\n\tGameState\022!\n\021forward_directio"
-    "n\030\001 \002(\0132\006.Vec3f\022\030\n\010velocity\030\002 \002(\0132\006.Vec3"
-    "f\022\020\n\010collided\030\003 \002(\010\";\n\rKeyboardState\022\t\n\001"
-    "w\030\001 \001(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
+    "AExtent\"-\n\tGameState\022\020\n\010collided\030\001 \002(\010\022\016"
+    "\n\006reward\030\002 \002(\001\";\n\rKeyboardState\022\t\n\001w\030\001 \001"
+    "(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
 };
 static ::absl::once_flag descriptor_table_amalgamated_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_amalgamated_2eproto = {
     false,
     false,
-    800,
+    755,
     descriptor_table_protodef_amalgamated_2eproto,
     "amalgamated.proto",
     &descriptor_table_amalgamated_2eproto_once,
@@ -3511,7 +3507,7 @@ class GameState::_Internal {
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(GameState, _impl_._has_bits_);
   static bool MissingRequiredFields(const HasBits& has_bits) {
-    return ((has_bits[0] & 0x00000007) ^ 0x00000007) != 0;
+    return ((has_bits[0] & 0x00000003) ^ 0x00000003) != 0;
   }
 };
 
@@ -3524,36 +3520,16 @@ GameState::GameState(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:GameState)
 }
-PROTOBUF_NDEBUG_INLINE GameState::Impl_::Impl_(
-    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    [[maybe_unused]] const ::GameState& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0} {}
-
 GameState::GameState(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const GameState& from)
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GameState& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, GameState_class_data_.base()) {
+    : ::google::protobuf::Message(arena, GameState_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  GameState* const _this = this;
-  (void)_this;
+      _impl_(from._impl_) {
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.forward_direction_ = (CheckHasBit(cached_has_bits, 0x00000001U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.forward_direction_)
-                : nullptr;
-  _impl_.velocity_ = (CheckHasBit(cached_has_bits, 0x00000002U))
-                ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.velocity_)
-                : nullptr;
-  _impl_.collided_ = from._impl_.collided_;
-
-  // @@protoc_insertion_point(copy_constructor:GameState)
 }
 PROTOBUF_NDEBUG_INLINE GameState::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -3563,10 +3539,10 @@ PROTOBUF_NDEBUG_INLINE GameState::Impl_::Impl_(
 inline void GameState::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
   ::memset(reinterpret_cast<char*>(&_impl_) +
-               offsetof(Impl_, forward_direction_),
+               offsetof(Impl_, reward_),
            0,
            offsetof(Impl_, collided_) -
-               offsetof(Impl_, forward_direction_) +
+               offsetof(Impl_, reward_) +
                sizeof(Impl_::collided_));
 }
 GameState::~GameState() {
@@ -3580,8 +3556,6 @@ inline void GameState::SharedDtor(MessageLite& self) {
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
-  delete this_._impl_.forward_direction_;
-  delete this_._impl_.velocity_;
   this_._impl_.~Impl_();
 }
 
@@ -3628,18 +3602,18 @@ GameState::GetClassData() const {
   return GameState_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<2, 3, 2, 0, 2>
+const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
 GameState::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(GameState, _impl_._has_bits_),
     0, // no _extensions_
-    3, 24,  // max_field_number, fast_idx_mask
+    2, 8,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967288,  // skipmap
+    4294967292,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    3,  // num_field_entries
-    2,  // num_aux_entries
-    offsetof(decltype(_table_), aux_entries),
+    2,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
     GameState_class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
@@ -3647,33 +3621,23 @@ GameState::_table_ = {
     ::_pbi::TcParser::GetTable<::GameState>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
-    // required .Vec3f forward_direction = 1;
-    {::_pbi::TcParser::FastMtS1,
-     {10, 0, 0,
-      PROTOBUF_FIELD_OFFSET(GameState, _impl_.forward_direction_)}},
-    // required .Vec3f velocity = 2;
-    {::_pbi::TcParser::FastMtS1,
-     {18, 1, 1,
-      PROTOBUF_FIELD_OFFSET(GameState, _impl_.velocity_)}},
-    // required bool collided = 3;
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(GameState, _impl_.collided_), 2>(),
-     {24, 2, 0,
+    // required double reward = 2;
+    {::_pbi::TcParser::FastF64S1,
+     {17, 0, 0,
+      PROTOBUF_FIELD_OFFSET(GameState, _impl_.reward_)}},
+    // required bool collided = 1;
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(GameState, _impl_.collided_), 1>(),
+     {8, 1, 0,
       PROTOBUF_FIELD_OFFSET(GameState, _impl_.collided_)}},
   }}, {{
     65535, 65535
   }}, {{
-    // required .Vec3f forward_direction = 1;
-    {PROTOBUF_FIELD_OFFSET(GameState, _impl_.forward_direction_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-    // required .Vec3f velocity = 2;
-    {PROTOBUF_FIELD_OFFSET(GameState, _impl_.velocity_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
-    // required bool collided = 3;
-    {PROTOBUF_FIELD_OFFSET(GameState, _impl_.collided_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+    // required bool collided = 1;
+    {PROTOBUF_FIELD_OFFSET(GameState, _impl_.collided_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+    // required double reward = 2;
+    {PROTOBUF_FIELD_OFFSET(GameState, _impl_.reward_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kDouble)},
   }},
-  {{
-      {::_pbi::TcParser::GetTable<::Vec3f>()},
-      {::_pbi::TcParser::GetTable<::Vec3f>()},
-  }},
+  // no aux_entries
   {{
   }},
 };
@@ -3686,16 +3650,10 @@ PROTOBUF_NOINLINE void GameState::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      ABSL_DCHECK(_impl_.forward_direction_ != nullptr);
-      _impl_.forward_direction_->Clear();
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      ABSL_DCHECK(_impl_.velocity_ != nullptr);
-      _impl_.velocity_->Clear();
-    }
+    ::memset(&_impl_.reward_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.collided_) -
+        reinterpret_cast<char*>(&_impl_.reward_)) + sizeof(_impl_.collided_));
   }
-  _impl_.collided_ = false;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -3719,25 +3677,18 @@ PROTOBUF_NOINLINE void GameState::Clear() {
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // required .Vec3f forward_direction = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        1, *this_._impl_.forward_direction_, this_._impl_.forward_direction_->GetCachedSize(), target,
-        stream);
-  }
-
-  // required .Vec3f velocity = 2;
+  // required bool collided = 1;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, *this_._impl_.velocity_, this_._impl_.velocity_->GetCachedSize(), target,
-        stream);
-  }
-
-  // required bool collided = 3;
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        3, this_._internal_collided(), target);
+        1, this_._internal_collided(), target);
+  }
+
+  // required double reward = 2;
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteDoubleToArray(
+        2, this_._internal_reward(), target);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -3765,19 +3716,8 @@ PROTOBUF_NOINLINE void GameState::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  total_size += static_cast<bool>(0x00000004U & cached_has_bits) * 2;
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
-    // required .Vec3f forward_direction = 1;
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.forward_direction_);
-    }
-    // required .Vec3f velocity = 2;
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.velocity_);
-    }
-  }
+  total_size += static_cast<bool>(0x00000001U & cached_has_bits) * 9;
+  total_size += static_cast<bool>(0x00000002U & cached_has_bits) * 2;
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
@@ -3790,31 +3730,17 @@ void GameState::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:GameState)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      ABSL_DCHECK(from._impl_.forward_direction_ != nullptr);
-      if (_this->_impl_.forward_direction_ == nullptr) {
-        _this->_impl_.forward_direction_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.forward_direction_);
-      } else {
-        _this->_impl_.forward_direction_->MergeFrom(*from._impl_.forward_direction_);
-      }
+      _this->_impl_.reward_ = from._impl_.reward_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      ABSL_DCHECK(from._impl_.velocity_ != nullptr);
-      if (_this->_impl_.velocity_ == nullptr) {
-        _this->_impl_.velocity_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.velocity_);
-      } else {
-        _this->_impl_.velocity_->MergeFrom(*from._impl_.velocity_);
-      }
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _this->_impl_.collided_ = from._impl_.collided_;
     }
   }
@@ -3836,12 +3762,6 @@ PROTOBUF_NOINLINE bool GameState::IsInitializedImpl(
   if (_Internal::MissingRequiredFields(this_._impl_._has_bits_)) {
     return false;
   }
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
-    if (!this_._impl_.forward_direction_->IsInitialized()) return false;
-  }
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
-    if (!this_._impl_.velocity_->IsInitialized()) return false;
-  }
   return true;
 }
 
@@ -3852,9 +3772,9 @@ void GameState::InternalSwap(GameState* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(GameState, _impl_.collided_)
       + sizeof(GameState::_impl_.collided_)
-      - PROTOBUF_FIELD_OFFSET(GameState, _impl_.forward_direction_)>(
-          reinterpret_cast<char*>(&_impl_.forward_direction_),
-          reinterpret_cast<char*>(&other->_impl_.forward_direction_));
+      - PROTOBUF_FIELD_OFFSET(GameState, _impl_.reward_)>(
+          reinterpret_cast<char*>(&_impl_.reward_),
+          reinterpret_cast<char*>(&other->_impl_.reward_));
 }
 
 ::google::protobuf::Metadata GameState::GetMetadata() const {

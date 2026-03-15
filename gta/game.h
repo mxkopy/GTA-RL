@@ -79,31 +79,25 @@ void OnTick()
 	static GameState GameState{};
 	auto VEHICLE = _VEHICLE;
 
-	if (VEHICLE != NULL)
+	if (VEHICLE == NULL || FLAGS.GetFlag(RESET))
+	{
+		Reset();
+		FLAGS.SetFlag(RESET, false);
+	}
+	else if (VEHICLE != NULL)
 	{
 		CenterCamera();
 
 		bool Collided = ENTITY::HAS_ENTITY_COLLIDED_WITH_ANYTHING(VEHICLE);
 		auto Velocity = ENTITY::GET_ENTITY_VELOCITY(VEHICLE);
 		auto Forward = ENTITY::GET_ENTITY_FORWARD_VECTOR(VEHICLE);
+		auto Reward = (Forward.x * Velocity.x) + (Forward.y * Velocity.y) + (Forward.z * Velocity.z);
 
+		GameState.set_reward(Reward);
 		GameState.set_collided(Collided);
-		GameState.mutable_forward_direction()->set_x(Forward.x);
-		GameState.mutable_forward_direction()->set_y(Forward.y);
-		GameState.mutable_forward_direction()->set_z(Forward.z);
-		GameState.mutable_velocity()->set_x(Velocity.x);
-		GameState.mutable_velocity()->set_y(Velocity.y);
-		GameState.mutable_velocity()->set_z(Velocity.z);
-		
-		if (FLAGS.GetFlag(UNSTUCK)) FLAGS.SetFlag(REQUEST_GAME_STATE, true);
-		
-		GameStateMemory = GameState;
 
-		if (Collided) Reset();
-	}
-	else
-	{
-		Reset();
+		if (FLAGS.GetFlag(UNSTUCK)) FLAGS.SetFlag(REQUEST_GAME_STATE, true);
+		GameStateMemory = GameState;
 	}
 }
 

@@ -6,17 +6,29 @@ if __name__ == '__main__':
 
     if sys.argv[1] == 'train':
         import gc
+        import os
+        import datetime
+        from pathlib import Path
+        import tempfile
         import torch
         from ray.rllib.core.rl_module.rl_module import RLModuleSpec
         from ray.rllib.algorithms.ppo import PPOConfig
+        from ray.tune.logger import UnifiedLogger
         from environment import Environment, VideoState
         from ipc import Flags, PROJECT_DIR
-        from model import Model
-        from pathlib import Path
+        from model import Model, Learner
 
         TRAIN_BATCH_SIZE = 128
         MINIBATCH_SIZE = 32
         MODEL_PATH = Path(PROJECT_DIR) / 'driver.ckpt'
+        LOG_DIR = Path(PROJECT_DIR) / 'ray_results'
+        LOG_NAME = f'driver_{datetime.datetime.today().strftime("%Y-%m-%d_%H-%M-%S")}'
+        
+        def logger_creator(config):
+            if not Path.exists(LOG_DIR):
+                os.makedirs(LOG_DIR)
+            logdir = tempfile.mkdtemp(prefix=LOG_NAME, dir=LOG_DIR)
+            return UnifiedLogger(config, logdir=logdir, loggers=None)
 
         algorithm = (
             PPOConfig()
@@ -34,12 +46,18 @@ if __name__ == '__main__':
                 num_gpus_per_env_runner=0.5,
             )
             .learners(
+                learner_class=Learner,
+                learner_config_dict={
+                    "regularizer_coeff": 1e-5
+                },
                 num_learners=0,
-                num_gpus_per_learner=0.5,
+                num_gpus_per_learner=0.5
             )
             .environment(
                 env=Environment,
-                # env_config={'horizon': 256}
+                env_config={
+                    'horizon': 256
+                }
             )
             .rl_module(
                 rl_module_spec=RLModuleSpec(
@@ -52,17 +70,21 @@ if __name__ == '__main__':
                 )
             )
             .training(
-                lr=1e-3,
+                lr=1e-5,
                 train_batch_size=TRAIN_BATCH_SIZE,
                 minibatch_size=MINIBATCH_SIZE,
                 num_epochs=3,
-                use_kl_loss=False,
-                clip_param=0.1,
-                entropy_coeff=0.001,
+                use_gae=True,
+                use_critic=True,
+                lambda_=0.9,
+                clip_param=0.2,
+                entropy_coeff=0.0001,
                 vf_loss_coeff=1,
-                kl_target=0.003,
+                use_kl_loss=False
             )
-            .build_algo()
+            .build(
+                logger_creator=logger_creator
+            )
         )
         if MODEL_PATH.exists():
             algorithm.load_checkpoint(str(MODEL_PATH))

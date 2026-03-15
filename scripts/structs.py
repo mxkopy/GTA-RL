@@ -39,9 +39,8 @@ class CUDAPitchedArrayObject(metaclass=Serializable):
     extent: CUDAExtent
 
 class GameState(metaclass=Serializable):
-    forward_direction: Vec3f
-    velocity: Vec3f
     collided: bool
+    reward: float
 
 class KeyboardState(metaclass=Serializable):
     w: Optional[bool]

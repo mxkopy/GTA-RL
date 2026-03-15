@@ -16,38 +16,6 @@ static void GetDeviceAndContextFromSwapChain(void* chain) {
     DeviceContextVirtualTable = (void**)*(void**)DeviceContext.Get();
 }
 
-void DEBUG_TEXTURE2D(ComPtr<ID3D11Texture2D> Texture, const char* Name = "DEBUG") 
-{
-    D3D11_TEXTURE2D_DESC TextureDesc;
-    Texture->GetDesc(&TextureDesc);
-    LOG(Name);
-    LOG("Shape          " << TextureDesc.Width << ", " << TextureDesc.Height);
-    LOG("Format         " << TextureDesc.Format);
-    LOG("BindFlags:     " << TextureDesc.BindFlags);
-    LOG("MiscFlags      " << TextureDesc.MiscFlags);
-    LOG("SampleCount:   " << TextureDesc.SampleDesc.Count);
-    LOG("SampleQuality: " << TextureDesc.SampleDesc.Quality);
-    LOG("MipLevels:     " << TextureDesc.MipLevels);
-    LOG("ArraySize:     " << TextureDesc.ArraySize);
-    LOG("Usage:         " << TextureDesc.Usage);
-    LOG("");
-}
-
-void DEBUG_CONSTANT_BUFFER(ComPtr<ID3D11Buffer> ConstantBuffer, const char* Name = "DEBUG")
-{
-    D3D11_BUFFER_DESC BufferDesc;
-    ConstantBuffer->GetDesc(&BufferDesc);
-    LOG(Name);
-    LOG("ByteWidth: " << BufferDesc.ByteWidth);
-    LOG("StructureByteStride: " << BufferDesc.StructureByteStride);
-    LOG("Usage:               " << BufferDesc.Usage);
-    LOG("MiscFlags:           " << BufferDesc.MiscFlags);
-    LOG("BindFlags:           " << BufferDesc.BindFlags);
-    LOG("CPUAccessFlags:      " << BufferDesc.CPUAccessFlags);
-    LOG("");
-}
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Compute Shader
 
 
@@ -398,7 +366,7 @@ void ClearDepthStencilViewHook
         CameraTransforms::SetupMatrixBuffers();
     }
 
-    // 4 - 5
+    // 4
     if(pDepthStencilView == SentinelDSV && !DepthStencilStateDesc.DepthEnable && CUDADepthArray.cuMemory != nullptr)
     {
         //GAMEPLAY::SET_GAME_PAUSED(true);
@@ -406,8 +374,7 @@ void ClearDepthStencilViewHook
         CameraTransforms::Update(DeviceContext);
         DepthStencilComputeShader::RunComputeShader(DeviceContext);
         CUDADepthArray.Update();
-        //if (FLAGS.GetFlag(BEGIN_TRAINING))
-        //{
+        //if( FLAGS.GetFlag(BEGIN_TRAINING) ){
         //    Ray::Update();
         //    FLAGS.SetFlag(RAYCASTS, true);
         //    FLAGS.WaitUntil(RAYCASTS, false);

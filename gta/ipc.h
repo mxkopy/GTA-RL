@@ -139,11 +139,12 @@ struct Memory: MemoryMap
 #define REQUEST_GAME_STATE 1
 #define UNSTUCK 2
 #define RAYCASTS 3
+#define RESET 4
 
 struct Flags: MemoryMap
 {
 	#define FLAGS_TAGNAME "Flags"
-	#define N_FLAGS 4
+	#define N_FLAGS 5
 
 	Flags() : MemoryMap(FLAGS_TAGNAME, (N_FLAGS + CHAR_BIT - 1) / CHAR_BIT) {};
 

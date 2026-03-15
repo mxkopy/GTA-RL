@@ -8,8 +8,8 @@ class DummyShader:
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(111, projection='3d')
         self.color = 0
-        self.elev, self.azim, self.roll = self.get_angle_offsets()
-        self.ax.view_init(elev=self.elev, azim=self.azim, roll=self.roll)
+        # self.elev, self.azim, self.roll = self.get_angle_offsets()
+        # self.ax.view_init(elev=self.elev, azim=self.azim, roll=self.roll)
         self.ax.set_axis_off()
         self.zoom(1.0)
 

@@ -16,7 +16,6 @@ struct PerspectiveInfo
     float ScreenHeight;
     float ViewportWidth;
     float ViewportHeight;
-    float scale;
 };
 
 cbuffer b0 : register(b0)
@@ -34,13 +33,5 @@ cbuffer b1 : register(b1)
 [numthreads(32, 32, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    float2 ScreenCoords = float2(
-        2 * (float(DTid.x) / CurrentPerspectiveInfo.ViewportWidth) - (CurrentPerspectiveInfo.ScreenWidth / CurrentPerspectiveInfo.ViewportWidth),
-        2 * (float(DTid.y) / CurrentPerspectiveInfo.ViewportHeight) - (CurrentPerspectiveInfo.ScreenHeight / CurrentPerspectiveInfo.ViewportHeight)
-    );
-    float LastDepth = LastPerspectiveInfo.scale * pow(LastPerspectiveInfo.FarClip + 1, LastDepthSRV[DTid.xy].r) - 1;
-    float CurrentDepth = LastPerspectiveInfo.scale * pow(CurrentPerspectiveInfo.FarClip + 1, DepthSRV[DTid.xy].r) - 1;
-    float3 LastWorldPoint = mul(transpose(LastCamera.Axes), float3(ScreenCoords, 1)) * LastDepth;
-    float3 CurrentWorldPoint = mul(transpose(CurrentCamera.Axes), float3(ScreenCoords, 1)) * CurrentDepth;
-    VelocityUAV[DTid.xy].xyzw = float4(CurrentWorldPoint - LastWorldPoint, DepthSRV[DTid.xy].r);
+    VelocityUAV[DTid.xy].xyzw = float4(0.0f, 0.0f, 0.0f, DepthSRV[DTid.xy].r);
 }

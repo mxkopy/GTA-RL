@@ -88,8 +88,10 @@ struct VSConstants
         for (auto i = 0; i < N; i++) ERR(DeviceContext->Map(StagingBuffers[i], 0, D3D11_MAP_READ, NULL, &Subresources[i]));
         for (auto i = 0; i < N; i++) Data.set_constant_buffers(i, Subresources[i].pData, Subresources[i].DepthPitch);
         for (auto i = 0; i < N; i++) DeviceContext->Unmap(StagingBuffers[N - i - 1], 0);
-        Data.set_nearclip(CAM::_0xD0082607100D7193());
-        Data.set_farclip(CAM::_0xDFC8CBC606FDB0FC());
+        Data.set_nearclip(CAM::_0xA03502FC581F7D9B());
+        Data.set_farclip(CAM::_0x9780F32BCAF72431());
+        //Data.set_nearclip(CAM::_0xD0082607100D7193());
+        //Data.set_farclip(CAM::_0xDFC8CBC606FDB0FC());
         VSMemory = Data;
     }
 };
