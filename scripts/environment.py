@@ -5,7 +5,8 @@ from struct import unpack
 from ipc import Flags, GLOBAL_FLAGS, StructuredMemory, RequestLockedMemory
 from cuda_ipc import CUDAArray
 from gymnasium import Env
-from gymnasium.spaces import Tuple, Box, Discrete    
+from gymnasium.spaces import Tuple, Box, Discrete
+from math import prod
 
 class GameState:
 
@@ -24,6 +25,9 @@ class GameState:
 
 class VideoState:
 
+    NEAR = 0.15
+    FAR = 10003.815
+
     VertexShaderConstantsMemory = StructuredMemory('VSConstants')
     
     CUDAArrays = {
@@ -41,24 +45,10 @@ class VideoState:
     @staticmethod
     def rescale(img: torch.Tensor):
         img = img.squeeze()
+        dim_pads = (1 for _ in range(4 - len(img.shape)))
+        img = img.reshape(*dim_pads, *img.shape)
         size = config.image_shape[1:]
-        return torch.nn.functional.interpolate(img.unsqueeze(0), size, mode='bilinear', antialias=True).squeeze()
-
-    @staticmethod
-    def linearize_depth(array):
-        # VS = VideoState.VertexShaderConstantsMemory.data
-        # n, f = VS.nearclip, VS.farclip
-        NEAR = 0.15
-        FAR = 10003.815
-        n, f = NEAR, FAR
-        # Pulled from https://github.com/umautobots/GTAVisionExport/issues/13#issuecomment-765115705
-        Z = (-(FAR*NEAR)/(NEAR-FAR))/(array - (NEAR/(NEAR-FAR)))
-        return Z
-
-    @staticmethod
-    def cutoff_depth(array, cutoff=1000):
-        array[array >= cutoff] = 0
-        return array
+        return torch.nn.functional.interpolate(img, size, mode='bilinear', antialias=True).squeeze()
 
     @staticmethod
     def pop_rgb():
@@ -69,26 +59,60 @@ class VideoState:
         img = img.squeeze()[:3, ...]
         return img
 
+    @staticmethod
+    def linearize_depth(array, cutoff=config.depth_cutoff):
+        # VS = VideoState.VertexShaderConstantsMemory.data
+        # n, f = VS.nearclip, VS.farclip
+        # Pulled from https://github.com/umautobots/GTAVisionExport/issues/13#issuecomment-765115705
+        Z = (-(VideoState.FAR*VideoState.NEAR)/(VideoState.NEAR-VideoState.FAR))/(array - (VideoState.NEAR/(VideoState.NEAR-VideoState.FAR)))
+        if cutoff is not None:
+            Z[Z >= cutoff] = cutoff
+            return (cutoff - Z) / cutoff
+        return Z
+
+    @staticmethod
+    def voxelize(x, depth=config.voxel_depth, min_val=NEAR, max_val=1.0):
+        device = x.device
+        x = x.squeeze()
+        x = x.to(device='cuda')
+        if len(x.shape) > 2:
+            xs = x.shape
+            x = x.reshape(-1, xs[-2], xs[-1])
+            vx = torch.stack([VideoState.voxelize(x[i, ...]) for i in range(prod(xs[:-2]))])
+            vx = vx.reshape(*xs[:-2], -1, *xs[-2:])
+            return vx
+        measure = torch.linspace(min_val, max_val, depth + 1)[:-1]
+        z = torch.ones_like(x, dtype=torch.bool).unsqueeze(0).repeat(depth, 1, 1)
+        for i, m in enumerate(measure):
+            z[i, x < m] = 0
+        return z.unsqueeze(0).to(device=device, dtype=x.dtype)
+
+    @staticmethod
+    def pop_depth():
+        buffer = VideoState.CUDAArrays['Depth']
+        depth = VideoState.rescale(buffer.squeeze()[:, :, 3])
+        # depth = VideoState.voxelize(depth)
+        return depth
+
+
     # Velocity map scaled by depth (3 dims)
     # Distance map with cutoff (1 dim) -> 4 dim input
     @staticmethod
-    def pop_velocity_and_depth(cutoff=100.0):
+    def pop_velocity_and_depth():
         buffer = VideoState.CUDAArrays['Depth']
         velocity_and_depth = buffer.squeeze().permute(2, 0, 1)
         velocity_and_depth = VideoState.rescale(velocity_and_depth)
         velocity = velocity_and_depth[:3, ...]
         depth = velocity_and_depth[3, ...].unsqueeze(0)
-        return depth
-        # distances = VideoState.linearize_depth(depth)
-        # distances[distances >= cutoff] = cutoff
-        # depth[distances >= cutoff] = 0
-        # return velocity / 1e20, depth, distances
+        return velocity, depth
 
     @staticmethod
     def pop():
-        depth = VideoState.pop_velocity_and_depth()
+        # depth = VideoState.pop_velocity_and_depth()
+        depth = VideoState.pop_depth()
+        depth = VideoState.linearize_depth(depth)
         return depth.cpu()
-        # velocity, depth, distances = VideoState.pop_velocity_and_depth()
+        # velocity, depth = VideoState.pop_velocity_and_depth()
         # rgb = VideoState.pop_rgb()
         # return torch.cat((depth, distances, velocity)).cpu()
 
@@ -119,7 +143,7 @@ class Environment(Env):
     def calculate_reward(self, game_state):
         speed, collided = game_state
         horizon = 1 if self.horizon is None else self.horizon
-        return -1 if collided else max(0, speed) / horizon
+        return -10 if collided else np.log10(1 + max(0, speed))
 
     def truncate(self) -> bool:
         if self.horizon is not None:
@@ -156,3 +180,28 @@ class Environment(Env):
         self.last_n_frames = [torch.zeros_like(frame) for _ in range(config.n_frames)]
         observation = self.stack_frame(frame)
         return observation, {"env_state" : "reset"}
+
+
+
+# Custom logger to record environment data 
+from ray.rllib.callbacks.callbacks import RLlibCallback
+class EpisodeStepCallback(RLlibCallback):
+
+    def __init__(self):
+        super().__init__()
+        self.VSBMemory = StructuredMemory("VSConstants")
+        vsb = self.VSBMemory.data.constant_buffers[2]
+        vsb = np.frombuffer(vsb, dtype=np.float32).reshape(-1, 4)
+
+    def on_episode_created(self, *, episode, **kwargs):
+        episode.custom_data["camera_position"] = []
+        episode.custom_data["camera_direction"] = []
+
+    def on_episode_step(self, *, episode, **kwargs):
+        vsb = np.frombuffer(self.VSBMemory.data.constant_buffers[2], dtype=np.float32)
+        episode.custom_data["camera_position"].append(tuple(vsb[12:15]))
+        episode.custom_data["camera_direction"].append(tuple(vsb[16:19]))
+
+    def on_episode_end(self, *, episode, metrics_logger, **kwargs):
+        metrics_logger.log_value("camera_position", value=episode.custom_data["camera_position"], reduce="item")
+        metrics_logger.log_value("camera_direction", value=episode.custom_data["camera_direction"], reduce="item")

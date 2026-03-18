@@ -473,11 +473,12 @@ if __name__ == '__main__':
 
     if '--vsb' in sys.argv:
         import numpy as np
-        VSB = StructuredMemory("VSConstantBuffers")
-        while True:
-            vsb = VSB.data.constant_buffers[2]
-            vsb = np.frombuffer(vsb, dtype=np.float32).reshape(-1, 4)
-            print(vsb)
+        VSB = StructuredMemory("VSConstants")
+        vsb = VSB.data.constant_buffers[2]
+        vsb = np.frombuffer(vsb, dtype=np.float32).reshape(-1, 4)
+        print()
+        print(vsb)
+        exit()
 
     if '--test' in sys.argv:
         reader = RequestLockedMemory("GameState")
