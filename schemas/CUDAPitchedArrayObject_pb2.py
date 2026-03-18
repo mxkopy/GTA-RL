@@ -22,11 +22,11 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-import CUDAChannelFormatDesc_pb2 as CUDAChannelFormatDesc__pb2
 import CUDAExtent_pb2 as CUDAExtent__pb2
+import CUDAChannelFormatDesc_pb2 as CUDAChannelFormatDesc__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1c\x43UDAPitchedArrayObject.proto\x1a\x1b\x43UDAChannelFormatDesc.proto\x1a\x10\x43UDAExtent.proto\"|\n\x16\x43UDAPitchedArrayObject\x12\x0e\n\x06handle\x18\x01 \x02(\x0c\x12&\n\x06\x66ormat\x18\x02 \x02(\x0b\x32\x16.CUDAChannelFormatDesc\x12\r\n\x05pitch\x18\x03 \x02(\x04\x12\x1b\n\x06\x65xtent\x18\x04 \x02(\x0b\x32\x0b.CUDAExtent')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1c\x43UDAPitchedArrayObject.proto\x1a\x10\x43UDAExtent.proto\x1a\x1b\x43UDAChannelFormatDesc.proto\"|\n\x16\x43UDAPitchedArrayObject\x12\x0e\n\x06handle\x18\x01 \x02(\x0c\x12&\n\x06\x66ormat\x18\x02 \x02(\x0b\x32\x16.CUDAChannelFormatDesc\x12\r\n\x05pitch\x18\x03 \x02(\x04\x12\x1b\n\x06\x65xtent\x18\x04 \x02(\x0b\x32\x0b.CUDAExtent')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)

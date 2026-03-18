@@ -43,7 +43,7 @@ class GameState(metaclass=Serializable):
     reward: float
 
 class KeyboardState(metaclass=Serializable):
-    w: Optional[bool]
-    a: Optional[bool]
-    s: Optional[bool]
-    d: Optional[bool]
+    w: bool
+    a: bool
+    s: bool
+    d: bool

@@ -71,8 +71,8 @@ message GameState {
 
 
 message KeyboardState {
- optional bool w = 1;
- optional bool a = 2;
- optional bool s = 3;
- optional bool d = 4;
+ required bool w = 1;
+ required bool a = 2;
+ required bool s = 3;
+ required bool d = 4;
 }

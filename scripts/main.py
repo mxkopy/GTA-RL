@@ -7,9 +7,10 @@ if __name__ == '__main__':
     if sys.argv[1] == 'train':
         import gc
         import os
-        import datetime
+        from datetime import datetime
+        from dateutil import parser
         from pathlib import Path
-        import tempfile
+        import config
         import torch
         from ray.rllib.core.rl_module.rl_module import RLModuleSpec
         from ray.rllib.algorithms.ppo import PPOConfig
@@ -18,17 +19,25 @@ if __name__ == '__main__':
         from ipc import Flags, PROJECT_DIR
         from model import Model, Learner
 
-        TRAIN_BATCH_SIZE = 128
-        MINIBATCH_SIZE = 32
-        MODEL_PATH = Path(PROJECT_DIR) / 'driver.ckpt'
+        TIME_FMT = '%Y-%m-%d_%H-%M-%S'
+        ID = datetime.today().strftime(TIME_FMT)
+
         LOG_DIR = Path(PROJECT_DIR) / 'ray_results'
-        LOG_NAME = f'driver_{datetime.datetime.today().strftime("%Y-%m-%d_%H-%M-%S")}'
+        CHECKPOINT_DIR = Path(PROJECT_DIR) / 'checkpoints'
+
+        os.makedirs(LOG_DIR, exist_ok=True)
+        os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
+        if '--continue' in sys.argv:
+            checkpoints = os.listdir(CHECKPOINT_DIR)
+            if len(checkpoints) > 0:
+                checkpoints.sort(key=lambda x: datetime.strptime(x, TIME_FMT))
+                ID = checkpoints[-1]
         
         def logger_creator(config):
-            if not Path.exists(LOG_DIR):
-                os.makedirs(LOG_DIR)
-            logdir = tempfile.mkdtemp(prefix=LOG_NAME, dir=LOG_DIR)
-            return UnifiedLogger(config, logdir=logdir, loggers=None)
+            log = str(LOG_DIR / ID)
+            os.makedirs(log, exist_ok=True)
+            return UnifiedLogger(config, logdir=log, loggers=None)
 
         algorithm = (
             PPOConfig()
@@ -48,7 +57,7 @@ if __name__ == '__main__':
             .learners(
                 learner_class=Learner,
                 learner_config_dict={
-                    "regularizer_coeff": 1e-5
+                    "lasso_coeff": config.lasso_coeff
                 },
                 num_learners=0,
                 num_gpus_per_learner=0.5
@@ -56,7 +65,7 @@ if __name__ == '__main__':
             .environment(
                 env=Environment,
                 env_config={
-                    'horizon': 256
+                    'horizon': config.horizon
                 }
             )
             .rl_module(
@@ -65,29 +74,31 @@ if __name__ == '__main__':
                     observation_space=Environment().observation_space,
                     action_space=Environment().action_space,
                     model_config={
-                        'max_seq_len': MINIBATCH_SIZE,
+                        'max_seq_len': config.minibatch_size,
                     }
                 )
             )
             .training(
-                lr=1e-5,
-                train_batch_size=TRAIN_BATCH_SIZE,
-                minibatch_size=MINIBATCH_SIZE,
-                num_epochs=3,
                 use_gae=True,
                 use_critic=True,
-                lambda_=0.9,
-                clip_param=0.2,
-                entropy_coeff=0.0001,
-                vf_loss_coeff=1,
-                use_kl_loss=False
+                use_kl_loss=False,
+                lr=config.learning_rate,
+                train_batch_size=config.train_batch_size,
+                minibatch_size=config.minibatch_size,
+                num_epochs=config.num_epochs,
+                lambda_=config.gae_lambda,
+                clip_param=config.clip_param,
+                entropy_coeff=config.entropy_coeff,
+                vf_loss_coeff=config.vf_loss_coeff
             )
-            .build(
+            .build_algo(
                 logger_creator=logger_creator
             )
         )
-        if MODEL_PATH.exists():
-            algorithm.load_checkpoint(str(MODEL_PATH))
+
+        CKPT = CHECKPOINT_DIR / ID
+        if CKPT.exists():
+            algorithm.load_checkpoint(str(CKPT))
             # fix for https://github.com/ray-project/ray/issues/51560
             def betas_tensor_to_float(learner):
                 param_grp = next(iter(learner._optimizer_parameters.keys())).param_groups[0]
@@ -102,7 +113,7 @@ if __name__ == '__main__':
             gc.collect()
             torch.cuda.empty_cache()
             results = algorithm.train()
-            algorithm.save_checkpoint(str(MODEL_PATH))
+            algorithm.save_checkpoint(str(CKPT))
 
     if sys.argv[1] == 'debug':
         from ipc import Flags

@@ -1,14 +1,13 @@
 from structs import *
-from ipc import StructuredMemory, Flags
+from ipc import StructuredMemory, Flags, GLOBAL_FLAGS
 from environment import VideoState
 import matplotlib.pyplot as plt
 import sys
 import pickle
 from dummy_shader import *
 
-FLAGS = Flags()
 V = StructuredMemory("VSConstants")
-RAYS = [StructuredMemory(f'Ray{X}') for X in ('A', 'B', 'C', 'D')]
+RAYS = [StructuredMemory(f'Ray{X}') for X in ('A',)]
 
 def Proj():
     return np.frombuffer(V.data.constant_buffers[1], dtype=np.float32)
@@ -26,10 +25,10 @@ def Axes():
     return np.stack((X, Y, Z))
 
 def Rays():
-    FLAGS.wait_until(FLAGS.RAYCASTS, True)
+    GLOBAL_FLAGS.wait_until(Flags.RAYCASTS, True)
     vsb = VSB()
     axes = Axes()
-    depth = VideoState.pop()
+    depth = VideoState.pop()[3, ...]
     def get_depth(x, y):
         ar = depth.shape[2] / depth.shape[1]
         x = x / ar
@@ -49,7 +48,7 @@ def Rays():
             'Axes': axes
         } for ray in RAYS 
     ]
-    FLAGS.set_flag(FLAGS.RAYCASTS, False)
+    GLOBAL_FLAGS.set_flag(Flags.RAYCASTS, False)
     return rays
 
 def save_rays(rays):
@@ -73,19 +72,20 @@ if __name__ == '__main__':
         far = [10003.815 for ray in rays]
         near = [0.15 for ray in rays]
         depth = [(-(f*n)/(n-f))/(d - (n/(n-f))) for d, n, f in zip(depth, near, far)]
+        delta = [x - y for x, y in zip(distance, depth)]
         # plt.plot(distance, color='blue')
         # plt.plot(depth, color='red')
-        # plt.plot(distance, color='blue')
-        plt.plot(depth, color='red')
+        plt.plot(distance, color='blue')
+        # plt.plot(delta, color='red')
         plt.show(block=True)
         exit()
     else:
         print("Waiting for GTA V")
-        FLAGS.wait_until(Flags.BEGIN_TRAINING, True)
+        GLOBAL_FLAGS.wait_until(Flags.BEGIN_TRAINING, True)
         VideoState.init_cuda_arrays()
         print("VideoState Initialized")
-        FLAGS.set_flag(Flags.REQUEST_GAME_STATE, True)
-        FLAGS.set_flag(Flags.UNSTUCK, True)
+        GLOBAL_FLAGS.set_flag(Flags.REQUEST_GAME_STATE, True)
+        GLOBAL_FLAGS.set_flag(Flags.UNSTUCK, True)
 
 while True:
     R = []

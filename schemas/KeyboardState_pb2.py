@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13KeyboardState.proto\";\n\rKeyboardState\x12\t\n\x01w\x18\x01 \x01(\x08\x12\t\n\x01\x61\x18\x02 \x01(\x08\x12\t\n\x01s\x18\x03 \x01(\x08\x12\t\n\x01\x64\x18\x04 \x01(\x08')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13KeyboardState.proto\";\n\rKeyboardState\x12\t\n\x01w\x18\x01 \x02(\x08\x12\t\n\x01\x61\x18\x02 \x02(\x08\x12\t\n\x01s\x18\x03 \x02(\x08\x12\t\n\x01\x64\x18\x04 \x02(\x08')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)

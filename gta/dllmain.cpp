@@ -86,6 +86,8 @@ struct CameraTransforms
     {   
         auto A = (Matrix3f&) VSConstants::Axes;
         auto P = (Eigen::Map<Vector3f>) VSConstants::P;
+        
+        //Vector3 VehiclePosition = ENTITY::GET_ENTITY_COORDS(_VEHICLE, true);
 
         DeviceContext->CopyResource(LastMatrixBuffer.Get(), CurrentMatrixBuffer.Get());
         D3D11_MAPPED_SUBRESOURCE CurrentMatrixSubresource;
@@ -480,30 +482,15 @@ BOOL APIENTRY DllMain
     return TRUE;
 }
 #else
+#include "input.h"
 
 int main(int argc, char* argv[])
 {
-    cudaChannelFormatDesc Format = {8, 8, 8, 8, cudaChannelFormatKind::cudaChannelFormatKindFloat};
-    cudaExtent Extent = { 100, 100, 1 };
-    UINT BPP = 4;
+    Eigen::Matrix3f M;
 
-    IPCCUDAArray CUDAArray(Format, Extent, BPP, "Test");
+    M << Eigen::Vector3f{ 1, 2, 3 }, Eigen::Vector3f{ 4, 5, 6 }, Eigen::Vector3f{ 7, 8, 9 };
 
-    StructuredMemory<Vec3f> SM("VectorTest");
-    Vec3f V;
-    V.set_x(1.0);
-    V.set_y(2.0);
-    V.set_z(3.0);
-    SM = V;
-    auto U = static_cast<Vec3f>(SM);
-    std::cout << U.x() << " " << U.y() << " " << U.z() << std::endl;
-
-    RequestLockedMemory<Vec3f, 1> Reader("Test");
-    while (true)
-    {
-        Vec3f V = static_cast<Vec3f>(Reader);
-        std::cout << V.x() << std::endl;
-    }
-
+    std::cout << M.transpose() * Eigen::Vector3f{ 0, 0, 1 } << std::endl;
+    
 }
 #endif

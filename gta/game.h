@@ -5,6 +5,7 @@
 #include "natives.h"
 #include "ipc.h"
 #include "vertex_buffers.h"
+#include "input.h"
 
 static std::random_device RD;
 static std::mt19937 Gen(RD());
@@ -13,12 +14,6 @@ static std::uniform_real_distribution<float> UniformRandom(0.0f, 1.0f);
 const static Hash ENTITY_XF = 3003014393;
 const static Vector3 AIRPORT = {.x = -1161.462f, .y = -2584.786f, .z = 13.505f };
 const static Vector3 HIGHWAY = {.x = -704.8778f, .y = -2111.786,  .z = 13.51563f};
-
-
-#define _PLAYER PLAYER::PLAYER_ID()
-#define _PED PLAYER::GET_PLAYER_PED(_PLAYER)
-#define _LAST_VEHICLE PED::GET_VEHICLE_PED_IS_IN(_PED, true)
-#define _VEHICLE PED::GET_VEHICLE_PED_IS_IN(_PED, false)
 
 inline static void ClearWanted()
 {
@@ -86,6 +81,7 @@ void OnTick()
 	}
 	else if (VEHICLE != NULL)
 	{
+		//SendKeypress();
 		CenterCamera();
 
 		bool Collided = ENTITY::HAS_ENTITY_COLLIDED_WITH_ANYTHING(VEHICLE);

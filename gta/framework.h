@@ -75,3 +75,8 @@ static DXGI_SWAP_CHAIN_DESC SwapChainDesc;
 static ComPtr<ID3D11Device> Device;
 static ComPtr<ID3D11DeviceContext> DeviceContext;
 static void** DeviceContextVirtualTable;
+
+#define _PLAYER PLAYER::PLAYER_ID()
+#define _PED PLAYER::GET_PLAYER_PED(_PLAYER)
+#define _LAST_VEHICLE PED::GET_VEHICLE_PED_IS_IN(_PED, true)
+#define _VEHICLE PED::GET_VEHICLE_PED_IS_IN(_PED, false)

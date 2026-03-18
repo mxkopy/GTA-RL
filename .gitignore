@@ -1,6 +1,7 @@
 vcpkg_installed/
 ray_results/
-schemas.old
+checkpoints/
+schemas.old/
 *.exe
 *.cppliteral
 *.ckpt

@@ -486,8 +486,8 @@ const char descriptor_table_protodef_amalgamated_2eproto[] ABSL_ATTRIBUTE_SECTIO
     "\002(\014\022&\n\006format\030\002 \002(\0132\026.CUDAChannelFormatD"
     "esc\022\r\n\005pitch\030\003 \002(\004\022\033\n\006extent\030\004 \002(\0132\013.CUD"
     "AExtent\"-\n\tGameState\022\020\n\010collided\030\001 \002(\010\022\016"
-    "\n\006reward\030\002 \002(\001\";\n\rKeyboardState\022\t\n\001w\030\001 \001"
-    "(\010\022\t\n\001a\030\002 \001(\010\022\t\n\001s\030\003 \001(\010\022\t\n\001d\030\004 \001(\010"
+    "\n\006reward\030\002 \002(\001\";\n\rKeyboardState\022\t\n\001w\030\001 \002"
+    "(\010\022\t\n\001a\030\002 \002(\010\022\t\n\001s\030\003 \002(\010\022\t\n\001d\030\004 \002(\010"
 };
 static ::absl::once_flag descriptor_table_amalgamated_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_amalgamated_2eproto = {
@@ -3788,6 +3788,9 @@ class KeyboardState::_Internal {
       decltype(::std::declval<KeyboardState>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_._has_bits_);
+  static bool MissingRequiredFields(const HasBits& has_bits) {
+    return ((has_bits[0] & 0x0000000f) ^ 0x0000000f) != 0;
+  }
 };
 
 KeyboardState::KeyboardState(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -3853,7 +3856,7 @@ constexpr auto KeyboardState::InternalGenerateClassData_() {
           &_KeyboardState_default_instance_._instance,
           &_table_.header,
           nullptr,  // OnDemandRegisterArenaDtor
-          nullptr,  // IsInitialized
+          KeyboardState::IsInitializedImpl,
           &KeyboardState::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<KeyboardState>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -3900,32 +3903,32 @@ KeyboardState::_table_ = {
     ::_pbi::TcParser::GetTable<::KeyboardState>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // optional bool d = 4;
+    // required bool d = 4;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(KeyboardState, _impl_.d_), 3>(),
      {32, 3, 0,
       PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.d_)}},
-    // optional bool w = 1;
+    // required bool w = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(KeyboardState, _impl_.w_), 0>(),
      {8, 0, 0,
       PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.w_)}},
-    // optional bool a = 2;
+    // required bool a = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(KeyboardState, _impl_.a_), 1>(),
      {16, 1, 0,
       PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.a_)}},
-    // optional bool s = 3;
+    // required bool s = 3;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(KeyboardState, _impl_.s_), 2>(),
      {24, 2, 0,
       PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.s_)}},
   }}, {{
     65535, 65535
   }}, {{
-    // optional bool w = 1;
+    // required bool w = 1;
     {PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.w_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    // optional bool a = 2;
+    // required bool a = 2;
     {PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.a_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    // optional bool s = 3;
+    // required bool s = 3;
     {PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.s_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    // optional bool d = 4;
+    // required bool d = 4;
     {PROTOBUF_FIELD_OFFSET(KeyboardState, _impl_.d_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
   }},
   // no aux_entries
@@ -3965,28 +3968,28 @@ PROTOBUF_NOINLINE void KeyboardState::Clear() {
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // optional bool w = 1;
+  // required bool w = 1;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         1, this_._internal_w(), target);
   }
 
-  // optional bool a = 2;
+  // required bool a = 2;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         2, this_._internal_a(), target);
   }
 
-  // optional bool s = 3;
+  // required bool s = 3;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         3, this_._internal_s(), target);
   }
 
-  // optional bool d = 4;
+  // required bool d = 4;
   if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
@@ -4063,6 +4066,14 @@ void KeyboardState::CopyFrom(const KeyboardState& from) {
   MergeFrom(from);
 }
 
+PROTOBUF_NOINLINE bool KeyboardState::IsInitializedImpl(
+    const MessageLite& msg) {
+  auto& this_ = static_cast<const KeyboardState&>(msg);
+  if (_Internal::MissingRequiredFields(this_._impl_._has_bits_)) {
+    return false;
+  }
+  return true;
+}
 
 void KeyboardState::InternalSwap(KeyboardState* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;

@@ -10,34 +10,17 @@ from ray.rllib.core.columns import Columns
 from ray.rllib.core.rl_module.apis import TARGET_NETWORK_ACTION_DIST_INPUTS, ValueFunctionAPI
 
 # Extracts visual features
-# Loosely based on the first N layers of a YOLO segmentation model
-# Does not care about frame stacking; takes (-1, image_size...) shaped input
+# Should not care about frame stacking; takes (-1, image_size...) shaped input
 class VisualModel(nn.Module):
 
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(
             nn.LayerNorm(config.image_shape),
-            nn.Conv2d(config.image_shape[0], 64, 7, 2),
-            nn.LeakyReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(64, 192, 3, 2),
-            nn.LeakyReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(192, 128, 1, 1),
-            nn.LeakyReLU(),
-            nn.Conv2d(128, 256, 3, 3),
-            nn.LeakyReLU(),
-            nn.Conv2d(256, 256, 1, 1),
-            nn.LeakyReLU(),
-            nn.Conv2d(256, 512, 3, 3),
-            nn.LeakyReLU(),
-            nn.MaxPool2d(2, 1, padding=1),
-            nn.AdaptiveAvgPool2d(1),
             nn.Flatten(),
-            nn.Linear(512, config.num_visual_features),
-            nn.ReLU(),
-            nn.Linear(config.num_visual_features, config.num_visual_features)        
+            nn.Linear(prod(config.image_shape), config.num_visual_features),
+            nn.LeakyReLU(),
+            nn.Linear(config.num_visual_features, config.num_visual_features)
         )
 
     def forward(self, images):
@@ -51,25 +34,18 @@ class Embedding(nn.Module):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.model = nn.Sequential(
-            # nn.LayerNorm(config.num_features),
+            nn.LayerNorm(config.num_features),
+            nn.Linear(config.num_features, config.num_features),
+            nn.LeakyReLU(),
             nn.Linear(config.num_features, config.embedding_size),
             nn.LeakyReLU(),
             nn.Linear(config.embedding_size, config.embedding_size),
             nn.LeakyReLU(),
-            nn.Linear(config.embedding_size, config.embedding_size),
+            nn.Linear(config.embedding_size, config.embedding_size)
         )
 
     def forward(self, features):
         return self.model(features)
-
-
-# class Recurrent(nn.Module):
-
-#     def __init__(self, *args, **kwargs):
-#         self.model = nn.LSTM(*args, **kwargs)
-
-#     def forward(self, batch: Dict[str, Any]):
-#         pass
 
 # TODO: Add LSTM nn.Module to encapsulate the ugliness in Model.compute_embeddings_and_state_outs
 
@@ -120,7 +96,7 @@ class Model(TorchRLModule, ValueFunctionAPI):
     @override(TorchRLModule)
     def setup(self):
         self.visual = VisualModel()
-        self.lstm = nn.LSTM(config.num_features, config.num_features, num_layers=4, batch_first=True)
+        self.lstm = nn.LSTM(config.num_features, config.num_features, num_layers=2, batch_first=True)
         self.embedding = Embedding()
         self.actor = Actor()
         self.critic = Critic()
@@ -207,7 +183,7 @@ class Learner(PPOTorchLearner):
 
         total_loss = (
             base_total_loss
-            + config.learner_config_dict["regularizer_coeff"] * mean_abs_weight
+            + config.learner_config_dict["lasso_coeff"] * mean_abs_weight
         )
 
         return total_loss

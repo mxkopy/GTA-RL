@@ -318,7 +318,7 @@ echo ^)^" &gt;&gt; gta\ComputeShader.hlsl.cppliteral</Command>
     <ClInclude Include="gta\game.h" />
     <ClInclude Include="gta\graphics_debug.h" />
     <ClInclude Include="gta\ipc.h" />
-    <ClInclude Include="gta\keyboard.h">
+    <ClInclude Include="gta\input.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="gta\launch_debugger.h" />
@@ -331,13 +331,6 @@ echo ^)^" &gt;&gt; gta\ComputeShader.hlsl.cppliteral</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="gta\ComputeShader.hlsl.cppliteral">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gta\dllmain.cpp" />

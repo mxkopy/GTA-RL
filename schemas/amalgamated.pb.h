@@ -868,8 +868,13 @@ class KeyboardState final : public ::google::protobuf::Message
 
   public:
   bool IsInitialized() const {
-    return true;
+    return IsInitializedImpl(*this);
   }
+
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
@@ -928,7 +933,7 @@ class KeyboardState final : public ::google::protobuf::Message
     kSFieldNumber = 3,
     kDFieldNumber = 4,
   };
-  // optional bool w = 1;
+  // required bool w = 1;
   bool has_w() const;
   void clear_w() ;
   bool w() const;
@@ -939,7 +944,7 @@ class KeyboardState final : public ::google::protobuf::Message
   void _internal_set_w(bool value);
 
   public:
-  // optional bool a = 2;
+  // required bool a = 2;
   bool has_a() const;
   void clear_a() ;
   bool a() const;
@@ -950,7 +955,7 @@ class KeyboardState final : public ::google::protobuf::Message
   void _internal_set_a(bool value);
 
   public:
-  // optional bool s = 3;
+  // required bool s = 3;
   bool has_s() const;
   void clear_s() ;
   bool s() const;
@@ -961,7 +966,7 @@ class KeyboardState final : public ::google::protobuf::Message
   void _internal_set_s(bool value);
 
   public:
-  // optional bool d = 4;
+  // required bool d = 4;
   bool has_d() const;
   void clear_d() ;
   bool d() const;
@@ -4045,7 +4050,7 @@ inline void GameState::_internal_set_reward(double value) {
 
 // KeyboardState
 
-// optional bool w = 1;
+// required bool w = 1;
 inline bool KeyboardState::has_w() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
   return value;
@@ -4074,7 +4079,7 @@ inline void KeyboardState::_internal_set_w(bool value) {
   _impl_.w_ = value;
 }
 
-// optional bool a = 2;
+// required bool a = 2;
 inline bool KeyboardState::has_a() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
@@ -4103,7 +4108,7 @@ inline void KeyboardState::_internal_set_a(bool value) {
   _impl_.a_ = value;
 }
 
-// optional bool s = 3;
+// required bool s = 3;
 inline bool KeyboardState::has_s() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
@@ -4132,7 +4137,7 @@ inline void KeyboardState::_internal_set_s(bool value) {
   _impl_.s_ = value;
 }
 
-// optional bool d = 4;
+// required bool d = 4;
 inline bool KeyboardState::has_d() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;

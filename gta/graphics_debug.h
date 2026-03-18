@@ -16,7 +16,7 @@ struct Ray
     Vector3f ComputeDirection()
     {
         auto Axes = (const Matrix3f&)VSConstants::Axes;
-        return Axes.transpose() * Vector3f(Data.x(), Data.y(), 1);
+        return Axes * Vector3f(Data.x(), Data.y(), 1);
     }
 
     static Vector3 Cast(Eigen::Map<Vector3f> P, Vector3f V)
@@ -41,9 +41,10 @@ struct Ray
         Data.mutable_collision() -> set_x(Collision.x);
         Data.mutable_collision() -> set_y(Collision.y);
         Data.mutable_collision() -> set_z(Collision.z);
-        Data.set_nearclip(CAM::_0xA03502FC581F7D9B());
-        Data.set_farclip(CAM::_0x9780F32BCAF72431());
-
+        Data.set_nearclip(0.15);
+        Data.set_farclip(10003.815);
+        //Data.set_nearclip(CAM::_0xA03502FC581F7D9B());
+        //Data.set_farclip(CAM::_0x9780F32BCAF72431());
         //Data.set_nearclip(CAM::_0xD0082607100D7193());
         //Data.set_farclip(CAM::_0xDFC8CBC606FDB0FC());
         Memory = Data;
@@ -52,10 +53,7 @@ struct Ray
     static void Update()
     {
         static Ray Rays[] = {
-            Ray(-0.5, -0.5, "A"),
-            Ray(0.5, -0.5, "B"),
-            Ray(-0.5, 0.5, "C"),
-            Ray(0.5, 0.5, "D")
+            Ray(0.0, 0.0, "A"),
         };
         //DEBUG_ENTER;
         //BREAKPOINT;

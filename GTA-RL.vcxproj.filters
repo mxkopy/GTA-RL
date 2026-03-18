@@ -29,7 +29,7 @@
     <ClInclude Include="schemas\amalgamated.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gta\keyboard.h">
+    <ClInclude Include="gta\input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gta\cuda_ipc.h">
@@ -43,11 +43,6 @@
     <FxCompile Include="gta\ComputeShader.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="gta\ComputeShader.hlsl.cppliteral">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gta\dllmain.cpp">

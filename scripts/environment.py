@@ -5,8 +5,7 @@ from struct import unpack
 from ipc import Flags, GLOBAL_FLAGS, StructuredMemory, RequestLockedMemory
 from cuda_ipc import CUDAArray
 from gymnasium import Env
-from gymnasium.spaces import Tuple, Box, Discrete
-from math import sqrt        
+from gymnasium.spaces import Tuple, Box, Discrete    
 
 class GameState:
 
@@ -46,15 +45,20 @@ class VideoState:
         return torch.nn.functional.interpolate(img.unsqueeze(0), size, mode='bilinear', antialias=True).squeeze()
 
     @staticmethod
-    def linearize_depth(array, cutoff=100.0):
+    def linearize_depth(array):
         # VS = VideoState.VertexShaderConstantsMemory.data
         # n, f = VS.nearclip, VS.farclip
         NEAR = 0.15
         FAR = 10003.815
         n, f = NEAR, FAR
-        Z = (-(f*n)/(n-f))/(array - (n/(n-f)))
-        Z[Z >= cutoff] = cutoff
+        # Pulled from https://github.com/umautobots/GTAVisionExport/issues/13#issuecomment-765115705
+        Z = (-(FAR*NEAR)/(NEAR-FAR))/(array - (NEAR/(NEAR-FAR)))
         return Z
+
+    @staticmethod
+    def cutoff_depth(array, cutoff=1000):
+        array[array >= cutoff] = 0
+        return array
 
     @staticmethod
     def pop_rgb():
@@ -65,23 +69,28 @@ class VideoState:
         img = img.squeeze()[:3, ...]
         return img
 
+    # Velocity map scaled by depth (3 dims)
+    # Distance map with cutoff (1 dim) -> 4 dim input
     @staticmethod
-    def pop_velocity_and_depth():
-        depthinfo = VideoState.CUDAArrays['Depth']
-        # near, far = unpack('@2f', VideoState.nearclipfarclip.pop_nbl())
-        velocity_and_depth = depthinfo.squeeze().permute(2, 0, 1)
+    def pop_velocity_and_depth(cutoff=100.0):
+        buffer = VideoState.CUDAArrays['Depth']
+        velocity_and_depth = buffer.squeeze().permute(2, 0, 1)
         velocity_and_depth = VideoState.rescale(velocity_and_depth)
-        velocity_and_depth = torch.nan_to_num(velocity_and_depth, posinf=0, neginf=0)
-        # print(velocity_and_depth[:3, ...].max(), velocity_and_depth[:3, ...].min())
-        return velocity_and_depth[:3, ...], velocity_and_depth[3, ...].unsqueeze(0)
+        velocity = velocity_and_depth[:3, ...]
+        depth = velocity_and_depth[3, ...].unsqueeze(0)
+        return depth
+        # distances = VideoState.linearize_depth(depth)
+        # distances[distances >= cutoff] = cutoff
+        # depth[distances >= cutoff] = 0
+        # return velocity / 1e20, depth, distances
 
     @staticmethod
     def pop():
-        velocity, depth = VideoState.pop_velocity_and_depth()
-        rgb = VideoState.pop_rgb()
-        depth = VideoState.linearize_depth(depth)
-        # img = torch.cat((depth, rgb))
+        depth = VideoState.pop_velocity_and_depth()
         return depth.cpu()
+        # velocity, depth, distances = VideoState.pop_velocity_and_depth()
+        # rgb = VideoState.pop_rgb()
+        # return torch.cat((depth, distances, velocity)).cpu()
 
 class VideoGame:
 
@@ -95,32 +104,30 @@ class VideoGame:
         self.virtual_controller.update(action)
 
     def observe(self):
-        reward, collided = self.game_state.pop()
-        video_state = self.video_state.pop()
-        observation = video_state.reshape(-1)
-        reward = (-10 * collided) + (sqrt(abs(reward)) - 0.1) * (1 - collided) * (-1 if reward < 0 else 1)
-        is_terminal = collided
-        return observation, reward, is_terminal
+        return self.video_state.pop().reshape(-1), self.game_state.pop()
 
 class Environment(Env):
 
-    def __init__(self, conf=None):
+    def __init__(self, env_config={'horizon': None}):
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
         self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape)
         self.last_n_frames = []
-        self.horizon = float('inf')
-        if conf is not None and 'horizon' in conf:
-            self.horizon = conf['horizon']
-            self.t = 0
+        self.horizon = env_config['horizon']
+        self.t = 0
+
+    def calculate_reward(self, game_state):
+        speed, collided = game_state
+        horizon = 1 if self.horizon is None else self.horizon
+        return -1 if collided else max(0, speed) / horizon
 
     def truncate(self) -> bool:
-        if hasattr(self, 't'):
+        if self.horizon is not None:
             self.t += 1
             return self.t >= self.horizon
         return False
 
-    def stack_observation(self, observation):
+    def stack_frame(self, observation):
         if config.n_frames <= 1:
             return observation.reshape(-1)
         self.last_n_frames = [observation] + self.last_n_frames[:-1]
@@ -128,8 +135,10 @@ class Environment(Env):
 
     def step(self, action):
         self.video_game.act(action)
-        observation, reward, terminal = self.video_game.observe()
-        observation = self.stack_observation(observation)
+        video_state, game_state = self.video_game.observe()
+        observation = self.stack_frame(video_state)
+        reward = self.calculate_reward(game_state)
+        terminal = game_state[1]
         truncated = self.truncate()
         # print(f"{action[0]: >10.5f} {action[1]: >10.5f} | {str(reward)[0:5]}")
         return (
@@ -141,10 +150,9 @@ class Environment(Env):
         )
 
     def reset(self, *args, **kwargs):
-        if hasattr(self, 't'):
-            self.t = 0
+        self.t = 0
         self.video_game.game_state.reset()
-        obs = self.video_game.observe()[0]
-        self.last_n_frames = [torch.zeros_like(obs) for _ in range(config.n_frames)]
-        obs = self.stack_observation(obs)
-        return obs, {"env_state" : "reset"}
+        frame = self.video_game.observe()[0]
+        self.last_n_frames = [torch.zeros_like(frame) for _ in range(config.n_frames)]
+        observation = self.stack_frame(frame)
+        return observation, {"env_state" : "reset"}
