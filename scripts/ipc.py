@@ -12,6 +12,7 @@ from typing import Literal, Union, Tuple, Dict, Optional, get_args, get_origin, 
 from pprint import pp
 from google.protobuf.message import Message
 from google.protobuf.descriptor import FieldDescriptor
+from util import PARENT_DIR, PROJECT_DIR
 
 # At this stage I need a much more principled way of dealing with game data.
 # The idea is this:
@@ -51,9 +52,6 @@ def IS_UNION(typehint):
     if IS_OPTIONAL(typehint):
         return False
     return get_origin(typehint) is Union
-
-PARENT_DIR = Path(sys.argv[0]).parent
-PROJECT_DIR = Path('..' if PARENT_DIR == Path('.') else PARENT_DIR / '..').resolve()
 
 # Location of generated .proto files & protoc output
 SCHEMA_DIR = PROJECT_DIR / 'schemas' 

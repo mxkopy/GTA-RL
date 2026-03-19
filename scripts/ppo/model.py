@@ -159,7 +159,7 @@ class Critic(nn.Module):
         state_action_pair = torch.cat((embedding, action), dim=-1)
         return self.model(state_action_pair)
 
-class Model(TorchRLModule, ValueFunctionAPI):
+class PPODriver(TorchRLModule, ValueFunctionAPI):
      
     @override(TorchRLModule)
     def setup(self):
@@ -210,43 +210,3 @@ class Model(TorchRLModule, ValueFunctionAPI):
             Columns.EMBEDDINGS: embeddings
         }
 
-from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.algorithms.ppo.torch.ppo_torch_learner import PPOTorchLearner
-from ray.rllib.utils.typing import ModuleID, TensorType
-
-# Custom learner adding L1 weight regularization
-class Learner(PPOTorchLearner):
-
-    @override(PPOTorchLearner)
-    def compute_loss_for_module(
-        self,
-        *,
-        module_id: ModuleID,
-        config: PPOConfig,
-        batch: Dict[str, Any],
-        fwd_out: Dict[str, TensorType],
-    ) -> TensorType:
-
-        base_total_loss = super().compute_loss_for_module(
-            module_id=module_id,
-            config=config,
-            batch=batch,
-            fwd_out=fwd_out,
-        )
-
-        # Compute the mean of all the RLModule's weights' absolute values.
-        parameters = self.get_parameters(self.module[module_id])
-        mean_abs_weight = torch.mean(torch.cat([p.reshape(-1).abs() for p in parameters]))
-
-        self.metrics.log_value(
-            key=(module_id, "lasso_coeff"),
-            value=mean_abs_weight,
-            window=1,
-        )
-
-        total_loss = (
-            base_total_loss
-            + config.learner_config_dict["lasso_coeff"] * mean_abs_weight
-        )
-
-        return total_loss

@@ -17,6 +17,7 @@ device = 'cuda'
 
 # Training hyperparameters
 learning_rate=1e-5
+gamma=0.995 
 num_epochs=1
 train_batch_size=128
 minibatch_size=32

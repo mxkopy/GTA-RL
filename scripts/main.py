@@ -12,12 +12,11 @@ if __name__ == '__main__':
         from pathlib import Path
         import config
         import torch
-        from ray.rllib.core.rl_module.rl_module import RLModuleSpec
-        from ray.rllib.algorithms.ppo import PPOConfig
         from ray.tune.logger import UnifiedLogger
         from environment import Environment, VideoState, ZeroCrashRewardLearnerConnector
-        from ipc import Flags, PROJECT_DIR
-        from model import Model, Learner
+        from ipc import Flags
+        from util import PROJECT_DIR, LassoLearner
+        from ppo.config import config as ppo_config
 
         TIME_FMT = '%Y-%m-%d_%H-%M-%S'
         ID = datetime.today().strftime(TIME_FMT)
@@ -40,7 +39,7 @@ if __name__ == '__main__':
             return UnifiedLogger(config, logdir=log, loggers=None)
 
         algorithm = (
-            PPOConfig()
+            ppo_config
             .framework(
                 "torch",
                 torch_compile_learner=True,
@@ -55,7 +54,7 @@ if __name__ == '__main__':
                 num_gpus_per_env_runner=0.5,
             )
             .learners(
-                learner_class=Learner,
+                learner_class=LassoLearner,
                 learner_config_dict={
                     "lasso_coeff": config.lasso_coeff
                 },
@@ -69,32 +68,7 @@ if __name__ == '__main__':
                     'horizon': config.horizon
                 }
             )
-            .rl_module(
-                rl_module_spec=RLModuleSpec(
-                    module_class=Model,
-                    observation_space=Environment().observation_space,
-                    action_space=Environment().action_space,
-                    model_config={
-                        'max_seq_len': config.minibatch_size,
-                    }
-                )
-            )
-            .training(
-                use_gae=True,
-                use_critic=True,
-                use_kl_loss=False,
-                lr=config.learning_rate,
-                train_batch_size=config.train_batch_size,
-                minibatch_size=config.minibatch_size,
-                num_epochs=config.num_epochs,
-                lambda_=config.gae_lambda,
-                clip_param=config.clip_param,
-                entropy_coeff=config.entropy_coeff,
-                vf_loss_coeff=config.vf_loss_coeff
-            )
-            .build_algo(
-                logger_creator=logger_creator
-            )
+            .build_algo(logger_creator=logger_creator)
         )
 
         CKPT = CHECKPOINT_DIR / ID
