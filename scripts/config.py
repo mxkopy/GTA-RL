@@ -2,7 +2,7 @@ from math import prod
 
 # Observation & Action spaces
 n_frames=1
-voxel_depth=8
+voxel_depth=16
 image_shape=(1, 360, 640)
 observation_space_shape=(n_frames * prod(image_shape),)
 action_space_shape=(2,)
@@ -20,7 +20,7 @@ learning_rate=1e-5
 num_epochs=1
 train_batch_size=128
 minibatch_size=32
-horizon=256
+horizon=train_batch_size * 8
 gae_lambda=0.95
 clip_param=0.2
 entropy_coeff=1e-5

@@ -91,9 +91,7 @@ class VideoState:
     def pop_depth():
         buffer = VideoState.CUDAArrays['Depth']
         depth = VideoState.rescale(buffer.squeeze()[:, :, 3])
-        # depth = VideoState.voxelize(depth)
         return depth
-
 
     # Velocity map scaled by depth (3 dims)
     # Distance map with cutoff (1 dim) -> 4 dim input
@@ -143,7 +141,7 @@ class Environment(Env):
     def calculate_reward(self, game_state):
         speed, collided = game_state
         horizon = 1 if self.horizon is None else self.horizon
-        return -10 if collided else np.log10(1 + max(0, speed))
+        return -10 if collided else np.sqrt(max(0, speed))
 
     def truncate(self) -> bool:
         if self.horizon is not None:
@@ -205,3 +203,24 @@ class EpisodeStepCallback(RLlibCallback):
     def on_episode_end(self, *, episode, metrics_logger, **kwargs):
         metrics_logger.log_value("camera_position", value=episode.custom_data["camera_position"], reduce="item")
         metrics_logger.log_value("camera_direction", value=episode.custom_data["camera_direction"], reduce="item")
+
+
+# Custom learner-connector to zero out rewards in episodes where the agent crashes
+from ray.rllib.connectors.connector_v2 import ConnectorV2
+class ZeroCrashRewardLearnerConnector(ConnectorV2):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, *, rl_module, batch, episodes, **kwargs):
+        for sa_episode in self.single_agent_episode_iterator(
+            episodes=episodes, agents_that_stepped_only=False
+        ):
+            if sa_episode.is_terminated:
+                rewards = sa_episode.get_rewards()
+                for i, _ in enumerate(rewards):
+                    sa_episode.set_rewards(
+                        new_data=0,
+                        at_indices=i
+                    )
+        return batch

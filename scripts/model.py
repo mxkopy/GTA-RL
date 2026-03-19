@@ -75,6 +75,8 @@ class UNet3D(nn.Module):
     def __init__(self):
         super().__init__()
         self.voxel_model = nn.Sequential(
+            # nn.Conv3d(config.image_shape[0], config.image_shape[0], 3, 1, padding='same'),
+            # nn.Conv3d(config.image_shape[0], config.image_shape[0], 3, 1, padding='same'),
             nn.Flatten(),
             nn.Linear(config.voxel_depth * prod(config.image_shape), config.num_visual_features)
         )
@@ -82,9 +84,16 @@ class UNet3D(nn.Module):
             nn.Flatten(),
             nn.Linear(prod(config.image_shape), config.num_visual_features)
         )
+        self.combine = nn.Sequential(
+            nn.Linear(config.num_visual_features * 2, config.num_visual_features * 2),
+            nn.LeakyReLU(),
+            nn.Linear(config.num_visual_features * 2, config.num_visual_features)
+        )
 
     def forward(self, x):
-        return self.point_model(x) + self.voxel_model(VideoState.voxelize(x))
+        point, voxel = self.point_model(x), self.voxel_model(VideoState.voxelize(x))
+        combined = torch.cat((point, voxel), dim=-1)
+        return self.combine(combined)
 
 # Extracts visual features
 # Should not care about frame stacking; takes (-1, image_size...) shaped input
@@ -93,9 +102,6 @@ class VisualModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(
-            # UNet(architecture=[64, 128, 256, 512]),
-            # nn.Flatten(),
-            # nn.Linear(prod(config.image_shape), config.num_visual_features),
             UNet3D(),
             nn.LeakyReLU(),
             nn.Linear(config.num_visual_features, config.num_visual_features)
@@ -152,8 +158,6 @@ class Critic(nn.Module):
     def forward(self, embedding, action):
         state_action_pair = torch.cat((embedding, action), dim=-1)
         return self.model(state_action_pair)
-
-
 
 class Model(TorchRLModule, ValueFunctionAPI):
      

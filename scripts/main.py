@@ -15,7 +15,7 @@ if __name__ == '__main__':
         from ray.rllib.core.rl_module.rl_module import RLModuleSpec
         from ray.rllib.algorithms.ppo import PPOConfig
         from ray.tune.logger import UnifiedLogger
-        from environment import Environment, VideoState
+        from environment import Environment, VideoState, ZeroCrashRewardLearnerConnector
         from ipc import Flags, PROJECT_DIR
         from model import Model, Learner
 
@@ -59,6 +59,7 @@ if __name__ == '__main__':
                 learner_config_dict={
                     "lasso_coeff": config.lasso_coeff
                 },
+                learner_connector=lambda observation_space, action_space: ZeroCrashRewardLearnerConnector(),
                 num_learners=0,
                 num_gpus_per_learner=0.5
             )
