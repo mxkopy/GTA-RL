@@ -8,136 +8,245 @@ from ray.rllib.core.rl_module.torch import TorchRLModule
 from ray.rllib.utils.annotations import override
 from ray.rllib.core.columns import Columns
 from ray.rllib.core.rl_module.apis import TARGET_NETWORK_ACTION_DIST_INPUTS, ValueFunctionAPI
+from environment import VideoState
 
+class UNet(nn.Module):
 
-def unflatten_batch(flattened):
-    # batches = flattened.shape[0]
-    # torch.nn.ZeroPad2d(  )
-    
-    flat_images = flattened[..., config.n_frames * prod(config.image_shape):]
-    flat_velocities = flattened[..., -config.n_frames*prod(config.velocity_shape):]
-    images = flat_images.reshape(-1, config.n_frames, *config.image_shape)
-    velocities = flat_velocities.reshape(-1, config.n_frames, prod(config.velocity_shape))
-    return images, velocities
+    @staticmethod
+    def double_conv(in_channels, out_channels):
+        return nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding='same'),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+            nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding='same'),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU()
+        )
 
+    class Down(nn.Module):
+
+        def __init__(self, in_channels, out_channels):
+            super().__init__()
+            self.model = nn.Sequential(
+                nn.MaxPool2d(2),
+                UNet.double_conv(in_channels, out_channels)
+            )
+        
+        def forward(self, x):
+            return self.model(x)
+
+    class Up(nn.Module):
+
+        def __init__(self, in_channels, out_channels, bilinear=False):
+            super().__init__()
+            if bilinear:
+                self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+                self.conv = UNet.double_conv(in_channels, out_channels)
+            else:
+                self.up = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, stride=2)
+                self.conv = UNet.double_conv(out_channels * 2, out_channels)
+
+        def forward(self, x, x_p):
+            x = self.up(x)
+            diffY = x_p.shape[-2] - x.shape[-2]
+            diffX = x_p.shape[-1] - x.shape[-1]
+            x = nn.functional.pad(x, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2])
+            x = torch.cat((x_p, x), dim=-3)
+            return self.conv(x)
+
+    def __init__(self, architecture: list[int], in_channels=config.image_shape[0], out_channels=config.image_shape[0]):
+        super().__init__()
+        self.entry = self.double_conv(in_channels, architecture[0])
+        self.down = nn.ModuleList([UNet.Down(i, o) for i, o in zip(architecture[:-1], architecture[1:])])
+        self.up = nn.ModuleList([UNet.Up(o, i) for o, i in zip(architecture[:0:-1], architecture[-2::-1])])
+        self.exit = nn.Conv2d(architecture[0], out_channels, 1, 1)
+
+    def forward(self, x):
+        X = [self.entry(x)]
+        for layer in self.down:
+            X += [layer(X[-1])]
+        y = X.pop()
+        for layer in self.up:
+            y = layer(y, X.pop())
+        return self.exit(y)
+
+class UNet3D(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.voxel_model = nn.Sequential(
+            # nn.Conv3d(config.image_shape[0], config.image_shape[0], 3, 1, padding='same'),
+            # nn.Conv3d(config.image_shape[0], config.image_shape[0], 3, 1, padding='same'),
+            nn.Flatten(),
+            nn.Linear(config.voxel_depth * prod(config.image_shape), config.num_visual_features)
+        )
+        self.point_model = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(prod(config.image_shape), config.num_visual_features)
+        )
+        self.combine = nn.Sequential(
+            nn.Linear(config.num_visual_features * 2, config.num_visual_features * 2),
+            nn.LeakyReLU(),
+            nn.Linear(config.num_visual_features * 2, config.num_visual_features)
+        )
+
+    def forward(self, x):
+        point, voxel = self.point_model(x), self.voxel_model(VideoState.voxelize(x))
+        combined = torch.cat((point, voxel), dim=-1)
+        return self.combine(combined)
+
+# Extracts visual features
+# Should not care about frame stacking; takes (-1, image_size...) shaped input
 class VisualModel(nn.Module):
 
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Conv2d(config.image_shape[0], 64, 7, 2),
+            UNet3D(),
             nn.LeakyReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(64, 192, 3, 2),
-            nn.LeakyReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(192, 128, 1, 1),
-            nn.LeakyReLU(),
-            nn.Conv2d(128, 256, 3, 3),
-            nn.LeakyReLU(),
-            nn.Conv2d(256, 256, 1, 1),
-            nn.LeakyReLU(),
-            nn.Conv2d(256, 512, 3, 3),
-            nn.LeakyReLU(),
-            nn.MaxPool2d(2, 1, padding=1),
-            nn.AdaptiveAvgPool2d(1),
-            nn.Flatten(),
-            nn.Linear(512, config.visual_embedding_size),
-            nn.ReLU(),
-            nn.Linear(config.visual_embedding_size, config.visual_embedding_size)        
+            nn.Linear(config.num_visual_features, config.num_visual_features)
         )
 
-    def forward(self, img):
-        return self.model(img)
-    
+    def forward(self, images):
+        return self.model(images)
+
+# Embeds visual (and/or other) features as hidden/latent features 
+# Does care about frame stacking; takes (batch, n_frames * num_features) shaped input
 class Embedding(nn.Module):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.hidden_size = (config.visual_embedding_size + prod(config.velocity_shape)) * config.n_frames
-        self.embedding = nn.Sequential(
-            nn.Linear(self.hidden_size, config.embedding_size),
-            nn.ReLU(),
-            nn.Linear(config.embedding_size, config.embedding_size),
-            nn.ReLU(),
-            nn.Linear(config.embedding_size, config.embedding_size),
+        self.model = nn.Sequential(
+            nn.Linear(config.num_features, config.num_features),
+            nn.LeakyReLU(),
+            nn.Linear(config.num_features, config.embedding_size)
         )
 
-    def forward(self, visual_embedding, velocity):
-        visual_embedding = visual_embedding.reshape(-1, config.n_frames * config.visual_embedding_size)
-        velocity = velocity.reshape(-1, config.n_frames * np.prod(config.velocity_shape))
-        features = torch.cat((visual_embedding, velocity), dim=1)
-        return self.embedding(features)
-    
+    def forward(self, features):
+        return self.model(features)
+
+# TODO: Add LSTM nn.Module to encapsulate the ugliness in Model.compute_embeddings_and_state_outs
+
+# PPO actor model. 
+# Produces mean & std values defining action probability distribution from hidden features
 class Actor(nn.Module):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.actor = nn.Sequential(
-            nn.Linear(config.embedding_size, prod(config.action_space_shape)),
-            nn.ReLU(),
-            nn.Linear(prod(config.action_space_shape), 2*prod(config.action_space_shape)),
-            nn.ReLU(),
+        self.model = nn.Sequential(
+            nn.Linear(config.embedding_size, 2*prod(config.action_space_shape)),
+            nn.LeakyReLU(),
             nn.Linear(2*prod(config.action_space_shape), 2*prod(config.action_space_shape))
         )
 
     def forward(self, embedding):
-        return self.actor(embedding)
+        return self.model(embedding)
 
+
+# PPO critic model. 
+# Estimates the value of an action in a given state (hopefully encapsulated in the hidden features)
 class Critic(nn.Module):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.value = nn.Sequential(
-            nn.Linear(config.embedding_size, prod(config.action_space_shape)),
-            nn.ReLU(),
-            nn.Linear(prod(config.action_space_shape), 2*prod(config.action_space_shape)),
-            nn.ReLU(),
-            nn.Linear(2*prod(config.action_space_shape), 1)
+        self.model = nn.Sequential(
+            nn.Linear(config.embedding_size + prod(config.action_space_shape), config.embedding_size + prod(config.action_space_shape)),
+            nn.LeakyReLU(),
+            nn.Linear(config.embedding_size + prod(config.action_space_shape), 1),
         )
 
-    def forward(self, embedding):
-        return self.value(embedding)
-
+    def forward(self, embedding, action):
+        state_action_pair = torch.cat((embedding, action), dim=-1)
+        return self.model(state_action_pair)
 
 class Model(TorchRLModule, ValueFunctionAPI):
      
     @override(TorchRLModule)
-    def setup(self, **kwargs):
+    def setup(self):
         self.visual = VisualModel()
+        self.lstm = nn.LSTM(config.num_features, config.num_features, num_layers=config.lstm_num_layers, batch_first=True)
         self.embedding = Embedding()
         self.actor = Actor()
         self.critic = Critic()
 
+    @override(TorchRLModule)
+    def get_initial_state(self) -> Any:
+        return {
+            "h": np.zeros(shape=(self.lstm.num_layers, self.lstm.hidden_size), dtype=np.float32),
+            "c": np.zeros(shape=(self.lstm.num_layers, self.lstm.hidden_size), dtype=np.float32)
+        }
+
+    def compute_embeddings_and_state_outs(self, batch: Dict[str, Any]):
+        images = batch[Columns.OBS].reshape(-1, *config.image_shape)
+        image_features = self.visual(images)
+        hidden_features = image_features.reshape(-1, config.num_features)
+        # embeddings will have a shape of the form (batch_size * num_batches, embedding_size)
+        # Hence embeddings.shape[-2] // batch_size is the size of the batch dimension
+        # And max_seq_len is the sequence length (since everything gets padded to it)
+        hidden_features = hidden_features.reshape(-(hidden_features.shape[-2] // -self.model_config['max_seq_len']), -1, hidden_features.shape[-1])
+        # The hidden states are shaped (batch, numlayers, x), but lstms take the batch second for hidden states
+        h, c = batch[Columns.STATE_IN]['h'], batch[Columns.STATE_IN]['c']
+        h, c = torch.transpose(h, 0, 1).contiguous(), torch.transpose(c, 0, 1).contiguous()
+        hidden_features, (h, c) = self.lstm(hidden_features, (h, c))
+        h, c = torch.transpose(h, 0, 1), torch.transpose(c, 0, 1)
+        embeddings = self.embedding(hidden_features)
+        return embeddings, {'h': h, 'c': c}
+
     @override(ValueFunctionAPI)
     def compute_values(self, batch: Dict[str, Any], embeddings: Optional[Any] = None, **kwargs):
         if embeddings is None:
-            images, velocities = unflatten_batch(batch[Columns.OBS])
-            images = self.visual(images.reshape(-1, *config.image_shape))
-            embeddings = self.embedding(images, velocities)
-        return self.critic(embeddings)
-    
-    def compute_embeddings_and_logits(self, batch):
-        images, velocities = unflatten_batch(batch[Columns.OBS])
-        vis = self.visual(images.reshape(-1, *config.image_shape))
-        embeddings = self.embedding(vis, velocities)
-        logits = self.actor(embeddings)
-        return (
-            embeddings,
-            logits
-        )
+            embeddings, _ = self.compute_embeddings_and_state_outs(batch)
+        values = self.critic(embeddings, batch[Columns.ACTIONS])
+        return values.reshape(*batch[Columns.LOSS_MASK].shape)
     
     @override(TorchRLModule)
     def _forward(self, batch, **kwargs):
-        _, logits = self.compute_embeddings_and_logits(batch)
+        embeddings, states_out = self.compute_embeddings_and_state_outs(batch)
+        logits = self.actor(embeddings)
+        logits = logits.reshape(-(logits.shape[-2] // -self.model_config['max_seq_len']), -1, logits.shape[-1])
         return {
             Columns.ACTION_DIST_INPUTS: logits,
+            Columns.STATE_OUT: states_out,
+            Columns.EMBEDDINGS: embeddings
         }
 
-    @override(TorchRLModule)
-    def _forward_train(self, batch, **kwargs):
-        embeddings, logits = self.compute_embeddings_and_logits(batch)
-        return {
-            Columns.ACTION_DIST_INPUTS: logits,
-            Columns.EMBEDDINGS: embeddings,
-        }
+from ray.rllib.algorithms.ppo import PPOConfig
+from ray.rllib.algorithms.ppo.torch.ppo_torch_learner import PPOTorchLearner
+from ray.rllib.utils.typing import ModuleID, TensorType
+
+# Custom learner adding L1 weight regularization
+class Learner(PPOTorchLearner):
+
+    @override(PPOTorchLearner)
+    def compute_loss_for_module(
+        self,
+        *,
+        module_id: ModuleID,
+        config: PPOConfig,
+        batch: Dict[str, Any],
+        fwd_out: Dict[str, TensorType],
+    ) -> TensorType:
+
+        base_total_loss = super().compute_loss_for_module(
+            module_id=module_id,
+            config=config,
+            batch=batch,
+            fwd_out=fwd_out,
+        )
+
+        # Compute the mean of all the RLModule's weights' absolute values.
+        parameters = self.get_parameters(self.module[module_id])
+        mean_abs_weight = torch.mean(torch.cat([p.reshape(-1).abs() for p in parameters]))
+
+        self.metrics.log_value(
+            key=(module_id, "lasso_coeff"),
+            value=mean_abs_weight,
+            window=1,
+        )
+
+        total_loss = (
+            base_total_loss
+            + config.learner_config_dict["lasso_coeff"] * mean_abs_weight
+        )
+
+        return total_loss

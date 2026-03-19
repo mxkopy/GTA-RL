@@ -1,0 +1,8 @@
+import "CUDAExtent.proto";
+import "CUDAChannelFormatDesc.proto";
+message CUDAPitchedArrayObject {
+ required bytes handle = 1;
+ required CUDAChannelFormatDesc format = 2;
+ required uint64 pitch = 3;
+ required CUDAExtent extent = 4;
+}

@@ -1,4 +1,4 @@
-Texture2D<float> DepthSRV : register(t0);
+Texture2D<float> CurrentDepthSRV : register(t0);
 Texture2D<float> LastDepthSRV : register(t1);
 RWTexture2D<float4> VelocityUAV : register(u0);
 
@@ -8,39 +8,44 @@ struct CameraTransform
     float3 P;
 };
 
-struct PerspectiveInfo
-{
-    float NearClip;
-    float FarClip;
-    float ScreenWidth;
-    float ScreenHeight;
-    float ViewportWidth;
-    float ViewportHeight;
-    float scale;
-};
-
 cbuffer b0 : register(b0)
 {
     CameraTransform CurrentCamera;
-    PerspectiveInfo CurrentPerspectiveInfo;
 }
 
 cbuffer b1 : register(b1)
 {
     CameraTransform LastCamera;
-    PerspectiveInfo LastPerspectiveInfo;
 }
+
+static const float N = 0.15;
+static const float F = 10003.815;
+static const float N1 = -(N * F) / (N - F);
+static const float N2 = (N / (N - F));
 
 [numthreads(32, 32, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
+    float W;
+    float H;
+    
+    CurrentDepthSRV.GetDimensions(W, H);
+    
     float2 ScreenCoords = float2(
-        2 * (float(DTid.x) / CurrentPerspectiveInfo.ViewportWidth) - (CurrentPerspectiveInfo.ScreenWidth / CurrentPerspectiveInfo.ViewportWidth),
-        2 * (float(DTid.y) / CurrentPerspectiveInfo.ViewportHeight) - (CurrentPerspectiveInfo.ScreenHeight / CurrentPerspectiveInfo.ViewportHeight)
+        2.0 * (float(DTid.x) / H) - (W / H),
+        2.0 * (float(DTid.y) / H) - 1.0
     );
-    float LastDepth = LastPerspectiveInfo.scale * pow(LastPerspectiveInfo.FarClip + 1, LastDepthSRV[DTid.xy].r) - 1;
-    float CurrentDepth = LastPerspectiveInfo.scale * pow(CurrentPerspectiveInfo.FarClip + 1, DepthSRV[DTid.xy].r) - 1;
-    float3 LastWorldPoint = mul(transpose(LastCamera.Axes), float3(ScreenCoords, 1)) * LastDepth;
-    float3 CurrentWorldPoint = mul(transpose(CurrentCamera.Axes), float3(ScreenCoords, 1)) * CurrentDepth;
-    VelocityUAV[DTid.xy].xyzw = float4(CurrentWorldPoint - LastWorldPoint, DepthSRV[DTid.xy].r);
+
+    // We shouldn't need to normalize? https://www.derschmale.com/2014/01/26/reconstructing-positions-from-the-depth-buffer/
+
+    float3 U = mul(normalize(float3(ScreenCoords, 1.0)), transpose(CurrentCamera.Axes));
+    float3 V = mul(normalize(float3(ScreenCoords, 1.0)), transpose(LastCamera.Axes));
+
+    float CurrentDepth = -N1 / (CurrentDepthSRV[DTid.xy].r - N2);
+    float LastDepth = -N1 / (LastDepthSRV[DTid.xy].r - N2);
+    
+    float3 Delta = ((CurrentDepth * U) - (LastDepth * V));
+    
+    VelocityUAV[DTid.xy].xyzw = float4(Delta, CurrentDepthSRV[DTid.xy].r);
+    
 }

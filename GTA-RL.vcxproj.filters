@@ -23,13 +23,19 @@
     <ClInclude Include="gta\launch_debugger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gta\vertexbuffers.h">
+    <ClInclude Include="gta\vertex_buffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="schemas\amalgamated.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gta\keyboard.h">
+    <ClInclude Include="gta\input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gta\cuda_ipc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gta\graphics_debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -37,11 +43,6 @@
     <FxCompile Include="gta\ComputeShader.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="gta\ComputeShader.hlsl.cppliteral">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gta\dllmain.cpp">

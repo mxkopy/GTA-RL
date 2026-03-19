@@ -60,10 +60,6 @@ class ByteBuffers;
 struct ByteBuffersDefaultTypeInternal;
 extern ByteBuffersDefaultTypeInternal _ByteBuffers_default_instance_;
 extern const ::google::protobuf::internal::ClassDataFull ByteBuffers_class_data_;
-class CUDAArrayObject;
-struct CUDAArrayObjectDefaultTypeInternal;
-extern CUDAArrayObjectDefaultTypeInternal _CUDAArrayObject_default_instance_;
-extern const ::google::protobuf::internal::ClassDataFull CUDAArrayObject_class_data_;
 class CUDAChannelFormatDesc;
 struct CUDAChannelFormatDescDefaultTypeInternal;
 extern CUDAChannelFormatDescDefaultTypeInternal _CUDAChannelFormatDesc_default_instance_;
@@ -72,6 +68,10 @@ class CUDAExtent;
 struct CUDAExtentDefaultTypeInternal;
 extern CUDAExtentDefaultTypeInternal _CUDAExtent_default_instance_;
 extern const ::google::protobuf::internal::ClassDataFull CUDAExtent_class_data_;
+class CUDAPitchedArrayObject;
+struct CUDAPitchedArrayObjectDefaultTypeInternal;
+extern CUDAPitchedArrayObjectDefaultTypeInternal _CUDAPitchedArrayObject_default_instance_;
+extern const ::google::protobuf::internal::ClassDataFull CUDAPitchedArrayObject_class_data_;
 class GameState;
 struct GameStateDefaultTypeInternal;
 extern GameStateDefaultTypeInternal _GameState_default_instance_;
@@ -84,6 +84,10 @@ class Payload;
 struct PayloadDefaultTypeInternal;
 extern PayloadDefaultTypeInternal _Payload_default_instance_;
 extern const ::google::protobuf::internal::ClassDataFull Payload_class_data_;
+class RayCast;
+struct RayCastDefaultTypeInternal;
+extern RayCastDefaultTypeInternal _RayCast_default_instance_;
+extern const ::google::protobuf::internal::ClassDataFull RayCast_class_data_;
 class Vec3f;
 struct Vec3fDefaultTypeInternal;
 extern Vec3fDefaultTypeInternal _Vec3f_default_instance_;
@@ -158,7 +162,7 @@ class VertexShaderConstants final : public ::google::protobuf::Message
     return *reinterpret_cast<const VertexShaderConstants*>(
         &_VertexShaderConstants_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 7;
+  static constexpr int kIndexInFileMessages = 5;
   friend void swap(VertexShaderConstants& a, VertexShaderConstants& b) { a.Swap(&b); }
   inline void Swap(VertexShaderConstants* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -832,7 +836,7 @@ class KeyboardState final : public ::google::protobuf::Message
     return *reinterpret_cast<const KeyboardState*>(
         &_KeyboardState_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 9;
+  static constexpr int kIndexInFileMessages = 10;
   friend void swap(KeyboardState& a, KeyboardState& b) { a.Swap(&b); }
   inline void Swap(KeyboardState* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -864,8 +868,13 @@ class KeyboardState final : public ::google::protobuf::Message
 
   public:
   bool IsInitialized() const {
-    return true;
+    return IsInitializedImpl(*this);
   }
+
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
@@ -924,7 +933,7 @@ class KeyboardState final : public ::google::protobuf::Message
     kSFieldNumber = 3,
     kDFieldNumber = 4,
   };
-  // optional bool w = 1;
+  // required bool w = 1;
   bool has_w() const;
   void clear_w() ;
   bool w() const;
@@ -935,7 +944,7 @@ class KeyboardState final : public ::google::protobuf::Message
   void _internal_set_w(bool value);
 
   public:
-  // optional bool a = 2;
+  // required bool a = 2;
   bool has_a() const;
   void clear_a() ;
   bool a() const;
@@ -946,7 +955,7 @@ class KeyboardState final : public ::google::protobuf::Message
   void _internal_set_a(bool value);
 
   public:
-  // optional bool s = 3;
+  // required bool s = 3;
   bool has_s() const;
   void clear_s() ;
   bool s() const;
@@ -957,7 +966,7 @@ class KeyboardState final : public ::google::protobuf::Message
   void _internal_set_s(bool value);
 
   public:
-  // optional bool d = 4;
+  // required bool d = 4;
   bool has_d() const;
   void clear_d() ;
   bool d() const;
@@ -1005,6 +1014,215 @@ class KeyboardState final : public ::google::protobuf::Message
 };
 
 extern const ::google::protobuf::internal::ClassDataFull KeyboardState_class_data_;
+// -------------------------------------------------------------------
+
+class GameState final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:GameState) */ {
+ public:
+  inline GameState() : GameState(nullptr) {}
+  ~GameState() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(GameState* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(GameState));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR GameState(::google::protobuf::internal::ConstantInitialized);
+
+  inline GameState(const GameState& from) : GameState(nullptr, from) {}
+  inline GameState(GameState&& from) noexcept
+      : GameState(nullptr, ::std::move(from)) {}
+  inline GameState& operator=(const GameState& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline GameState& operator=(GameState&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const GameState& default_instance() {
+    return *reinterpret_cast<const GameState*>(
+        &_GameState_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 9;
+  friend void swap(GameState& a, GameState& b) { a.Swap(&b); }
+  inline void Swap(GameState* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(GameState* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  GameState* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<GameState>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const GameState& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const GameState& from) { GameState::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return IsInitializedImpl(*this);
+  }
+
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(GameState* PROTOBUF_NONNULL other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "GameState"; }
+
+  explicit GameState(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  GameState(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GameState& from);
+  GameState(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GameState&& from) noexcept
+      : GameState(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto InternalNewImpl_();
+
+ public:
+  static constexpr auto InternalGenerateClassData_();
+
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kRewardFieldNumber = 2,
+    kCollidedFieldNumber = 1,
+  };
+  // required double reward = 2;
+  bool has_reward() const;
+  void clear_reward() ;
+  double reward() const;
+  void set_reward(double value);
+
+  private:
+  double _internal_reward() const;
+  void _internal_set_reward(double value);
+
+  public:
+  // required bool collided = 1;
+  bool has_collided() const;
+  void clear_collided() ;
+  bool collided() const;
+  void set_collided(bool value);
+
+  private:
+  bool _internal_collided() const;
+  void _internal_set_collided(bool value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:GameState)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<1, 2,
+                                   0, 0,
+                                   2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const GameState& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    double reward_;
+    bool collided_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_amalgamated_2eproto;
+};
+
+extern const ::google::protobuf::internal::ClassDataFull GameState_class_data_;
 // -------------------------------------------------------------------
 
 class CUDAExtent final : public ::google::protobuf::Message
@@ -1062,7 +1280,7 @@ class CUDAExtent final : public ::google::protobuf::Message
     return *reinterpret_cast<const CUDAExtent*>(
         &_CUDAExtent_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 4;
+  static constexpr int kIndexInFileMessages = 6;
   friend void swap(CUDAExtent& a, CUDAExtent& b) { a.Swap(&b); }
   inline void Swap(CUDAExtent* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -1284,7 +1502,7 @@ class CUDAChannelFormatDesc final : public ::google::protobuf::Message
     return *reinterpret_cast<const CUDAChannelFormatDesc*>(
         &_CUDAChannelFormatDesc_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 5;
+  static constexpr int kIndexInFileMessages = 7;
   friend void swap(CUDAChannelFormatDesc& a, CUDAChannelFormatDesc& b) { a.Swap(&b); }
   inline void Swap(CUDAChannelFormatDesc* PROTOBUF_NONNULL other) {
     if (other == this) return;
@@ -1678,30 +1896,30 @@ class ByteBuffer final : public ::google::protobuf::Message
 extern const ::google::protobuf::internal::ClassDataFull ByteBuffer_class_data_;
 // -------------------------------------------------------------------
 
-class GameState final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:GameState) */ {
+class RayCast final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:RayCast) */ {
  public:
-  inline GameState() : GameState(nullptr) {}
-  ~GameState() PROTOBUF_FINAL;
+  inline RayCast() : RayCast(nullptr) {}
+  ~RayCast() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(GameState* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  void operator delete(RayCast* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(GameState));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(RayCast));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR GameState(::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR RayCast(::google::protobuf::internal::ConstantInitialized);
 
-  inline GameState(const GameState& from) : GameState(nullptr, from) {}
-  inline GameState(GameState&& from) noexcept
-      : GameState(nullptr, ::std::move(from)) {}
-  inline GameState& operator=(const GameState& from) {
+  inline RayCast(const RayCast& from) : RayCast(nullptr, from) {}
+  inline RayCast(RayCast&& from) noexcept
+      : RayCast(nullptr, ::std::move(from)) {}
+  inline RayCast& operator=(const RayCast& from) {
     CopyFrom(from);
     return *this;
   }
-  inline GameState& operator=(GameState&& from) noexcept {
+  inline RayCast& operator=(RayCast&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -1729,13 +1947,13 @@ class GameState final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const GameState& default_instance() {
-    return *reinterpret_cast<const GameState*>(
-        &_GameState_default_instance_);
+  static const RayCast& default_instance() {
+    return *reinterpret_cast<const RayCast*>(
+        &_RayCast_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 8;
-  friend void swap(GameState& a, GameState& b) { a.Swap(&b); }
-  inline void Swap(GameState* PROTOBUF_NONNULL other) {
+  static constexpr int kIndexInFileMessages = 4;
+  friend void swap(RayCast& a, RayCast& b) { a.Swap(&b); }
+  inline void Swap(RayCast* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -1743,7 +1961,7 @@ class GameState final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(GameState* PROTOBUF_NONNULL other) {
+  void UnsafeArenaSwap(RayCast* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -1751,13 +1969,13 @@ class GameState final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  GameState* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<GameState>(arena);
+  RayCast* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<RayCast>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const GameState& from);
+  void CopyFrom(const RayCast& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const GameState& from) { GameState::MergeImpl(*this, from); }
+  void MergeFrom(const RayCast& from) { RayCast::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -1798,17 +2016,17 @@ class GameState final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(GameState* PROTOBUF_NONNULL other);
+  void InternalSwap(RayCast* PROTOBUF_NONNULL other);
  private:
   template <typename T>
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "GameState"; }
+  static ::absl::string_view FullMessageName() { return "RayCast"; }
 
-  explicit GameState(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  GameState(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GameState& from);
-  GameState(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GameState&& from) noexcept
-      : GameState(arena) {
+  explicit RayCast(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  RayCast(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const RayCast& from);
+  RayCast(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, RayCast&& from) noexcept
+      : RayCast(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
@@ -1825,56 +2043,92 @@ class GameState final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kCameraDirectionFieldNumber = 1,
-    kVelocityFieldNumber = 2,
-    kCollidedFieldNumber = 3,
+    kCollisionFieldNumber = 3,
+    kPositionFieldNumber = 4,
+    kXFieldNumber = 1,
+    kYFieldNumber = 2,
+    kNearclipFieldNumber = 5,
+    kFarclipFieldNumber = 6,
   };
-  // required .Vec3f camera_direction = 1;
-  bool has_camera_direction() const;
-  void clear_camera_direction() ;
-  const ::Vec3f& camera_direction() const;
-  [[nodiscard]] ::Vec3f* PROTOBUF_NULLABLE release_camera_direction();
-  ::Vec3f* PROTOBUF_NONNULL mutable_camera_direction();
-  void set_allocated_camera_direction(::Vec3f* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_camera_direction(::Vec3f* PROTOBUF_NULLABLE value);
-  ::Vec3f* PROTOBUF_NULLABLE unsafe_arena_release_camera_direction();
+  // required .Vec3f collision = 3;
+  bool has_collision() const;
+  void clear_collision() ;
+  const ::Vec3f& collision() const;
+  [[nodiscard]] ::Vec3f* PROTOBUF_NULLABLE release_collision();
+  ::Vec3f* PROTOBUF_NONNULL mutable_collision();
+  void set_allocated_collision(::Vec3f* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_collision(::Vec3f* PROTOBUF_NULLABLE value);
+  ::Vec3f* PROTOBUF_NULLABLE unsafe_arena_release_collision();
 
   private:
-  const ::Vec3f& _internal_camera_direction() const;
-  ::Vec3f* PROTOBUF_NONNULL _internal_mutable_camera_direction();
+  const ::Vec3f& _internal_collision() const;
+  ::Vec3f* PROTOBUF_NONNULL _internal_mutable_collision();
 
   public:
-  // required .Vec3f velocity = 2;
-  bool has_velocity() const;
-  void clear_velocity() ;
-  const ::Vec3f& velocity() const;
-  [[nodiscard]] ::Vec3f* PROTOBUF_NULLABLE release_velocity();
-  ::Vec3f* PROTOBUF_NONNULL mutable_velocity();
-  void set_allocated_velocity(::Vec3f* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_velocity(::Vec3f* PROTOBUF_NULLABLE value);
-  ::Vec3f* PROTOBUF_NULLABLE unsafe_arena_release_velocity();
+  // required .Vec3f position = 4;
+  bool has_position() const;
+  void clear_position() ;
+  const ::Vec3f& position() const;
+  [[nodiscard]] ::Vec3f* PROTOBUF_NULLABLE release_position();
+  ::Vec3f* PROTOBUF_NONNULL mutable_position();
+  void set_allocated_position(::Vec3f* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_position(::Vec3f* PROTOBUF_NULLABLE value);
+  ::Vec3f* PROTOBUF_NULLABLE unsafe_arena_release_position();
 
   private:
-  const ::Vec3f& _internal_velocity() const;
-  ::Vec3f* PROTOBUF_NONNULL _internal_mutable_velocity();
+  const ::Vec3f& _internal_position() const;
+  ::Vec3f* PROTOBUF_NONNULL _internal_mutable_position();
 
   public:
-  // required bool collided = 3;
-  bool has_collided() const;
-  void clear_collided() ;
-  bool collided() const;
-  void set_collided(bool value);
+  // required float x = 1;
+  bool has_x() const;
+  void clear_x() ;
+  float x() const;
+  void set_x(float value);
 
   private:
-  bool _internal_collided() const;
-  void _internal_set_collided(bool value);
+  float _internal_x() const;
+  void _internal_set_x(float value);
 
   public:
-  // @@protoc_insertion_point(class_scope:GameState)
+  // required float y = 2;
+  bool has_y() const;
+  void clear_y() ;
+  float y() const;
+  void set_y(float value);
+
+  private:
+  float _internal_y() const;
+  void _internal_set_y(float value);
+
+  public:
+  // required float nearclip = 5;
+  bool has_nearclip() const;
+  void clear_nearclip() ;
+  float nearclip() const;
+  void set_nearclip(float value);
+
+  private:
+  float _internal_nearclip() const;
+  void _internal_set_nearclip(float value);
+
+  public:
+  // required float farclip = 6;
+  bool has_farclip() const;
+  void clear_farclip() ;
+  float farclip() const;
+  void set_farclip(float value);
+
+  private:
+  float _internal_farclip() const;
+  void _internal_set_farclip(float value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:RayCast)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3,
+  static const ::google::protobuf::internal::TcParseTable<3, 6,
                                    2, 0,
                                    2>
       _table_;
@@ -1893,45 +2147,48 @@ class GameState final : public ::google::protobuf::Message
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-        const GameState& from_msg);
+        const RayCast& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::Vec3f* PROTOBUF_NULLABLE camera_direction_;
-    ::Vec3f* PROTOBUF_NULLABLE velocity_;
-    bool collided_;
+    ::Vec3f* PROTOBUF_NULLABLE collision_;
+    ::Vec3f* PROTOBUF_NULLABLE position_;
+    float x_;
+    float y_;
+    float nearclip_;
+    float farclip_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_amalgamated_2eproto;
 };
 
-extern const ::google::protobuf::internal::ClassDataFull GameState_class_data_;
+extern const ::google::protobuf::internal::ClassDataFull RayCast_class_data_;
 // -------------------------------------------------------------------
 
-class CUDAArrayObject final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:CUDAArrayObject) */ {
+class CUDAPitchedArrayObject final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:CUDAPitchedArrayObject) */ {
  public:
-  inline CUDAArrayObject() : CUDAArrayObject(nullptr) {}
-  ~CUDAArrayObject() PROTOBUF_FINAL;
+  inline CUDAPitchedArrayObject() : CUDAPitchedArrayObject(nullptr) {}
+  ~CUDAPitchedArrayObject() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CUDAArrayObject* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+  void operator delete(CUDAPitchedArrayObject* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(CUDAArrayObject));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(CUDAPitchedArrayObject));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR CUDAArrayObject(::google::protobuf::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR CUDAPitchedArrayObject(::google::protobuf::internal::ConstantInitialized);
 
-  inline CUDAArrayObject(const CUDAArrayObject& from) : CUDAArrayObject(nullptr, from) {}
-  inline CUDAArrayObject(CUDAArrayObject&& from) noexcept
-      : CUDAArrayObject(nullptr, ::std::move(from)) {}
-  inline CUDAArrayObject& operator=(const CUDAArrayObject& from) {
+  inline CUDAPitchedArrayObject(const CUDAPitchedArrayObject& from) : CUDAPitchedArrayObject(nullptr, from) {}
+  inline CUDAPitchedArrayObject(CUDAPitchedArrayObject&& from) noexcept
+      : CUDAPitchedArrayObject(nullptr, ::std::move(from)) {}
+  inline CUDAPitchedArrayObject& operator=(const CUDAPitchedArrayObject& from) {
     CopyFrom(from);
     return *this;
   }
-  inline CUDAArrayObject& operator=(CUDAArrayObject&& from) noexcept {
+  inline CUDAPitchedArrayObject& operator=(CUDAPitchedArrayObject&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -1959,13 +2216,13 @@ class CUDAArrayObject final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const CUDAArrayObject& default_instance() {
-    return *reinterpret_cast<const CUDAArrayObject*>(
-        &_CUDAArrayObject_default_instance_);
+  static const CUDAPitchedArrayObject& default_instance() {
+    return *reinterpret_cast<const CUDAPitchedArrayObject*>(
+        &_CUDAPitchedArrayObject_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 6;
-  friend void swap(CUDAArrayObject& a, CUDAArrayObject& b) { a.Swap(&b); }
-  inline void Swap(CUDAArrayObject* PROTOBUF_NONNULL other) {
+  static constexpr int kIndexInFileMessages = 8;
+  friend void swap(CUDAPitchedArrayObject& a, CUDAPitchedArrayObject& b) { a.Swap(&b); }
+  inline void Swap(CUDAPitchedArrayObject* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -1973,7 +2230,7 @@ class CUDAArrayObject final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(CUDAArrayObject* PROTOBUF_NONNULL other) {
+  void UnsafeArenaSwap(CUDAPitchedArrayObject* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -1981,13 +2238,13 @@ class CUDAArrayObject final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  CUDAArrayObject* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<CUDAArrayObject>(arena);
+  CUDAPitchedArrayObject* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<CUDAPitchedArrayObject>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const CUDAArrayObject& from);
+  void CopyFrom(const CUDAPitchedArrayObject& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const CUDAArrayObject& from) { CUDAArrayObject::MergeImpl(*this, from); }
+  void MergeFrom(const CUDAPitchedArrayObject& from) { CUDAPitchedArrayObject::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
@@ -2028,17 +2285,17 @@ class CUDAArrayObject final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(CUDAArrayObject* PROTOBUF_NONNULL other);
+  void InternalSwap(CUDAPitchedArrayObject* PROTOBUF_NONNULL other);
  private:
   template <typename T>
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "CUDAArrayObject"; }
+  static ::absl::string_view FullMessageName() { return "CUDAPitchedArrayObject"; }
 
-  explicit CUDAArrayObject(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CUDAArrayObject(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CUDAArrayObject& from);
-  CUDAArrayObject(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CUDAArrayObject&& from) noexcept
-      : CUDAArrayObject(arena) {
+  explicit CUDAPitchedArrayObject(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  CUDAPitchedArrayObject(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CUDAPitchedArrayObject& from);
+  CUDAPitchedArrayObject(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CUDAPitchedArrayObject&& from) noexcept
+      : CUDAPitchedArrayObject(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
@@ -2057,9 +2314,8 @@ class CUDAArrayObject final : public ::google::protobuf::Message
   enum : int {
     kHandleFieldNumber = 1,
     kFormatFieldNumber = 2,
-    kExtentFieldNumber = 5,
-    kBppFieldNumber = 3,
-    kPitchFieldNumber = 4,
+    kExtentFieldNumber = 4,
+    kPitchFieldNumber = 3,
   };
   // required bytes handle = 1;
   bool has_handle() const;
@@ -2092,7 +2348,7 @@ class CUDAArrayObject final : public ::google::protobuf::Message
   ::CUDAChannelFormatDesc* PROTOBUF_NONNULL _internal_mutable_format();
 
   public:
-  // required .CUDAExtent extent = 5;
+  // required .CUDAExtent extent = 4;
   bool has_extent() const;
   void clear_extent() ;
   const ::CUDAExtent& extent() const;
@@ -2107,18 +2363,7 @@ class CUDAArrayObject final : public ::google::protobuf::Message
   ::CUDAExtent* PROTOBUF_NONNULL _internal_mutable_extent();
 
   public:
-  // required uint64 bpp = 3;
-  bool has_bpp() const;
-  void clear_bpp() ;
-  ::uint64_t bpp() const;
-  void set_bpp(::uint64_t value);
-
-  private:
-  ::uint64_t _internal_bpp() const;
-  void _internal_set_bpp(::uint64_t value);
-
-  public:
-  // required uint64 pitch = 4;
+  // required uint64 pitch = 3;
   bool has_pitch() const;
   void clear_pitch() ;
   ::uint64_t pitch() const;
@@ -2129,11 +2374,11 @@ class CUDAArrayObject final : public ::google::protobuf::Message
   void _internal_set_pitch(::uint64_t value);
 
   public:
-  // @@protoc_insertion_point(class_scope:CUDAArrayObject)
+  // @@protoc_insertion_point(class_scope:CUDAPitchedArrayObject)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5,
+  static const ::google::protobuf::internal::TcParseTable<2, 4,
                                    2, 0,
                                    2>
       _table_;
@@ -2152,13 +2397,12 @@ class CUDAArrayObject final : public ::google::protobuf::Message
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-        const CUDAArrayObject& from_msg);
+        const CUDAPitchedArrayObject& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr handle_;
     ::CUDAChannelFormatDesc* PROTOBUF_NULLABLE format_;
     ::CUDAExtent* PROTOBUF_NULLABLE extent_;
-    ::uint64_t bpp_;
     ::uint64_t pitch_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -2166,7 +2410,7 @@ class CUDAArrayObject final : public ::google::protobuf::Message
   friend struct ::TableStruct_amalgamated_2eproto;
 };
 
-extern const ::google::protobuf::internal::ClassDataFull CUDAArrayObject_class_data_;
+extern const ::google::protobuf::internal::ClassDataFull CUDAPitchedArrayObject_class_data_;
 // -------------------------------------------------------------------
 
 class ByteBuffers final : public ::google::protobuf::Message
@@ -2750,6 +2994,458 @@ inline void Vec3f::_internal_set_z(float value) {
 
 // -------------------------------------------------------------------
 
+// RayCast
+
+// required float x = 1;
+inline bool RayCast::has_x() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  return value;
+}
+inline void RayCast::clear_x() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.x_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
+}
+inline float RayCast::x() const {
+  // @@protoc_insertion_point(field_get:RayCast.x)
+  return _internal_x();
+}
+inline void RayCast::set_x(float value) {
+  _internal_set_x(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  // @@protoc_insertion_point(field_set:RayCast.x)
+}
+inline float RayCast::_internal_x() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.x_;
+}
+inline void RayCast::_internal_set_x(float value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.x_ = value;
+}
+
+// required float y = 2;
+inline bool RayCast::has_y() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  return value;
+}
+inline void RayCast::clear_y() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.y_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
+}
+inline float RayCast::y() const {
+  // @@protoc_insertion_point(field_get:RayCast.y)
+  return _internal_y();
+}
+inline void RayCast::set_y(float value) {
+  _internal_set_y(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  // @@protoc_insertion_point(field_set:RayCast.y)
+}
+inline float RayCast::_internal_y() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.y_;
+}
+inline void RayCast::_internal_set_y(float value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.y_ = value;
+}
+
+// required .Vec3f collision = 3;
+inline bool RayCast::has_collision() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
+  PROTOBUF_ASSUME(!value || _impl_.collision_ != nullptr);
+  return value;
+}
+inline void RayCast::clear_collision() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.collision_ != nullptr) _impl_.collision_->Clear();
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
+}
+inline const ::Vec3f& RayCast::_internal_collision() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  const ::Vec3f* p = _impl_.collision_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Vec3f&>(::_Vec3f_default_instance_);
+}
+inline const ::Vec3f& RayCast::collision() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:RayCast.collision)
+  return _internal_collision();
+}
+inline void RayCast::unsafe_arena_set_allocated_collision(
+    ::Vec3f* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.collision_);
+  }
+  _impl_.collision_ = reinterpret_cast<::Vec3f*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:RayCast.collision)
+}
+inline ::Vec3f* PROTOBUF_NULLABLE RayCast::release_collision() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::Vec3f* released = _impl_.collision_;
+  _impl_.collision_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+inline ::Vec3f* PROTOBUF_NULLABLE RayCast::unsafe_arena_release_collision() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:RayCast.collision)
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::Vec3f* temp = _impl_.collision_;
+  _impl_.collision_ = nullptr;
+  return temp;
+}
+inline ::Vec3f* PROTOBUF_NONNULL RayCast::_internal_mutable_collision() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.collision_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::Vec3f>(GetArena());
+    _impl_.collision_ = reinterpret_cast<::Vec3f*>(p);
+  }
+  return _impl_.collision_;
+}
+inline ::Vec3f* PROTOBUF_NONNULL RayCast::mutable_collision()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::Vec3f* _msg = _internal_mutable_collision();
+  // @@protoc_insertion_point(field_mutable:RayCast.collision)
+  return _msg;
+}
+inline void RayCast::set_allocated_collision(::Vec3f* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.collision_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+
+  _impl_.collision_ = reinterpret_cast<::Vec3f*>(value);
+  // @@protoc_insertion_point(field_set_allocated:RayCast.collision)
+}
+
+// required .Vec3f position = 4;
+inline bool RayCast::has_position() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  PROTOBUF_ASSUME(!value || _impl_.position_ != nullptr);
+  return value;
+}
+inline void RayCast::clear_position() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.position_ != nullptr) _impl_.position_->Clear();
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
+}
+inline const ::Vec3f& RayCast::_internal_position() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  const ::Vec3f* p = _impl_.position_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Vec3f&>(::_Vec3f_default_instance_);
+}
+inline const ::Vec3f& RayCast::position() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:RayCast.position)
+  return _internal_position();
+}
+inline void RayCast::unsafe_arena_set_allocated_position(
+    ::Vec3f* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.position_);
+  }
+  _impl_.position_ = reinterpret_cast<::Vec3f*>(value);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:RayCast.position)
+}
+inline ::Vec3f* PROTOBUF_NULLABLE RayCast::release_position() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::Vec3f* released = _impl_.position_;
+  _impl_.position_ = nullptr;
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
+    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
+  }
+  return released;
+}
+inline ::Vec3f* PROTOBUF_NULLABLE RayCast::unsafe_arena_release_position() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:RayCast.position)
+
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::Vec3f* temp = _impl_.position_;
+  _impl_.position_ = nullptr;
+  return temp;
+}
+inline ::Vec3f* PROTOBUF_NONNULL RayCast::_internal_mutable_position() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (_impl_.position_ == nullptr) {
+    auto* p = ::google::protobuf::Message::DefaultConstruct<::Vec3f>(GetArena());
+    _impl_.position_ = reinterpret_cast<::Vec3f*>(p);
+  }
+  return _impl_.position_;
+}
+inline ::Vec3f* PROTOBUF_NONNULL RayCast::mutable_position()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::Vec3f* _msg = _internal_mutable_position();
+  // @@protoc_insertion_point(field_mutable:RayCast.position)
+  return _msg;
+}
+inline void RayCast::set_allocated_position(::Vec3f* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (message_arena == nullptr) {
+    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.position_);
+  }
+
+  if (value != nullptr) {
+    ::google::protobuf::Arena* submessage_arena = value->GetArena();
+    if (message_arena != submessage_arena) {
+      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
+    }
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+
+  _impl_.position_ = reinterpret_cast<::Vec3f*>(value);
+  // @@protoc_insertion_point(field_set_allocated:RayCast.position)
+}
+
+// required float nearclip = 5;
+inline bool RayCast::has_nearclip() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
+  return value;
+}
+inline void RayCast::clear_nearclip() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.nearclip_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000010U);
+}
+inline float RayCast::nearclip() const {
+  // @@protoc_insertion_point(field_get:RayCast.nearclip)
+  return _internal_nearclip();
+}
+inline void RayCast::set_nearclip(float value) {
+  _internal_set_nearclip(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  // @@protoc_insertion_point(field_set:RayCast.nearclip)
+}
+inline float RayCast::_internal_nearclip() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.nearclip_;
+}
+inline void RayCast::_internal_set_nearclip(float value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.nearclip_ = value;
+}
+
+// required float farclip = 6;
+inline bool RayCast::has_farclip() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000020U);
+  return value;
+}
+inline void RayCast::clear_farclip() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.farclip_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000020U);
+}
+inline float RayCast::farclip() const {
+  // @@protoc_insertion_point(field_get:RayCast.farclip)
+  return _internal_farclip();
+}
+inline void RayCast::set_farclip(float value) {
+  _internal_set_farclip(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000020U);
+  // @@protoc_insertion_point(field_set:RayCast.farclip)
+}
+inline float RayCast::_internal_farclip() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.farclip_;
+}
+inline void RayCast::_internal_set_farclip(float value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.farclip_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// VertexShaderConstants
+
+// required float nearclip = 1;
+inline bool VertexShaderConstants::has_nearclip() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  return value;
+}
+inline void VertexShaderConstants::clear_nearclip() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.nearclip_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
+}
+inline float VertexShaderConstants::nearclip() const {
+  // @@protoc_insertion_point(field_get:VertexShaderConstants.nearclip)
+  return _internal_nearclip();
+}
+inline void VertexShaderConstants::set_nearclip(float value) {
+  _internal_set_nearclip(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_set:VertexShaderConstants.nearclip)
+}
+inline float VertexShaderConstants::_internal_nearclip() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.nearclip_;
+}
+inline void VertexShaderConstants::_internal_set_nearclip(float value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.nearclip_ = value;
+}
+
+// required float farclip = 2;
+inline bool VertexShaderConstants::has_farclip() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  return value;
+}
+inline void VertexShaderConstants::clear_farclip() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.farclip_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
+}
+inline float VertexShaderConstants::farclip() const {
+  // @@protoc_insertion_point(field_get:VertexShaderConstants.farclip)
+  return _internal_farclip();
+}
+inline void VertexShaderConstants::set_farclip(float value) {
+  _internal_set_farclip(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  // @@protoc_insertion_point(field_set:VertexShaderConstants.farclip)
+}
+inline float VertexShaderConstants::_internal_farclip() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.farclip_;
+}
+inline void VertexShaderConstants::_internal_set_farclip(float value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.farclip_ = value;
+}
+
+// repeated bytes constant_buffers = 3;
+inline int VertexShaderConstants::_internal_constant_buffers_size() const {
+  return _internal_constant_buffers().size();
+}
+inline int VertexShaderConstants::constant_buffers_size() const {
+  return _internal_constant_buffers_size();
+}
+inline void VertexShaderConstants::clear_constant_buffers() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.constant_buffers_.Clear();
+  ClearHasBitForRepeated(_impl_._has_bits_[0],
+                  0x00000001U);
+}
+inline ::std::string* PROTOBUF_NONNULL VertexShaderConstants::add_constant_buffers()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::std::string* _s =
+      _internal_mutable_constant_buffers()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_add_mutable:VertexShaderConstants.constant_buffers)
+  return _s;
+}
+inline const ::std::string& VertexShaderConstants::constant_buffers(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:VertexShaderConstants.constant_buffers)
+  return _internal_constant_buffers().Get(index);
+}
+inline ::std::string* PROTOBUF_NONNULL VertexShaderConstants::mutable_constant_buffers(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:VertexShaderConstants.constant_buffers)
+  return _internal_mutable_constant_buffers()->Mutable(index);
+}
+template <typename Arg_, typename... Args_>
+inline void VertexShaderConstants::set_constant_buffers(int index, Arg_&& value, Args_... args) {
+  ::google::protobuf::internal::AssignToString(*_internal_mutable_constant_buffers()->Mutable(index), ::std::forward<Arg_>(value),
+                        args... , ::google::protobuf::internal::BytesTag{});
+  // @@protoc_insertion_point(field_set:VertexShaderConstants.constant_buffers)
+}
+template <typename Arg_, typename... Args_>
+inline void VertexShaderConstants::add_constant_buffers(Arg_&& value, Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_constant_buffers(), ::std::forward<Arg_>(value),
+      args... , ::google::protobuf::internal::BytesTag{});
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_add:VertexShaderConstants.constant_buffers)
+}
+inline const ::google::protobuf::RepeatedPtrField<::std::string>& VertexShaderConstants::constant_buffers()
+    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_list:VertexShaderConstants.constant_buffers)
+  return _internal_constant_buffers();
+}
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
+VertexShaderConstants::mutable_constant_buffers() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:VertexShaderConstants.constant_buffers)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_constant_buffers();
+}
+inline const ::google::protobuf::RepeatedPtrField<::std::string>&
+VertexShaderConstants::_internal_constant_buffers() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.constant_buffers_;
+}
+inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
+VertexShaderConstants::_internal_mutable_constant_buffers() {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return &_impl_.constant_buffers_;
+}
+
+// -------------------------------------------------------------------
+
 // CUDAExtent
 
 // required int64 width = 1;
@@ -2990,53 +3686,53 @@ inline void CUDAChannelFormatDesc::_internal_set_f(::uint32_t value) {
 
 // -------------------------------------------------------------------
 
-// CUDAArrayObject
+// CUDAPitchedArrayObject
 
 // required bytes handle = 1;
-inline bool CUDAArrayObject::has_handle() const {
+inline bool CUDAPitchedArrayObject::has_handle() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
   return value;
 }
-inline void CUDAArrayObject::clear_handle() {
+inline void CUDAPitchedArrayObject::clear_handle() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.handle_.ClearToEmpty();
   ClearHasBit(_impl_._has_bits_[0],
                   0x00000001U);
 }
-inline const ::std::string& CUDAArrayObject::handle() const
+inline const ::std::string& CUDAPitchedArrayObject::handle() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:CUDAArrayObject.handle)
+  // @@protoc_insertion_point(field_get:CUDAPitchedArrayObject.handle)
   return _internal_handle();
 }
 template <typename Arg_, typename... Args_>
-PROTOBUF_ALWAYS_INLINE void CUDAArrayObject::set_handle(Arg_&& arg, Args_... args) {
+PROTOBUF_ALWAYS_INLINE void CUDAPitchedArrayObject::set_handle(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.handle_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
-  // @@protoc_insertion_point(field_set:CUDAArrayObject.handle)
+  // @@protoc_insertion_point(field_set:CUDAPitchedArrayObject.handle)
 }
-inline ::std::string* PROTOBUF_NONNULL CUDAArrayObject::mutable_handle()
+inline ::std::string* PROTOBUF_NONNULL CUDAPitchedArrayObject::mutable_handle()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_handle();
-  // @@protoc_insertion_point(field_mutable:CUDAArrayObject.handle)
+  // @@protoc_insertion_point(field_mutable:CUDAPitchedArrayObject.handle)
   return _s;
 }
-inline const ::std::string& CUDAArrayObject::_internal_handle() const {
+inline const ::std::string& CUDAPitchedArrayObject::_internal_handle() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.handle_.Get();
 }
-inline void CUDAArrayObject::_internal_set_handle(const ::std::string& value) {
+inline void CUDAPitchedArrayObject::_internal_set_handle(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.handle_.Set(value, GetArena());
 }
-inline ::std::string* PROTOBUF_NONNULL CUDAArrayObject::_internal_mutable_handle() {
+inline ::std::string* PROTOBUF_NONNULL CUDAPitchedArrayObject::_internal_mutable_handle() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _impl_.handle_.Mutable( GetArena());
 }
-inline ::std::string* PROTOBUF_NULLABLE CUDAArrayObject::release_handle() {
+inline ::std::string* PROTOBUF_NULLABLE CUDAPitchedArrayObject::release_handle() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:CUDAArrayObject.handle)
+  // @@protoc_insertion_point(field_release:CUDAPitchedArrayObject.handle)
   if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
     return nullptr;
   }
@@ -3047,7 +3743,7 @@ inline ::std::string* PROTOBUF_NULLABLE CUDAArrayObject::release_handle() {
   }
   return released;
 }
-inline void CUDAArrayObject::set_allocated_handle(::std::string* PROTOBUF_NULLABLE value) {
+inline void CUDAPitchedArrayObject::set_allocated_handle(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
     SetHasBit(_impl_._has_bits_[0], 0x00000001U);
@@ -3058,31 +3754,31 @@ inline void CUDAArrayObject::set_allocated_handle(::std::string* PROTOBUF_NULLAB
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.handle_.IsDefault()) {
     _impl_.handle_.Set("", GetArena());
   }
-  // @@protoc_insertion_point(field_set_allocated:CUDAArrayObject.handle)
+  // @@protoc_insertion_point(field_set_allocated:CUDAPitchedArrayObject.handle)
 }
 
 // required .CUDAChannelFormatDesc format = 2;
-inline bool CUDAArrayObject::has_format() const {
+inline bool CUDAPitchedArrayObject::has_format() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   PROTOBUF_ASSUME(!value || _impl_.format_ != nullptr);
   return value;
 }
-inline void CUDAArrayObject::clear_format() {
+inline void CUDAPitchedArrayObject::clear_format() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.format_ != nullptr) _impl_.format_->Clear();
   ClearHasBit(_impl_._has_bits_[0],
                   0x00000002U);
 }
-inline const ::CUDAChannelFormatDesc& CUDAArrayObject::_internal_format() const {
+inline const ::CUDAChannelFormatDesc& CUDAPitchedArrayObject::_internal_format() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::CUDAChannelFormatDesc* p = _impl_.format_;
   return p != nullptr ? *p : reinterpret_cast<const ::CUDAChannelFormatDesc&>(::_CUDAChannelFormatDesc_default_instance_);
 }
-inline const ::CUDAChannelFormatDesc& CUDAArrayObject::format() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:CUDAArrayObject.format)
+inline const ::CUDAChannelFormatDesc& CUDAPitchedArrayObject::format() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:CUDAPitchedArrayObject.format)
   return _internal_format();
 }
-inline void CUDAArrayObject::unsafe_arena_set_allocated_format(
+inline void CUDAPitchedArrayObject::unsafe_arena_set_allocated_format(
     ::CUDAChannelFormatDesc* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
@@ -3094,9 +3790,9 @@ inline void CUDAArrayObject::unsafe_arena_set_allocated_format(
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:CUDAArrayObject.format)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:CUDAPitchedArrayObject.format)
 }
-inline ::CUDAChannelFormatDesc* PROTOBUF_NULLABLE CUDAArrayObject::release_format() {
+inline ::CUDAChannelFormatDesc* PROTOBUF_NULLABLE CUDAPitchedArrayObject::release_format() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
   ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
@@ -3115,16 +3811,16 @@ inline ::CUDAChannelFormatDesc* PROTOBUF_NULLABLE CUDAArrayObject::release_forma
   }
   return released;
 }
-inline ::CUDAChannelFormatDesc* PROTOBUF_NULLABLE CUDAArrayObject::unsafe_arena_release_format() {
+inline ::CUDAChannelFormatDesc* PROTOBUF_NULLABLE CUDAPitchedArrayObject::unsafe_arena_release_format() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:CUDAArrayObject.format)
+  // @@protoc_insertion_point(field_release:CUDAPitchedArrayObject.format)
 
   ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::CUDAChannelFormatDesc* temp = _impl_.format_;
   _impl_.format_ = nullptr;
   return temp;
 }
-inline ::CUDAChannelFormatDesc* PROTOBUF_NONNULL CUDAArrayObject::_internal_mutable_format() {
+inline ::CUDAChannelFormatDesc* PROTOBUF_NONNULL CUDAPitchedArrayObject::_internal_mutable_format() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.format_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::CUDAChannelFormatDesc>(GetArena());
@@ -3132,14 +3828,14 @@ inline ::CUDAChannelFormatDesc* PROTOBUF_NONNULL CUDAArrayObject::_internal_muta
   }
   return _impl_.format_;
 }
-inline ::CUDAChannelFormatDesc* PROTOBUF_NONNULL CUDAArrayObject::mutable_format()
+inline ::CUDAChannelFormatDesc* PROTOBUF_NONNULL CUDAPitchedArrayObject::mutable_format()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::CUDAChannelFormatDesc* _msg = _internal_mutable_format();
-  // @@protoc_insertion_point(field_mutable:CUDAArrayObject.format)
+  // @@protoc_insertion_point(field_mutable:CUDAPitchedArrayObject.format)
   return _msg;
 }
-inline void CUDAArrayObject::set_allocated_format(::CUDAChannelFormatDesc* PROTOBUF_NULLABLE value) {
+inline void CUDAPitchedArrayObject::set_allocated_format(::CUDAChannelFormatDesc* PROTOBUF_NULLABLE value) {
   ::google::protobuf::Arena* message_arena = GetArena();
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
@@ -3157,89 +3853,60 @@ inline void CUDAArrayObject::set_allocated_format(::CUDAChannelFormatDesc* PROTO
   }
 
   _impl_.format_ = reinterpret_cast<::CUDAChannelFormatDesc*>(value);
-  // @@protoc_insertion_point(field_set_allocated:CUDAArrayObject.format)
+  // @@protoc_insertion_point(field_set_allocated:CUDAPitchedArrayObject.format)
 }
 
-// required uint64 bpp = 3;
-inline bool CUDAArrayObject::has_bpp() const {
+// required uint64 pitch = 3;
+inline bool CUDAPitchedArrayObject::has_pitch() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;
 }
-inline void CUDAArrayObject::clear_bpp() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.bpp_ = ::uint64_t{0u};
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
-}
-inline ::uint64_t CUDAArrayObject::bpp() const {
-  // @@protoc_insertion_point(field_get:CUDAArrayObject.bpp)
-  return _internal_bpp();
-}
-inline void CUDAArrayObject::set_bpp(::uint64_t value) {
-  _internal_set_bpp(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
-  // @@protoc_insertion_point(field_set:CUDAArrayObject.bpp)
-}
-inline ::uint64_t CUDAArrayObject::_internal_bpp() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.bpp_;
-}
-inline void CUDAArrayObject::_internal_set_bpp(::uint64_t value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.bpp_ = value;
-}
-
-// required uint64 pitch = 4;
-inline bool CUDAArrayObject::has_pitch() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
-  return value;
-}
-inline void CUDAArrayObject::clear_pitch() {
+inline void CUDAPitchedArrayObject::clear_pitch() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.pitch_ = ::uint64_t{0u};
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000010U);
+                  0x00000008U);
 }
-inline ::uint64_t CUDAArrayObject::pitch() const {
-  // @@protoc_insertion_point(field_get:CUDAArrayObject.pitch)
+inline ::uint64_t CUDAPitchedArrayObject::pitch() const {
+  // @@protoc_insertion_point(field_get:CUDAPitchedArrayObject.pitch)
   return _internal_pitch();
 }
-inline void CUDAArrayObject::set_pitch(::uint64_t value) {
+inline void CUDAPitchedArrayObject::set_pitch(::uint64_t value) {
   _internal_set_pitch(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
-  // @@protoc_insertion_point(field_set:CUDAArrayObject.pitch)
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  // @@protoc_insertion_point(field_set:CUDAPitchedArrayObject.pitch)
 }
-inline ::uint64_t CUDAArrayObject::_internal_pitch() const {
+inline ::uint64_t CUDAPitchedArrayObject::_internal_pitch() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.pitch_;
 }
-inline void CUDAArrayObject::_internal_set_pitch(::uint64_t value) {
+inline void CUDAPitchedArrayObject::_internal_set_pitch(::uint64_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.pitch_ = value;
 }
 
-// required .CUDAExtent extent = 5;
-inline bool CUDAArrayObject::has_extent() const {
+// required .CUDAExtent extent = 4;
+inline bool CUDAPitchedArrayObject::has_extent() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   PROTOBUF_ASSUME(!value || _impl_.extent_ != nullptr);
   return value;
 }
-inline void CUDAArrayObject::clear_extent() {
+inline void CUDAPitchedArrayObject::clear_extent() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.extent_ != nullptr) _impl_.extent_->Clear();
   ClearHasBit(_impl_._has_bits_[0],
                   0x00000004U);
 }
-inline const ::CUDAExtent& CUDAArrayObject::_internal_extent() const {
+inline const ::CUDAExtent& CUDAPitchedArrayObject::_internal_extent() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   const ::CUDAExtent* p = _impl_.extent_;
   return p != nullptr ? *p : reinterpret_cast<const ::CUDAExtent&>(::_CUDAExtent_default_instance_);
 }
-inline const ::CUDAExtent& CUDAArrayObject::extent() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:CUDAArrayObject.extent)
+inline const ::CUDAExtent& CUDAPitchedArrayObject::extent() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:CUDAPitchedArrayObject.extent)
   return _internal_extent();
 }
-inline void CUDAArrayObject::unsafe_arena_set_allocated_extent(
+inline void CUDAPitchedArrayObject::unsafe_arena_set_allocated_extent(
     ::CUDAExtent* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (GetArena() == nullptr) {
@@ -3251,9 +3918,9 @@ inline void CUDAArrayObject::unsafe_arena_set_allocated_extent(
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:CUDAArrayObject.extent)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:CUDAPitchedArrayObject.extent)
 }
-inline ::CUDAExtent* PROTOBUF_NULLABLE CUDAArrayObject::release_extent() {
+inline ::CUDAExtent* PROTOBUF_NULLABLE CUDAPitchedArrayObject::release_extent() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
   ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
@@ -3272,16 +3939,16 @@ inline ::CUDAExtent* PROTOBUF_NULLABLE CUDAArrayObject::release_extent() {
   }
   return released;
 }
-inline ::CUDAExtent* PROTOBUF_NULLABLE CUDAArrayObject::unsafe_arena_release_extent() {
+inline ::CUDAExtent* PROTOBUF_NULLABLE CUDAPitchedArrayObject::unsafe_arena_release_extent() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:CUDAArrayObject.extent)
+  // @@protoc_insertion_point(field_release:CUDAPitchedArrayObject.extent)
 
   ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::CUDAExtent* temp = _impl_.extent_;
   _impl_.extent_ = nullptr;
   return temp;
 }
-inline ::CUDAExtent* PROTOBUF_NONNULL CUDAArrayObject::_internal_mutable_extent() {
+inline ::CUDAExtent* PROTOBUF_NONNULL CUDAPitchedArrayObject::_internal_mutable_extent() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.extent_ == nullptr) {
     auto* p = ::google::protobuf::Message::DefaultConstruct<::CUDAExtent>(GetArena());
@@ -3289,14 +3956,14 @@ inline ::CUDAExtent* PROTOBUF_NONNULL CUDAArrayObject::_internal_mutable_extent(
   }
   return _impl_.extent_;
 }
-inline ::CUDAExtent* PROTOBUF_NONNULL CUDAArrayObject::mutable_extent()
+inline ::CUDAExtent* PROTOBUF_NONNULL CUDAPitchedArrayObject::mutable_extent()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::CUDAExtent* _msg = _internal_mutable_extent();
-  // @@protoc_insertion_point(field_mutable:CUDAArrayObject.extent)
+  // @@protoc_insertion_point(field_mutable:CUDAPitchedArrayObject.extent)
   return _msg;
 }
-inline void CUDAArrayObject::set_allocated_extent(::CUDAExtent* PROTOBUF_NULLABLE value) {
+inline void CUDAPitchedArrayObject::set_allocated_extent(::CUDAExtent* PROTOBUF_NULLABLE value) {
   ::google::protobuf::Arena* message_arena = GetArena();
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (message_arena == nullptr) {
@@ -3314,355 +3981,23 @@ inline void CUDAArrayObject::set_allocated_extent(::CUDAExtent* PROTOBUF_NULLABL
   }
 
   _impl_.extent_ = reinterpret_cast<::CUDAExtent*>(value);
-  // @@protoc_insertion_point(field_set_allocated:CUDAArrayObject.extent)
-}
-
-// -------------------------------------------------------------------
-
-// VertexShaderConstants
-
-// required float nearclip = 1;
-inline bool VertexShaderConstants::has_nearclip() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
-  return value;
-}
-inline void VertexShaderConstants::clear_nearclip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.nearclip_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
-}
-inline float VertexShaderConstants::nearclip() const {
-  // @@protoc_insertion_point(field_get:VertexShaderConstants.nearclip)
-  return _internal_nearclip();
-}
-inline void VertexShaderConstants::set_nearclip(float value) {
-  _internal_set_nearclip(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  // @@protoc_insertion_point(field_set:VertexShaderConstants.nearclip)
-}
-inline float VertexShaderConstants::_internal_nearclip() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.nearclip_;
-}
-inline void VertexShaderConstants::_internal_set_nearclip(float value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.nearclip_ = value;
-}
-
-// required float farclip = 2;
-inline bool VertexShaderConstants::has_farclip() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
-  return value;
-}
-inline void VertexShaderConstants::clear_farclip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.farclip_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
-}
-inline float VertexShaderConstants::farclip() const {
-  // @@protoc_insertion_point(field_get:VertexShaderConstants.farclip)
-  return _internal_farclip();
-}
-inline void VertexShaderConstants::set_farclip(float value) {
-  _internal_set_farclip(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
-  // @@protoc_insertion_point(field_set:VertexShaderConstants.farclip)
-}
-inline float VertexShaderConstants::_internal_farclip() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.farclip_;
-}
-inline void VertexShaderConstants::_internal_set_farclip(float value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.farclip_ = value;
-}
-
-// repeated bytes constant_buffers = 3;
-inline int VertexShaderConstants::_internal_constant_buffers_size() const {
-  return _internal_constant_buffers().size();
-}
-inline int VertexShaderConstants::constant_buffers_size() const {
-  return _internal_constant_buffers_size();
-}
-inline void VertexShaderConstants::clear_constant_buffers() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.constant_buffers_.Clear();
-  ClearHasBitForRepeated(_impl_._has_bits_[0],
-                  0x00000001U);
-}
-inline ::std::string* PROTOBUF_NONNULL VertexShaderConstants::add_constant_buffers()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s =
-      _internal_mutable_constant_buffers()->InternalAddWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_add_mutable:VertexShaderConstants.constant_buffers)
-  return _s;
-}
-inline const ::std::string& VertexShaderConstants::constant_buffers(int index) const
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:VertexShaderConstants.constant_buffers)
-  return _internal_constant_buffers().Get(index);
-}
-inline ::std::string* PROTOBUF_NONNULL VertexShaderConstants::mutable_constant_buffers(int index)
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_mutable:VertexShaderConstants.constant_buffers)
-  return _internal_mutable_constant_buffers()->Mutable(index);
-}
-template <typename Arg_, typename... Args_>
-inline void VertexShaderConstants::set_constant_buffers(int index, Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::AssignToString(*_internal_mutable_constant_buffers()->Mutable(index), ::std::forward<Arg_>(value),
-                        args... , ::google::protobuf::internal::BytesTag{});
-  // @@protoc_insertion_point(field_set:VertexShaderConstants.constant_buffers)
-}
-template <typename Arg_, typename... Args_>
-inline void VertexShaderConstants::add_constant_buffers(Arg_&& value, Args_... args) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(
-      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
-      *_internal_mutable_constant_buffers(), ::std::forward<Arg_>(value),
-      args... , ::google::protobuf::internal::BytesTag{});
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_add:VertexShaderConstants.constant_buffers)
-}
-inline const ::google::protobuf::RepeatedPtrField<::std::string>& VertexShaderConstants::constant_buffers()
-    const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_list:VertexShaderConstants.constant_buffers)
-  return _internal_constant_buffers();
-}
-inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-VertexShaderConstants::mutable_constant_buffers() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
-  // @@protoc_insertion_point(field_mutable_list:VertexShaderConstants.constant_buffers)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _internal_mutable_constant_buffers();
-}
-inline const ::google::protobuf::RepeatedPtrField<::std::string>&
-VertexShaderConstants::_internal_constant_buffers() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.constant_buffers_;
-}
-inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
-VertexShaderConstants::_internal_mutable_constant_buffers() {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return &_impl_.constant_buffers_;
+  // @@protoc_insertion_point(field_set_allocated:CUDAPitchedArrayObject.extent)
 }
 
 // -------------------------------------------------------------------
 
 // GameState
 
-// required .Vec3f camera_direction = 1;
-inline bool GameState::has_camera_direction() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
-  PROTOBUF_ASSUME(!value || _impl_.camera_direction_ != nullptr);
-  return value;
-}
-inline void GameState::clear_camera_direction() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.camera_direction_ != nullptr) _impl_.camera_direction_->Clear();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000001U);
-}
-inline const ::Vec3f& GameState::_internal_camera_direction() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::Vec3f* p = _impl_.camera_direction_;
-  return p != nullptr ? *p : reinterpret_cast<const ::Vec3f&>(::_Vec3f_default_instance_);
-}
-inline const ::Vec3f& GameState::camera_direction() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:GameState.camera_direction)
-  return _internal_camera_direction();
-}
-inline void GameState::unsafe_arena_set_allocated_camera_direction(
-    ::Vec3f* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.camera_direction_);
-  }
-  _impl_.camera_direction_ = reinterpret_cast<::Vec3f*>(value);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:GameState.camera_direction)
-}
-inline ::Vec3f* PROTOBUF_NULLABLE GameState::release_camera_direction() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  ::Vec3f* released = _impl_.camera_direction_;
-  _impl_.camera_direction_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::Vec3f* PROTOBUF_NULLABLE GameState::unsafe_arena_release_camera_direction() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:GameState.camera_direction)
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  ::Vec3f* temp = _impl_.camera_direction_;
-  _impl_.camera_direction_ = nullptr;
-  return temp;
-}
-inline ::Vec3f* PROTOBUF_NONNULL GameState::_internal_mutable_camera_direction() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.camera_direction_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::Vec3f>(GetArena());
-    _impl_.camera_direction_ = reinterpret_cast<::Vec3f*>(p);
-  }
-  return _impl_.camera_direction_;
-}
-inline ::Vec3f* PROTOBUF_NONNULL GameState::mutable_camera_direction()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  ::Vec3f* _msg = _internal_mutable_camera_direction();
-  // @@protoc_insertion_point(field_mutable:GameState.camera_direction)
-  return _msg;
-}
-inline void GameState::set_allocated_camera_direction(::Vec3f* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.camera_direction_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = value->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  }
-
-  _impl_.camera_direction_ = reinterpret_cast<::Vec3f*>(value);
-  // @@protoc_insertion_point(field_set_allocated:GameState.camera_direction)
-}
-
-// required .Vec3f velocity = 2;
-inline bool GameState::has_velocity() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
-  PROTOBUF_ASSUME(!value || _impl_.velocity_ != nullptr);
-  return value;
-}
-inline void GameState::clear_velocity() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.velocity_ != nullptr) _impl_.velocity_->Clear();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
-}
-inline const ::Vec3f& GameState::_internal_velocity() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::Vec3f* p = _impl_.velocity_;
-  return p != nullptr ? *p : reinterpret_cast<const ::Vec3f&>(::_Vec3f_default_instance_);
-}
-inline const ::Vec3f& GameState::velocity() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:GameState.velocity)
-  return _internal_velocity();
-}
-inline void GameState::unsafe_arena_set_allocated_velocity(
-    ::Vec3f* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.velocity_);
-  }
-  _impl_.velocity_ = reinterpret_cast<::Vec3f*>(value);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:GameState.velocity)
-}
-inline ::Vec3f* PROTOBUF_NULLABLE GameState::release_velocity() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  ::Vec3f* released = _impl_.velocity_;
-  _impl_.velocity_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::Vec3f* PROTOBUF_NULLABLE GameState::unsafe_arena_release_velocity() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:GameState.velocity)
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  ::Vec3f* temp = _impl_.velocity_;
-  _impl_.velocity_ = nullptr;
-  return temp;
-}
-inline ::Vec3f* PROTOBUF_NONNULL GameState::_internal_mutable_velocity() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.velocity_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::Vec3f>(GetArena());
-    _impl_.velocity_ = reinterpret_cast<::Vec3f*>(p);
-  }
-  return _impl_.velocity_;
-}
-inline ::Vec3f* PROTOBUF_NONNULL GameState::mutable_velocity()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  ::Vec3f* _msg = _internal_mutable_velocity();
-  // @@protoc_insertion_point(field_mutable:GameState.velocity)
-  return _msg;
-}
-inline void GameState::set_allocated_velocity(::Vec3f* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.velocity_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = value->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  }
-
-  _impl_.velocity_ = reinterpret_cast<::Vec3f*>(value);
-  // @@protoc_insertion_point(field_set_allocated:GameState.velocity)
-}
-
-// required bool collided = 3;
+// required bool collided = 1;
 inline bool GameState::has_collided() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
 }
 inline void GameState::clear_collided() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.collided_ = false;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+                  0x00000002U);
 }
 inline bool GameState::collided() const {
   // @@protoc_insertion_point(field_get:GameState.collided)
@@ -3670,7 +4005,7 @@ inline bool GameState::collided() const {
 }
 inline void GameState::set_collided(bool value) {
   _internal_set_collided(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_set:GameState.collided)
 }
 inline bool GameState::_internal_collided() const {
@@ -3682,11 +4017,40 @@ inline void GameState::_internal_set_collided(bool value) {
   _impl_.collided_ = value;
 }
 
+// required double reward = 2;
+inline bool GameState::has_reward() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
+  return value;
+}
+inline void GameState::clear_reward() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.reward_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
+}
+inline double GameState::reward() const {
+  // @@protoc_insertion_point(field_get:GameState.reward)
+  return _internal_reward();
+}
+inline void GameState::set_reward(double value) {
+  _internal_set_reward(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_set:GameState.reward)
+}
+inline double GameState::_internal_reward() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.reward_;
+}
+inline void GameState::_internal_set_reward(double value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.reward_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // KeyboardState
 
-// optional bool w = 1;
+// required bool w = 1;
 inline bool KeyboardState::has_w() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
   return value;
@@ -3715,7 +4079,7 @@ inline void KeyboardState::_internal_set_w(bool value) {
   _impl_.w_ = value;
 }
 
-// optional bool a = 2;
+// required bool a = 2;
 inline bool KeyboardState::has_a() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
@@ -3744,7 +4108,7 @@ inline void KeyboardState::_internal_set_a(bool value) {
   _impl_.a_ = value;
 }
 
-// optional bool s = 3;
+// required bool s = 3;
 inline bool KeyboardState::has_s() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
@@ -3773,7 +4137,7 @@ inline void KeyboardState::_internal_set_s(bool value) {
   _impl_.s_ = value;
 }
 
-// optional bool d = 4;
+// required bool d = 4;
 inline bool KeyboardState::has_d() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;

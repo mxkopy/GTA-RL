@@ -1,17 +1,12 @@
 import torch
-import random
 import config
-import torchvision
-import math
-import mmap
-import cupy
 import numpy as np
-import structs
 from struct import unpack
-from ipc import Flags, StructuredMemory, RequestLockedMemory
+from ipc import Flags, GLOBAL_FLAGS, StructuredMemory, RequestLockedMemory
 from cuda_ipc import CUDAArray
 from gymnasium import Env
 from gymnasium.spaces import Tuple, Box, Discrete
+from math import prod
 
 class GameState:
 
@@ -20,16 +15,20 @@ class GameState:
     @staticmethod
     def pop():
         state = GameState.GameStateMemory.data
-        return (
-            (state.camera_direction.x, state.camera_direction.y, state.camera_direction.z),
-            (state.velocity.x, state.velocity.y, state.velocity.z),
-            state.collided
-        )
+        return state.reward, state.collided
 
+    @staticmethod
+    def reset():
+        GameState.GameStateMemory.flags.set_flag(Flags.REQUEST_GAME_STATE, True)
+        GameState.GameStateMemory.flags.set_flag(Flags.RESET, True)
+        GameState.GameStateMemory.flags.wait_until(Flags.RESET, False)
 
 class VideoState:
 
-    VertexShaderConstantsMemory = StructuredMemory('VSConstantBuffers')
+    NEAR = 0.15
+    FAR = 10003.815
+
+    VertexShaderConstantsMemory = StructuredMemory('VSConstants')
     
     CUDAArrays = {
         'Depth': None,
@@ -42,21 +41,17 @@ class VideoState:
         for name in CUDAArrays:
             if CUDAArrays[name] is None:
                 CUDAArrays[name] = torch.from_dlpack(CUDAArray(name).data)
-
+    
+    @staticmethod
     def rescale(img: torch.Tensor):
         img = img.squeeze()
+        dim_pads = (1 for _ in range(4 - len(img.shape)))
+        img = img.reshape(*dim_pads, *img.shape)
         size = config.image_shape[1:]
-        return torch.nn.functional.interpolate(img.unsqueeze(0), size, mode='bilinear', antialias=True).squeeze()
-
-    def linearize_depth(array):
-        VS = VideoState.VertexShaderConstantsMemory.data
-        n, f = VS.nearclip, VS.farclip
-        z = (f - n) / (array * (f + n))
-        return z
+        return torch.nn.functional.interpolate(img, size, mode='bilinear', antialias=True).squeeze()
 
     @staticmethod
     def pop_rgb():
-        VideoState.init_cuda_arrays()
         img = VideoState.CUDAArrays['RGB']
         img = img.permute(2, 0, 1).unsqueeze(0).to(dtype=torch.float32)
         img = img / 255
@@ -65,22 +60,59 @@ class VideoState:
         return img
 
     @staticmethod
-    def pop_depth_and_velocity():
-        VideoState.init_cuda_arrays()
-        depthinfo = VideoState.CUDAArrays['Depth']
-        # near, far = unpack('@2f', VideoState.nearclipfarclip.pop_nbl())
-        velocity_and_depth = depthinfo.squeeze().permute(2, 0, 1)
+    def linearize_depth(array, cutoff=config.depth_cutoff):
+        # VS = VideoState.VertexShaderConstantsMemory.data
+        # n, f = VS.nearclip, VS.farclip
+        # Pulled from https://github.com/umautobots/GTAVisionExport/issues/13#issuecomment-765115705
+        Z = (-(VideoState.FAR*VideoState.NEAR)/(VideoState.NEAR-VideoState.FAR))/(array - (VideoState.NEAR/(VideoState.NEAR-VideoState.FAR)))
+        if cutoff is not None:
+            Z[Z >= cutoff] = cutoff
+            return (cutoff - Z) / cutoff
+        return Z
+
+    @staticmethod
+    def voxelize(x, depth=config.voxel_depth, min_val=NEAR, max_val=1.0):
+        device = x.device
+        x = x.squeeze()
+        x = x.to(device='cuda')
+        if len(x.shape) > 2:
+            xs = x.shape
+            x = x.reshape(-1, xs[-2], xs[-1])
+            vx = torch.stack([VideoState.voxelize(x[i, ...]) for i in range(prod(xs[:-2]))])
+            vx = vx.reshape(*xs[:-2], -1, *xs[-2:])
+            return vx
+        measure = torch.linspace(min_val, max_val, depth + 1)[:-1]
+        z = torch.ones_like(x, dtype=torch.bool).unsqueeze(0).repeat(depth, 1, 1)
+        for i, m in enumerate(measure):
+            z[i, x < m] = 0
+        return z.unsqueeze(0).to(device=device, dtype=x.dtype)
+
+    @staticmethod
+    def pop_depth():
+        buffer = VideoState.CUDAArrays['Depth']
+        depth = VideoState.rescale(buffer.squeeze()[:, :, 3])
+        return depth
+
+    # Velocity map scaled by depth (3 dims)
+    # Distance map with cutoff (1 dim) -> 4 dim input
+    @staticmethod
+    def pop_velocity_and_depth():
+        buffer = VideoState.CUDAArrays['Depth']
+        velocity_and_depth = buffer.squeeze().permute(2, 0, 1)
         velocity_and_depth = VideoState.rescale(velocity_and_depth)
-        velocity_and_depth = torch.nan_to_num(velocity_and_depth, posinf=0, neginf=0)
-        # print(velocity_and_depth[:3, ...].max(), velocity_and_depth[:3, ...].min())
-        return velocity_and_depth[:3, ...], velocity_and_depth[3, ...].unsqueeze(0)
+        velocity = velocity_and_depth[:3, ...]
+        depth = velocity_and_depth[3, ...].unsqueeze(0)
+        return velocity, depth
 
     @staticmethod
     def pop():
-        velocity, depth = VideoState.pop_depth_and_velocity()
-        rgb = VideoState.pop_rgb()
-        img = torch.cat((depth, rgb))
-        return img.cpu()
+        # depth = VideoState.pop_velocity_and_depth()
+        depth = VideoState.pop_depth()
+        depth = VideoState.linearize_depth(depth)
+        return depth.cpu()
+        # velocity, depth = VideoState.pop_velocity_and_depth()
+        # rgb = VideoState.pop_rgb()
+        # return torch.cat((depth, distances, velocity)).cpu()
 
 class VideoGame:
 
@@ -93,33 +125,44 @@ class VideoGame:
     def act(self, action: tuple):
         self.virtual_controller.update(action)
 
-    def reward(camera_direction, velocity, collided):
-        if collided:
-            return -10
-        else:
-            return np.dot(np.array(camera_direction), np.array(velocity))
-
     def observe(self):
-        camera_direction, velocity, collided = self.game_state.pop()
-        video_state = self.video_state.pop()
-        observation = torch.cat((video_state.reshape(-1), torch.tensor(velocity, device=video_state.device)) )
-        reward = VideoGame.reward(camera_direction, velocity, collided)
-        terminal = collided == 0
-        truncated = False
-        return observation.reshape(-1), reward, terminal, truncated
+        return self.video_state.pop().reshape(-1), self.game_state.pop()
 
 class Environment(Env):
 
-    def __init__(self, conf=None):
-        self.device = 'cuda'
+    def __init__(self, env_config={'horizon': None}):
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
         self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape)
+        self.last_n_frames = []
+        self.horizon = env_config['horizon']
+        self.t = 0
+
+    def calculate_reward(self, game_state):
+        speed, collided = game_state
+        horizon = 1 if self.horizon is None else self.horizon
+        return -10 if collided else np.sqrt(max(0, speed))
+
+    def truncate(self) -> bool:
+        if self.horizon is not None:
+            self.t += 1
+            return self.t >= self.horizon
+        return False
+
+    def stack_frame(self, observation):
+        if config.n_frames <= 1:
+            return observation.reshape(-1)
+        self.last_n_frames = [observation] + self.last_n_frames[:-1]
+        return torch.stack(self.last_n_frames, dim=0).reshape(-1)
 
     def step(self, action):
         self.video_game.act(action)
-        observation, reward, terminal, truncated = self.video_game.observe()
-        print(f"{action[0]: >10.5f} {action[1]: >10.5f} {action[2]: >10.5f} | {str(reward)[0:5]}")
+        video_state, game_state = self.video_game.observe()
+        observation = self.stack_frame(video_state)
+        reward = self.calculate_reward(game_state)
+        terminal = game_state[1]
+        truncated = self.truncate()
+        # print(f"{action[0]: >10.5f} {action[1]: >10.5f} | {str(reward)[0:5]}")
         return (
             observation,
             reward,
@@ -129,5 +172,55 @@ class Environment(Env):
         )
 
     def reset(self, *args, **kwargs):
-        obs = self.video_game.observe()[0], {"env_state": "reset"}
-        return obs
+        self.t = 0
+        self.video_game.game_state.reset()
+        frame = self.video_game.observe()[0]
+        self.last_n_frames = [torch.zeros_like(frame) for _ in range(config.n_frames)]
+        observation = self.stack_frame(frame)
+        return observation, {"env_state" : "reset"}
+
+
+
+# Custom logger to record environment data 
+from ray.rllib.callbacks.callbacks import RLlibCallback
+class EpisodeStepCallback(RLlibCallback):
+
+    def __init__(self):
+        super().__init__()
+        self.VSBMemory = StructuredMemory("VSConstants")
+        vsb = self.VSBMemory.data.constant_buffers[2]
+        vsb = np.frombuffer(vsb, dtype=np.float32).reshape(-1, 4)
+
+    def on_episode_created(self, *, episode, **kwargs):
+        episode.custom_data["camera_position"] = []
+        episode.custom_data["camera_direction"] = []
+
+    def on_episode_step(self, *, episode, **kwargs):
+        vsb = np.frombuffer(self.VSBMemory.data.constant_buffers[2], dtype=np.float32)
+        episode.custom_data["camera_position"].append(tuple(vsb[12:15]))
+        episode.custom_data["camera_direction"].append(tuple(vsb[16:19]))
+
+    def on_episode_end(self, *, episode, metrics_logger, **kwargs):
+        metrics_logger.log_value("camera_position", value=episode.custom_data["camera_position"], reduce="item")
+        metrics_logger.log_value("camera_direction", value=episode.custom_data["camera_direction"], reduce="item")
+
+
+# Custom learner-connector to zero out rewards in episodes where the agent crashes
+from ray.rllib.connectors.connector_v2 import ConnectorV2
+class ZeroCrashRewardLearnerConnector(ConnectorV2):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, *, rl_module, batch, episodes, **kwargs):
+        for sa_episode in self.single_agent_episode_iterator(
+            episodes=episodes, agents_that_stepped_only=False
+        ):
+            if sa_episode.is_terminated:
+                rewards = sa_episode.get_rewards()
+                for i, _ in enumerate(rewards):
+                    sa_episode.set_rewards(
+                        new_data=0,
+                        at_indices=i
+                    )
+        return batch

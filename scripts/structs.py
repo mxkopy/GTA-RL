@@ -7,6 +7,19 @@ class Vec3f(metaclass=Serializable):
     y: np.float32
     z: np.float32
 
+class RayCast(metaclass=Serializable):
+    x: np.float32
+    y: np.float32
+    collision: Vec3f
+    position: Vec3f
+    nearclip: np.float32
+    farclip: np.float32
+
+class VertexShaderConstants(metaclass=Serializable):
+    nearclip: np.float32
+    farclip: np.float32
+    constant_buffers: list[bytes]
+
 class CUDAExtent(metaclass=Serializable):
     width: int
     height: int
@@ -19,25 +32,18 @@ class CUDAChannelFormatDesc(metaclass=Serializable):
     w: np.uint32
     f: np.uint32
 
-class CUDAArrayObject(metaclass=Serializable):
+class CUDAPitchedArrayObject(metaclass=Serializable):
     handle: bytes
     format: CUDAChannelFormatDesc
-    bpp: np.uint64
     pitch: np.uint64
     extent: CUDAExtent
 
-class VertexShaderConstants(metaclass=Serializable):
-    nearclip: np.float32
-    farclip: np.float32
-    constant_buffers: list[bytes]
-
 class GameState(metaclass=Serializable):
-    camera_direction: Vec3f
-    velocity: Vec3f
     collided: bool
+    reward: float
 
 class KeyboardState(metaclass=Serializable):
-    w: Optional[bool]
-    a: Optional[bool]
-    s: Optional[bool]
-    d: Optional[bool]
+    w: bool
+    a: bool
+    s: bool
+    d: bool
