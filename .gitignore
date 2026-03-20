@@ -2,6 +2,9 @@ vcpkg_installed/
 ray_results/
 checkpoints/
 schemas.old/
+last_run
+sac/
+results_backup/
 *.exe
 *.cppliteral
 *.ckpt
