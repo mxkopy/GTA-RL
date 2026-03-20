@@ -90,8 +90,20 @@ class UNet3D(nn.Module):
             nn.Linear(config.num_visual_features * 2, config.num_visual_features)
         )
 
+    @staticmethod
+    def fill_voxels(x):
+        with torch.no_grad():
+            device = x.device
+            x = x.to(device='cuda')
+            voxels = VideoState.voxelize(x)
+            idxs = torch.arange(voxels.shape[-3], device=voxels.device, dtype=torch.int).reshape(1, -1, 1, 1).repeat(1, 1, voxels.shape[-2], voxels.shape[-1])
+            voxels[idxs < (voxels * idxs).sum(dim=-3, keepdim=True)] = 1
+            voxels = voxels.to(device=device)
+            return voxels
+
     def forward(self, x):
-        point, voxel = self.point_model(x), self.voxel_model(VideoState.voxelize(x))
+        voxels = self.fill_voxels(x)
+        point, voxel = self.point_model(x), self.voxel_model(voxels)
         combined = torch.cat((point, voxel), dim=-1)
         return self.combine(combined)
 

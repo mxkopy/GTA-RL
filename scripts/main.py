@@ -5,8 +5,8 @@ args = argparse.ArgumentParser()
 # i.e. have a main branch without model.py. when developing model, create new branch named 'xyz' with model.py. save & commit when ready to run algo.
 # when `--train model_name run` is run, switch to the `model_name` branch and pull config from model.py. if `run` is omitted, use previous_run if it exists otherwise use `default`.
 args.add_argument('--train', nargs='*', help='--train [model_name]\nLoads model_name if it is provided and exists in the checkpoint directory, otherwise creates it.\nIf no arguments are provided, loads the last run model if available, otherwise defaults to `ppo`.')
+args.add_argument('--nosave', action='store_true', help='If set, does not save the or log run.')
 args.add_argument('--flags', action='append', nargs='*', type=int, help='--flags\nPrints IPC flag values.\n--flags FLAG\nFlips flag.\n--flags FLAG VALUE\nSets flag.\nNOTE: Flipping a flag is ignored if that flag is set, and printing occurs after all operations.')
-args.add_argument('--debug', action='store_true', help='Prints IPC flags.\n')
 args.add_argument('--unlock', action='store_true', help='Switches whether the game is synchronized to the model.')
 
 args = args.parse_args()
@@ -77,7 +77,7 @@ if args.train is not None:
         )
         .env_runners(
             num_env_runners=0,
-            num_gpus_per_env_runner=0.5,
+            num_gpus_per_env_runner=1,
         )
         .learners(
             learner_class=LassoLearner,
@@ -94,7 +94,7 @@ if args.train is not None:
                 'horizon': config.horizon
             }
         )
-        .build_algo(logger_creator=lambda config: UnifiedLogger(config, logdir=LOG_DIR, loggers=None))
+        .build_algo(logger_creator=None if args.nosave else lambda config: UnifiedLogger(config, logdir=LOG_DIR, loggers=None))
     )
 
     if CHECKPOINT_DIR.exists():
@@ -114,8 +114,9 @@ if args.train is not None:
         gc.collect()
         torch.cuda.empty_cache()
         results = algorithm.train()
-        algorithm.save_checkpoint(str(CHECKPOINT_DIR))
-        if not last_run_written:
-            with open(Path(PROJECT_DIR) / 'last_run', 'w') as file:
-                file.write(MODEL_NAME)
-            last_run_written = True
+        if args.nosave:
+            algorithm.save_checkpoint(str(CHECKPOINT_DIR))
+            if not last_run_written:
+                with open(Path(PROJECT_DIR) / 'last_run', 'w') as file:
+                    file.write(MODEL_NAME)
+                last_run_written = True

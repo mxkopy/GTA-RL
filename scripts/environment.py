@@ -72,20 +72,19 @@ class VideoState:
 
     @staticmethod
     def voxelize(x, depth=config.voxel_depth, min_val=NEAR, max_val=1.0):
-        device = x.device
         x = x.squeeze()
-        x = x.to(device='cuda')
         if len(x.shape) > 2:
             xs = x.shape
             x = x.reshape(-1, xs[-2], xs[-1])
             vx = torch.stack([VideoState.voxelize(x[i, ...]) for i in range(prod(xs[:-2]))])
             vx = vx.reshape(*xs[:-2], -1, *xs[-2:])
             return vx
-        measure = torch.linspace(min_val, max_val, depth + 1)[:-1]
-        z = torch.ones_like(x, dtype=torch.bool).unsqueeze(0).repeat(depth, 1, 1)
-        for i, m in enumerate(measure):
-            z[i, x < m] = 0
-        return z.unsqueeze(0).to(device=device, dtype=x.dtype)
+        z = torch.zeros_like(x, dtype=torch.bool).unsqueeze(0).repeat(depth, 1, 1)
+        bounds = torch.linspace(min_val, max_val, depth+1, device=z.device) 
+        lb = bounds[:-1].reshape(-1, 1, 1).repeat(1, z.shape[1], z.shape[2])
+        ub = bounds[1:].reshape(-1, 1, 1).repeat(1, z.shape[1], z.shape[2])
+        z[(lb <= x) & (x < ub)] = 1
+        return z.unsqueeze(0).to(dtype=x.dtype)
 
     @staticmethod
     def pop_depth():
