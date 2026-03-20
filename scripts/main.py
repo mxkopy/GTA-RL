@@ -74,7 +74,7 @@ if args.train is not None:
         )
         .env_runners(
             num_env_runners=0,
-            num_gpus_per_env_runner=1,
+            num_gpus_per_env_runner=0.5,
         )
         .learners(
             learner_class=LassoLearner,
