@@ -11,7 +11,7 @@ while True:
     rgb = VideoState.pop_rgb()
     depth = VideoState.pop_depth()
     depth = VideoState.linearize_depth(depth)
-    voxels = VideoState.voxelize(depth).squeeze() * torch.arange(config.voxel_depth, device='cuda').reshape(-1, 1, 1)
+    voxels = VideoState.voxelize(depth).squeeze() * torch.arange(config.voxel_depth, device=voxels.device).reshape(-1, 1, 1)
     voxels = voxels.sum(dim=0)
     cv2.imshow("Voxels", voxels.cpu().numpy() / config.voxel_depth )
     cv2.imshow("Depth", depth.squeeze().cpu().numpy())
