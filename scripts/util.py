@@ -47,3 +47,23 @@ class LassoLearner(PPOTorchLearner):
         )
 
         return total_loss
+    
+# Custom learner-connector to zero out rewards in episodes where the agent crashes
+from ray.rllib.connectors.connector_v2 import ConnectorV2
+class ZeroCrashRewardLearnerConnector(ConnectorV2):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, *, rl_module, batch, episodes, **kwargs):
+        for sa_episode in self.single_agent_episode_iterator(
+            episodes=episodes, agents_that_stepped_only=False
+        ):
+            if sa_episode.is_terminated:
+                rewards = sa_episode.get_rewards()
+                for i, _ in enumerate(rewards):
+                    sa_episode.set_rewards(
+                        new_data=0,
+                        at_indices=i
+                    )
+        return batch

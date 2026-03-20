@@ -1,5 +1,18 @@
-import sys
+# import argparse
 
+# args = argparse.ArgumentParser()
+
+# args.add_argument('--train', nargs='?', const='ppo', help='--train [ppo|sac]')
+# args.add_argument('--continue', nargs='?', help='--continue [model_name]\nContinues training the specified model. If no model is specified, continues training the most recent model. Does nothing if --train is not specified')
+# args.add_argument('--debug', action='store_true', help='Prints IPC flags\n')
+# args.add_argument('--flag', action='append', nargs=2, help='--flag FLAG VALUE\nSets IPC flag values')
+
+# args = args.parse_args()
+# print(args)
+# exit()
+
+
+import sys
 if __name__ == '__main__':
 
     assert len(sys.argv) >= 2
@@ -8,14 +21,13 @@ if __name__ == '__main__':
         import gc
         import os
         from datetime import datetime
-        from dateutil import parser
         from pathlib import Path
         import config
         import torch
         from ray.tune.logger import UnifiedLogger
-        from environment import Environment, VideoState, ZeroCrashRewardLearnerConnector
+        from environment import Environment, VideoState
         from ipc import Flags
-        from util import PROJECT_DIR, LassoLearner
+        from util import PROJECT_DIR, LassoLearner, ZeroCrashRewardLearnerConnector
         from ppo.config import config as ppo_config
 
         TIME_FMT = '%Y-%m-%d_%H-%M-%S'

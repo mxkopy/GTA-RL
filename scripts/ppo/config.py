@@ -1,22 +1,11 @@
 import config
 from environment import Environment
-from model import PPODriver
+from ppo.model import PPODriver
 from ray.rllib.core.rl_module.rl_module import RLModuleSpec
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.tune.logger import UnifiedLogger
 
 config = (
     PPOConfig()
-    .rl_module(
-        rl_module_spec=RLModuleSpec(
-            module_class=PPODriver,
-            observation_space=Environment().observation_space,
-            action_space=Environment().action_space,
-            model_config={
-                'max_seq_len': config.minibatch_size,
-            }
-        )
-    )
     .training(
         use_gae=True,
         use_critic=True,
@@ -30,5 +19,15 @@ config = (
         clip_param=config.clip_param,
         entropy_coeff=config.entropy_coeff,
         vf_loss_coeff=config.vf_loss_coeff
+    )
+    .rl_module(
+        rl_module_spec=RLModuleSpec(
+            module_class=PPODriver,
+            observation_space=Environment().observation_space,
+            action_space=Environment().action_space,
+            model_config={
+                'max_seq_len': config.minibatch_size,
+            }
+        )
     )
 )

@@ -1,8 +1,11 @@
 protobuf
 cupy-cuda12x
 numpy
+matplotlib
 ray[rllib]
 gymnasium
 vgamepad
 opencv-python
 tensorboard
+argparse
+gymnasium
