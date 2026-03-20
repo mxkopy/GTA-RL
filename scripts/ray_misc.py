@@ -69,6 +69,7 @@ class ZeroCrashRewardLearnerConnector(ConnectorV2):
 
 
 # Mixed precision stuff
+HALF = np.float16
 def astype(x, T):
     if hasattr(x, '__array__'):    
         return np.astype(x, T)
@@ -80,7 +81,6 @@ def astype(x, T):
             return x.__class__((astype(y, T) for y in x))
     return x
 
-HALF = np.float16
 # Blatant https://github.com/ray-project/ray/blob/master/rllib/examples/gpus/mixed_precision_training_float16_inference.py
 def halfp_algorithm(algorithm: Algorithm, **kwargs):
     algorithm.env_runner_group.foreach_env_runner(
