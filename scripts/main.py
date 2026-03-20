@@ -61,9 +61,6 @@ if args.train is not None:
     LOG_DIR = Path(PROJECT_DIR) / 'ray_results' / MODEL_NAME
     CHECKPOINT_DIR = Path(PROJECT_DIR) / 'checkpoints' / MODEL_NAME
 
-    os.makedirs(LOG_DIR, exist_ok=True)
-    os.makedirs(CHECKPOINT_DIR, exist_ok=True)
-
     algorithm = (
         model_config
         .framework(
@@ -114,7 +111,7 @@ if args.train is not None:
         gc.collect()
         torch.cuda.empty_cache()
         results = algorithm.train()
-        if args.nosave:
+        if not args.nosave:
             algorithm.save_checkpoint(str(CHECKPOINT_DIR))
             if not last_run_written:
                 with open(Path(PROJECT_DIR) / 'last_run', 'w') as file:
