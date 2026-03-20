@@ -117,5 +117,3 @@ if args.train is not None:
                 with open(Path(PROJECT_DIR) / 'last_run', 'w') as file:
                     file.write(MODEL_NAME)
                 last_run_written = True
-
-# test
