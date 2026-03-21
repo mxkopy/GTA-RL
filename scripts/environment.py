@@ -71,7 +71,7 @@ class VideoState:
         return Z
 
     @staticmethod
-    def voxelize(x, depth=config.voxel_depth, min_val=NEAR, max_val=1.0):
+    def voxelize(x, depth=config.voxel_depth, min_val=NEAR/config.depth_cutoff, max_val=1.0):
         x = x.squeeze()
         if len(x.shape) > 2:
             xs = x.shape
