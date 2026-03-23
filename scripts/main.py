@@ -87,6 +87,8 @@ def cmd_train():
                 return [x]
         return x
 
+    model_learner_connector = (lambda *args: []) if model_config._learner_connector is None else model_config._learner_connector
+
     algorithm = (
         model_config
         .framework(
@@ -103,7 +105,7 @@ def cmd_train():
             num_gpus_per_env_runner=0.5,
         )
         .learners(
-            learner_connector=lambda *args: to_list(model_config._learner_connector(*args)) + [NormalizeRewards()],
+            learner_connector=lambda *args: to_list(model_learner_connector(*args)) + [NormalizeRewards()],
             num_learners=0,
             num_gpus_per_learner=0.5
         )
