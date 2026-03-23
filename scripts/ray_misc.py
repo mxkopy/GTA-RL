@@ -1,72 +1,8 @@
 
-import torch
 import numpy as np
 from collections.abc import Iterable
-from typing import Dict, Any, Optional
-from ray.rllib.connectors.connector_v2 import ConnectorV2
 from ray.rllib.algorithms.algorithm import Algorithm
-from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.algorithms.ppo.torch.ppo_torch_learner import PPOTorchLearner
-from ray.rllib.utils.typing import ModuleID, TensorType
-from ray.rllib.utils.annotations import override
-
-
-# Custom learner adding L1 weight regularization
-class LassoLearner(PPOTorchLearner):
-
-    @override(PPOTorchLearner)
-    def compute_loss_for_module(
-        self,
-        *,
-        module_id: ModuleID,
-        config: PPOConfig,
-        batch: Dict[str, Any],
-        fwd_out: Dict[str, TensorType],
-    ) -> TensorType:
-
-        base_total_loss = super().compute_loss_for_module(
-            module_id=module_id,
-            config=config,
-            batch=batch,
-            fwd_out=fwd_out,
-        )
-
-        # Compute the mean of all the RLModule's weights' absolute values.
-        parameters = self.get_parameters(self.module[module_id])
-        mean_abs_weight = torch.mean(torch.cat([p.reshape(-1).abs() for p in parameters]))
-
-        self.metrics.log_value(
-            key=(module_id, "lasso_coeff"),
-            value=mean_abs_weight,
-            window=1,
-        )
-
-        total_loss = (
-            base_total_loss
-            + config.learner_config_dict["lasso_coeff"] * mean_abs_weight
-        )
-
-        return total_loss
-    
-# Custom learner-connector to zero out rewards in episodes where the agent crashes
-class ZeroCrashRewardLearnerConnector(ConnectorV2):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def __call__(self, *, rl_module, batch, episodes, **kwargs):
-        for sa_episode in self.single_agent_episode_iterator(
-            episodes=episodes, agents_that_stepped_only=False
-        ):
-            if sa_episode.is_terminated:
-                rewards = sa_episode.get_rewards()
-                for i, _ in enumerate(rewards):
-                    sa_episode.set_rewards(
-                        new_data=0,
-                        at_indices=i
-                    )
-        return batch
-
+from ray.rllib.connectors.connector_v2 import ConnectorV2
 
 # Mixed precision stuff
 HALF = np.float16
@@ -114,8 +50,3 @@ class Float16Connector(ConnectorV2):
             self.add_batch_item(batch, column="obs", item_to_add=half_obs, single_agent_episode=sa_episode)
         return batch
 
-class PPOTorchMixedPrecisionLearner(PPOTorchLearner):
-    def _update(self, *args, **kwargs):
-        with torch.amp.autocast("cuda", dtype=getattr(torch, HALF.__name__)):
-            results = super()._update(*args, **kwargs)
-        return results

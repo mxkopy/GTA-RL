@@ -94,10 +94,6 @@ def cmd_train():
             num_gpus_per_env_runner=0.5,
         )
         .learners(
-            learner_class=LassoLearner,
-            learner_config_dict={
-                "lasso_coeff": config.lasso_coeff
-            },
             num_learners=0,
             num_gpus_per_learner=0.5
         )
