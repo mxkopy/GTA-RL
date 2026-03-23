@@ -62,7 +62,6 @@ def cmd_train():
     from ray.tune.logger import UnifiedLogger
     from environment import Environment, VideoState
     from ipc import Flags, GLOBAL_FLAGS
-    from ray_misc import LassoLearner, ZeroCrashRewardLearnerConnector
     from model import model_config
 
     MODEL_NAME = 'ppo'
