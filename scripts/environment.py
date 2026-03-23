@@ -140,7 +140,7 @@ class Environment(Env):
     def calculate_reward(self, game_state):
         speed, collided = game_state
         horizon = 1 if self.horizon is None else self.horizon
-        return -10 if collided else np.sqrt(max(0, speed))
+        return 0 if collided else np.sqrt(max(0, speed))
 
     def truncate(self) -> bool:
         if self.horizon is not None:

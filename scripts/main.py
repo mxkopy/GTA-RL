@@ -98,7 +98,6 @@ def cmd_train():
             learner_config_dict={
                 "lasso_coeff": config.lasso_coeff
             },
-            learner_connector=lambda observation_space, action_space: ZeroCrashRewardLearnerConnector(),
             num_learners=0,
             num_gpus_per_learner=0.5
         )
