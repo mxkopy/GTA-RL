@@ -50,3 +50,18 @@ class Float16Connector(ConnectorV2):
             self.add_batch_item(batch, column="obs", item_to_add=half_obs, single_agent_episode=sa_episode)
         return batch
 
+# Normalizes episode rewards
+class NormalizeRewards(ConnectorV2):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, *, rl_module, batch, episodes, **kwargs):
+        for sa_episode in self.single_agent_episode_iterator(episodes=episodes, agents_that_stepped_only=False):
+            rewards = sa_episode.get_rewards()
+            for i, r in enumerate(rewards):
+                sa_episode.set_rewards(
+                    new_data=(r - np.mean(rewards))/(np.std(rewards) + 1e-10),
+                    at_indices=i
+                )
+        return batch

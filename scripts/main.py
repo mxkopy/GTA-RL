@@ -62,6 +62,7 @@ def cmd_train():
     from environment import Environment, VideoState
     from ipc import Flags, GLOBAL_FLAGS
     from model import model_config
+    from ray_misc import NormalizeRewards
 
     MODEL_NAME = 'default'
     LAST_RUN = Path(PROJECT_DIR) / 'last_run'
@@ -75,6 +76,16 @@ def cmd_train():
 
     LOG_DIR = Path(PROJECT_DIR) / 'ray_results' / MODEL_NAME
     CHECKPOINT_DIR = Path(PROJECT_DIR) / 'checkpoints' / MODEL_NAME
+
+    def to_list(x):
+        if x is None:
+            return []
+        if not isinstance(x, list):
+            if isinstance(x, tuple):
+                return list(x)
+            else:
+                return [x]
+        return x
 
     algorithm = (
         model_config
@@ -92,6 +103,7 @@ def cmd_train():
             num_gpus_per_env_runner=0.5,
         )
         .learners(
+            learner_connector=lambda *args: to_list(model_config._learner_connector(*args)) + [NormalizeRewards()],
             num_learners=0,
             num_gpus_per_learner=0.5
         )

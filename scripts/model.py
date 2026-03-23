@@ -1,4 +1,5 @@
 import config
+import numpy as np
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 
