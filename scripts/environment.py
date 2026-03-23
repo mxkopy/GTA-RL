@@ -92,26 +92,16 @@ class VideoState:
         depth = VideoState.rescale(buffer.squeeze()[:, :, 3])
         return depth
 
-    # Velocity map scaled by depth (3 dims)
-    # Distance map with cutoff (1 dim) -> 4 dim input
     @staticmethod
-    def pop_velocity_and_depth():
+    def pop_velocity():
         buffer = VideoState.CUDAArrays['Depth']
-        velocity_and_depth = buffer.squeeze().permute(2, 0, 1)
-        velocity_and_depth = VideoState.rescale(velocity_and_depth)
-        velocity = velocity_and_depth[:3, ...]
-        depth = velocity_and_depth[3, ...].unsqueeze(0)
-        return velocity, depth
+        return VideoState.rescale(buffer.squeeze().permute(2, 0, 1)[:, :, :3])
 
     @staticmethod
     def pop():
-        # depth = VideoState.pop_velocity_and_depth()
         depth = VideoState.pop_depth()
         depth = VideoState.linearize_depth(depth)
         return depth.cpu()
-        # velocity, depth = VideoState.pop_velocity_and_depth()
-        # rgb = VideoState.pop_rgb()
-        # return torch.cat((depth, distances, velocity)).cpu()
 
 class VideoGame:
 
@@ -161,7 +151,6 @@ class Environment(Env):
         reward = self.calculate_reward(game_state)
         terminal = game_state[1]
         truncated = self.truncate()
-        # print(f"{action[0]: >10.5f} {action[1]: >10.5f} | {str(reward)[0:5]}")
         return (
             observation,
             reward,

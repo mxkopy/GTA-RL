@@ -52,7 +52,6 @@ def cmd_unlock():
     GLOBAL_FLAGS.set_flag(Flags.UNSTUCK, not GLOBAL_FLAGS.get_flag(Flags.UNSTUCK))
     GLOBAL_FLAGS.set_flag(Flags.REQUEST_GAME_STATE, True)
 
-
 def cmd_train():
     from util import PROJECT_DIR
     import gc
@@ -64,7 +63,7 @@ def cmd_train():
     from ipc import Flags, GLOBAL_FLAGS
     from model import model_config
 
-    MODEL_NAME = 'ppo'
+    MODEL_NAME = 'default'
     LAST_RUN = Path(PROJECT_DIR) / 'last_run'
 
     if LAST_RUN.exists():
