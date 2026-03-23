@@ -20,6 +20,8 @@ model_config = (
     )
     .rl_module(
         model_config=DefaultModelConfig(
+            fcnet_hiddens=[64, 64, 64, 64],
+            fcnet_activation='relu',
             use_lstm=True,
             max_seq_len=config.minibatch_size
         )

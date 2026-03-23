@@ -67,7 +67,8 @@ class VideoState:
         Z = (-(VideoState.FAR*VideoState.NEAR)/(VideoState.NEAR-VideoState.FAR))/(array - (VideoState.NEAR/(VideoState.NEAR-VideoState.FAR)))
         if cutoff is not None:
             Z[Z >= cutoff] = cutoff
-            return (cutoff - Z) / cutoff
+            Z = (Z - VideoState.NEAR) / (cutoff - VideoState.NEAR)
+            return 1 - Z
         return Z
 
     @staticmethod
