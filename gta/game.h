@@ -57,6 +57,7 @@ inline static void ResetPlayerDrivingPosition(Vector3 Position, float Heading)
 	auto V = _VEHICLE;
 	ENTITY::SET_ENTITY_COORDS(V, Position.x, Position.y, Position.z, false, false, false, true);
 	ENTITY::SET_ENTITY_HEADING(V, Heading);
+	WAIT(0);
 	VEHICLE::SET_VEHICLE_FIXED(V);
 }
 
