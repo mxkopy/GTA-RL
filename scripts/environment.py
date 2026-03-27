@@ -102,7 +102,6 @@ class VideoState:
     def pop():
         depth = VideoState.pop_depth()
         depth = VideoState.linearize_depth(depth)
-        depth = 2*depth-1
         return depth.cpu()
 
 class VideoGame:
@@ -126,7 +125,7 @@ class Environment(Env):
     def __init__(self, env_config={'horizon': None}):
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
-        self.observation_space = Box(low=-1.0, high=1.0, shape=config.observation_space_shape)
+        self.observation_space = Box(low=0.0, high=1.0, shape=config.observation_space_shape)
         self.last_n_frames = []
         self.horizon = env_config['horizon']
         self.t = 0

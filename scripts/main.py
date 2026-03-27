@@ -124,7 +124,7 @@ def cmd_train():
         .environment(
             env=Environment,
             env_config={
-                'horizon': config.horizon
+                'horizon': 1024
             }
         )
         .build_algo(
