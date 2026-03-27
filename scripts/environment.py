@@ -102,6 +102,7 @@ class VideoState:
     def pop():
         depth = VideoState.pop_depth()
         depth = VideoState.linearize_depth(depth)
+        depth = 2*depth-1
         return depth.cpu()
 
 class VideoGame:
@@ -116,6 +117,8 @@ class VideoGame:
         self.virtual_controller.update(action)
 
     def observe(self):
+        # frame = self.video_state.pop().reshape(-1)
+        # speed, collided = self.game_state.pop()
         return self.video_state.pop().reshape(-1), self.game_state.pop()
 
 class Environment(Env):
@@ -123,7 +126,7 @@ class Environment(Env):
     def __init__(self, env_config={'horizon': None}):
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
-        self.observation_space = Box(low=-float('inf'), high=float('inf'), shape=config.observation_space_shape)
+        self.observation_space = Box(low=-1.0, high=1.0, shape=config.observation_space_shape)
         self.last_n_frames = []
         self.horizon = env_config['horizon']
         self.t = 0
@@ -131,7 +134,7 @@ class Environment(Env):
     def calculate_reward(self, game_state):
         speed, collided = game_state
         horizon = 1 if self.horizon is None else self.horizon
-        return 0 if collided else np.sqrt(max(0, speed))
+        return -1000 if collided else np.log10(1 + np.abs(speed)) * np.sign(speed)
 
     def truncate(self) -> bool:
         if self.horizon is not None:

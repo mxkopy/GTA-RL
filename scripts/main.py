@@ -60,9 +60,21 @@ def cmd_train():
     import torch
     from ray.tune.logger import UnifiedLogger
     from environment import Environment, VideoState
-    from ipc import Flags, GLOBAL_FLAGS
+    from ipc import Flags, GLOBAL_FLAGS, SCHEMA_DIR
     from model import model_config
     from ray_misc import NormalizeRewards
+    import ray
+    from ray.runtime_env import RuntimeEnv
+    import os
+
+    SCHEMA_PYS = [str(SCHEMA_DIR / f) for f in os.listdir(SCHEMA_DIR) if f.endswith('.py')]
+    ray.init(
+        runtime_env=RuntimeEnv(
+            # working_dir=str(PROJECT_DIR),
+            # exclude=[], 
+            py_modules=SCHEMA_PYS
+        )
+    )
 
     MODEL_NAME = 'default'
     LAST_RUN = Path(PROJECT_DIR) / 'last_run'
@@ -102,7 +114,7 @@ def cmd_train():
         )
         .env_runners(
             num_env_runners=0,
-            num_gpus_per_env_runner=0.5,
+            num_gpus_per_env_runner=0.5
         )
         .learners(
             learner_connector=lambda *args: to_list(model_learner_connector(*args)) + [NormalizeRewards()],
@@ -115,7 +127,9 @@ def cmd_train():
                 'horizon': config.horizon
             }
         )
-        .build_algo(logger_creator=None if args.nosave else lambda config: UnifiedLogger(config, logdir=LOG_DIR, loggers=None))
+        .build_algo(
+            logger_creator=None if args.nosave else lambda config: UnifiedLogger(config, logdir=LOG_DIR, loggers=None)
+        )
     )
 
     if CHECKPOINT_DIR.exists():
