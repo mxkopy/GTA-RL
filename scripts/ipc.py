@@ -433,36 +433,37 @@ GLOBAL_FLAGS = Flags()
 
 # Memory with a specific synchronized access pattern.
 #
-# Assume all flags are set to 0 at initialization:
+# When writing game data:
+#   wait on read flag 
+#   write data to memory section
+#   signal write flag
+#   return
 #
-# When requesting game data: 
-#   set the request flag to 1. 
-#   wait until the flag is 0
-#   read memory section & return.
+# When reading game data: 
+#   signal read flag
+#   wait on write flag
+#   read memory section & return
 # 
-# When producing game data:
-#   wait until the request flag is set to 1. 
-#   write data to memory section. 
-#   set request flag to 0 & return
-#  
+from util import Event
 class RequestLockedMemory(StructuredMemory):
 
-    def __init__(self, tagname, request_signal = Flags.REQUEST_GAME_STATE, *args, **kwargs):
+    def __init__(self, tagname, *args, **kwargs):
         super().__init__(tagname, *args, **kwargs)
-        self.flags = Flags()
-        self.request_signal = request_signal
-    
+        self.read_flag = Event(f"{tagname}Read")
+        self.write_flag = Event(f"{tagname}Write")
+
     @property
     def data(self) -> Message:
-        self.flags.set_flag(self.request_signal, True)
-        self.flags.wait_until(self.request_signal, False)
+        self.read_flag.set()
+        self.write_flag.wait()        
         return StructuredMemory.data.fget(self)
 
     @data.setter
     def data(self, msg: Message):
-        self.flags.wait_until(self.request_signal, True)
+        self.read_flag.wait()
         StructuredMemory.data.fset(self, msg)
-        self.flags.set_flag(self.request_signal, False)
+        self.write_flag.set()
+
 
 if __name__ == '__main__':
 

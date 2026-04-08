@@ -71,7 +71,7 @@ static Flags FLAGS;
 
 void OnTick()
 {
-	static RequestLockedMemory<GameState, REQUEST_GAME_STATE> GameStateMemory("GameState");
+	static RequestLockedMemory<GameState> GameStateMemory("GameState");
 	static GameState GameState{};
 	auto VEHICLE = _VEHICLE;
 
@@ -93,7 +93,7 @@ void OnTick()
 		GameState.set_reward(Reward);
 		GameState.set_collided(Collided);
 
-		if (FLAGS.GetFlag(UNSTUCK)) FLAGS.SetFlag(REQUEST_GAME_STATE, true);
+		if (FLAGS.GetFlag(UNSTUCK)) GameStateMemory.ReadFlag.Set();
 		GameStateMemory = GameState;
 	}
 }

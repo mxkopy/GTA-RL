@@ -486,11 +486,11 @@ BOOL APIENTRY DllMain
 
 int main(int argc, char* argv[])
 {
-    Eigen::Matrix3f M;
-
-    M << Eigen::Vector3f{ 1, 2, 3 }, Eigen::Vector3f{ 4, 5, 6 }, Eigen::Vector3f{ 7, 8, 9 };
-
-    std::cout << M.transpose() * Eigen::Vector3f{ 0, 0, 1 } << std::endl;
-    
+    RequestLockedMemory<Vec3f> Reader("Test");
+    for (int i = 0; i <= 10; i++) {
+        std::cout << i << std::endl;
+        Vec3f V = static_cast<Vec3f>(Reader);
+        std::cout << V.x() << " " << V.y() << " " << V.z() << std::endl;
+    }
 }
 #endif

@@ -48,15 +48,15 @@ def cmd_flags():
         Flags.debug()
 
 def cmd_unlock():
-    from ipc import Flags, GLOBAL_FLAGS
+    from ipc import Event, Flags, GLOBAL_FLAGS
     GLOBAL_FLAGS.set_flag(Flags.UNSTUCK, not GLOBAL_FLAGS.get_flag(Flags.UNSTUCK))
-    GLOBAL_FLAGS.set_flag(Flags.REQUEST_GAME_STATE, True)
+    Event("GameStateRead").set()
+    Event("GameStateWrite").set()
 
 def cmd_train():
     from util import PROJECT_DIR
     import gc
     from pathlib import Path
-    import config
     import torch
     from ray.tune.logger import UnifiedLogger
     from environment import Environment, VideoState
@@ -165,6 +165,14 @@ def cmd_view():
     VideoState.init_cuda_arrays()
 
     print("Showing")
+
+    cv2.namedWindow('Voxels', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('Depth', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('RGB', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Voxels', 640, 360)
+    cv2.resizeWindow('Depth', 640, 360)
+    cv2.resizeWindow('RGB', 640, 360)
+
     while True:
         keypress = cv2.waitKey(1)
         rgb = VideoState.pop_rgb()
@@ -173,7 +181,7 @@ def cmd_view():
         voxels = VideoState.voxelize(depth).squeeze() 
         voxels = voxels * torch.arange(config.voxel_depth, device=voxels.device).reshape(-1, 1, 1)
         voxels = voxels.sum(dim=0)
-        cv2.imshow("Voxels", voxels.cpu().numpy() / config.voxel_depth )
+        cv2.imshow("Voxels", voxels.cpu().numpy() / config.voxel_depth)
         cv2.imshow("Depth", depth.squeeze().cpu().numpy())
         cv2.imshow("RGB", rgb.permute(1, 2, 0).squeeze().cpu().numpy())
 

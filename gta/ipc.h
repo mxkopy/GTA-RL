@@ -203,27 +203,61 @@ struct StructuredMemory : Memory
 	}
 };
 
+
+struct Event
+{
+	HANDLE Handle;
+
+	Event(string Name, bool ManualReset = false, bool InitialState = false) : 
+		Handle(CreateEventA(NULL, ManualReset, InitialState, Name.c_str()))
+	{}
+
+	Event() = default;
+
+	bool Set()
+	{
+		return SetEvent(Handle);
+	}
+
+	bool Reset()
+	{
+		return ResetEvent(Handle);
+	}
+
+	DWORD Wait(bool Alertable = true)
+	{
+		DWORD result;
+		if (Alertable) while (true) if ((result = WaitForSingleObjectEx(Handle, INFINITE, true)) != WAIT_IO_COMPLETION) return result;
+		else return WaitForSingleObjectEx(Handle, INFINITE, false);
+	}
+};
+
 // A memory region containing a protobuf object with a specific synchronized access pattern 
 // See scripts/ipc.py
-template<std::derived_from<Message> T, size_t RequestFlag>
+template<std::derived_from<Message> T>
 struct RequestLockedMemory : StructuredMemory<T>
 {
 
-	Flags flags;
+	Event ReadFlag;
+	Event WriteFlag;
 
-	using StructuredMemory<T>::StructuredMemory;
+	RequestLockedMemory(string Tagname) : 
+		StructuredMemory<T>(Tagname), 
+		ReadFlag(Tagname + "Read"),
+		WriteFlag(Tagname + "Write")
+	{}
 
 	void operator = (const T& Msg)
 	{
-		flags.WaitUntil(RequestFlag, true);
+		ReadFlag.Wait();
 		StructuredMemory<T>::operator=(Msg);
-		flags.SetFlag(RequestFlag, false);
+		WriteFlag.Set();
 	}
 
 	operator T ()
 	{
-		flags.SetFlag(RequestFlag, true);
-		flags.WaitUntil(RequestFlag, false);
+		ReadFlag.Set();
+		WriteFlag.Wait();
 		return static_cast<StructuredMemory<T>>(*this);
 	}
 };

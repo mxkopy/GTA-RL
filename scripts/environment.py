@@ -10,7 +10,7 @@ from math import prod
 
 class GameState:
 
-    GameStateMemory = RequestLockedMemory('GameState', Flags.REQUEST_GAME_STATE)
+    GameStateMemory = RequestLockedMemory('GameState')
 
     @staticmethod
     def pop():
@@ -19,9 +19,10 @@ class GameState:
 
     @staticmethod
     def reset():
-        GameState.GameStateMemory.flags.set_flag(Flags.REQUEST_GAME_STATE, True)
-        GameState.GameStateMemory.flags.set_flag(Flags.RESET, True)
-        GameState.GameStateMemory.flags.wait_until(Flags.RESET, False)
+        GameState.GameStateMemory.read_flag.set()
+        GameState.GameStateMemory.write_flag.set()
+        GLOBAL_FLAGS.set_flag(Flags.RESET, True)
+        GLOBAL_FLAGS.wait_until(Flags.RESET, False)
 
 class VideoState:
 
@@ -102,7 +103,7 @@ class VideoState:
     def pop():
         depth = VideoState.pop_depth()
         depth = VideoState.linearize_depth(depth)
-        return depth.cpu()
+        return 2*depth.detach().cpu()-1
 
 class VideoGame:
 
@@ -125,7 +126,7 @@ class Environment(Env):
     def __init__(self, env_config={'horizon': None}):
         self.video_game = VideoGame()
         self.action_space = Box(low=-1.0, high=1.0, shape=config.action_space_shape)
-        self.observation_space = Box(low=0.0, high=1.0, shape=config.observation_space_shape)
+        self.observation_space = Box(low=-1.0, high=1.0, shape=config.observation_space_shape)
         self.last_n_frames = []
         self.horizon = env_config['horizon']
         self.t = 0
@@ -133,7 +134,7 @@ class Environment(Env):
     def calculate_reward(self, game_state):
         speed, collided = game_state
         horizon = 1 if self.horizon is None else self.horizon
-        return -1000 if collided else np.log10(1 + np.abs(speed)) * np.sign(speed)
+        return 0 if collided else np.sqrt(np.abs(speed)) * np.sign(speed) * (0.1 if np.sign(speed) < 0 else 1)
 
     def truncate(self) -> bool:
         if self.horizon is not None:
@@ -169,8 +170,6 @@ class Environment(Env):
         self.last_n_frames = [torch.zeros_like(frame) for _ in range(config.n_frames)]
         observation = self.stack_frame(frame)
         return observation, {"env_state" : "reset"}
-
-
 
 # Custom logger to record environment data 
 from ray.rllib.callbacks.callbacks import RLlibCallback
