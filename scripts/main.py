@@ -27,6 +27,8 @@ args.add_argument('--nosave', action='store_true', help='If set, does not save t
 args.add_argument('--flags', action='append', nargs='*', type=int, help='--flags\nPrints IPC flag values.\n--flags FLAG\nFlips flag.\n--flags FLAG VALUE\nSets flag.\nNOTE: Flipping a flag is ignored if that flag is set, and printing occurs after all operations.')
 args.add_argument('--unlock', action='store_true', help='Switches whether the game is synchronized to the model or free-running.')
 
+args.add_argument('--raycast', action='store_true')
+
 args = args.parse_args()
 
 def cmd_flags():
@@ -185,6 +187,22 @@ def cmd_view():
         cv2.imshow("Depth", depth.squeeze().cpu().numpy())
         cv2.imshow("RGB", rgb.permute(1, 2, 0).squeeze().cpu().numpy())
 
+
+def raycast_control():
+    from ipc import StructuredMemory
+    from structs import RayCast
+    ray = StructuredMemory("RayA")
+    raycast = ray.data
+    raycast.x = 0.5
+    raycast.y = 0.5
+    raycast.r = 255
+    raycast.g = 0
+    raycast.b = 0
+    raycast.a = 255
+    ray.data = raycast
+    print(raycast.collision)
+
+
 if __name__ == '__main__':
     import multiprocessing
     import signal
@@ -200,3 +218,6 @@ if __name__ == '__main__':
 
     if args.view:
         cmd_view()
+
+    if args.raycast:
+        raycast_control()

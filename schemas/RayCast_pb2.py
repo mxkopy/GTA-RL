@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 import Vec3f_pb2 as Vec3f__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rRayCast.proto\x1a\x0bVec3f.proto\"w\n\x07RayCast\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\x12\x19\n\tcollision\x18\x03 \x02(\x0b\x32\x06.Vec3f\x12\x18\n\x08position\x18\x04 \x02(\x0b\x32\x06.Vec3f\x12\x10\n\x08nearclip\x18\x05 \x02(\x02\x12\x0f\n\x07\x66\x61rclip\x18\x06 \x02(\x02')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rRayCast.proto\x1a\x0bVec3f.proto\"f\n\x07RayCast\x12\t\n\x01x\x18\x01 \x02(\x02\x12\t\n\x01y\x18\x02 \x02(\x02\x12\t\n\x01r\x18\x03 \x02(\x03\x12\t\n\x01g\x18\x04 \x02(\x03\x12\t\n\x01\x62\x18\x05 \x02(\x03\x12\t\n\x01\x61\x18\x06 \x02(\x03\x12\x19\n\tcollision\x18\x07 \x02(\x0b\x32\x06.Vec3f')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,5 +33,5 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'RayCast_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_RAYCAST']._serialized_start=30
-  _globals['_RAYCAST']._serialized_end=149
+  _globals['_RAYCAST']._serialized_end=132
 # @@protoc_insertion_point(module_scope)

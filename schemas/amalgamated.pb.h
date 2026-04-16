@@ -2043,14 +2043,15 @@ class RayCast final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kCollisionFieldNumber = 3,
-    kPositionFieldNumber = 4,
+    kCollisionFieldNumber = 7,
     kXFieldNumber = 1,
     kYFieldNumber = 2,
-    kNearclipFieldNumber = 5,
-    kFarclipFieldNumber = 6,
+    kRFieldNumber = 3,
+    kGFieldNumber = 4,
+    kBFieldNumber = 5,
+    kAFieldNumber = 6,
   };
-  // required .Vec3f collision = 3;
+  // required .Vec3f collision = 7;
   bool has_collision() const;
   void clear_collision() ;
   const ::Vec3f& collision() const;
@@ -2063,21 +2064,6 @@ class RayCast final : public ::google::protobuf::Message
   private:
   const ::Vec3f& _internal_collision() const;
   ::Vec3f* PROTOBUF_NONNULL _internal_mutable_collision();
-
-  public:
-  // required .Vec3f position = 4;
-  bool has_position() const;
-  void clear_position() ;
-  const ::Vec3f& position() const;
-  [[nodiscard]] ::Vec3f* PROTOBUF_NULLABLE release_position();
-  ::Vec3f* PROTOBUF_NONNULL mutable_position();
-  void set_allocated_position(::Vec3f* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_position(::Vec3f* PROTOBUF_NULLABLE value);
-  ::Vec3f* PROTOBUF_NULLABLE unsafe_arena_release_position();
-
-  private:
-  const ::Vec3f& _internal_position() const;
-  ::Vec3f* PROTOBUF_NONNULL _internal_mutable_position();
 
   public:
   // required float x = 1;
@@ -2102,34 +2088,56 @@ class RayCast final : public ::google::protobuf::Message
   void _internal_set_y(float value);
 
   public:
-  // required float nearclip = 5;
-  bool has_nearclip() const;
-  void clear_nearclip() ;
-  float nearclip() const;
-  void set_nearclip(float value);
+  // required int64 r = 3;
+  bool has_r() const;
+  void clear_r() ;
+  ::int64_t r() const;
+  void set_r(::int64_t value);
 
   private:
-  float _internal_nearclip() const;
-  void _internal_set_nearclip(float value);
+  ::int64_t _internal_r() const;
+  void _internal_set_r(::int64_t value);
 
   public:
-  // required float farclip = 6;
-  bool has_farclip() const;
-  void clear_farclip() ;
-  float farclip() const;
-  void set_farclip(float value);
+  // required int64 g = 4;
+  bool has_g() const;
+  void clear_g() ;
+  ::int64_t g() const;
+  void set_g(::int64_t value);
 
   private:
-  float _internal_farclip() const;
-  void _internal_set_farclip(float value);
+  ::int64_t _internal_g() const;
+  void _internal_set_g(::int64_t value);
+
+  public:
+  // required int64 b = 5;
+  bool has_b() const;
+  void clear_b() ;
+  ::int64_t b() const;
+  void set_b(::int64_t value);
+
+  private:
+  ::int64_t _internal_b() const;
+  void _internal_set_b(::int64_t value);
+
+  public:
+  // required int64 a = 6;
+  bool has_a() const;
+  void clear_a() ;
+  ::int64_t a() const;
+  void set_a(::int64_t value);
+
+  private:
+  ::int64_t _internal_a() const;
+  void _internal_set_a(::int64_t value);
 
   public:
   // @@protoc_insertion_point(class_scope:RayCast)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 6,
-                                   2, 0,
+  static const ::google::protobuf::internal::TcParseTable<3, 7,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -2151,11 +2159,12 @@ class RayCast final : public ::google::protobuf::Message
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::Vec3f* PROTOBUF_NULLABLE collision_;
-    ::Vec3f* PROTOBUF_NULLABLE position_;
     float x_;
     float y_;
-    float nearclip_;
-    float farclip_;
+    ::int64_t r_;
+    ::int64_t g_;
+    ::int64_t b_;
+    ::int64_t a_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -2998,14 +3007,14 @@ inline void Vec3f::_internal_set_z(float value) {
 
 // required float x = 1;
 inline bool RayCast::has_x() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
 }
 inline void RayCast::clear_x() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.x_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+                  0x00000002U);
 }
 inline float RayCast::x() const {
   // @@protoc_insertion_point(field_get:RayCast.x)
@@ -3013,7 +3022,7 @@ inline float RayCast::x() const {
 }
 inline void RayCast::set_x(float value) {
   _internal_set_x(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_set:RayCast.x)
 }
 inline float RayCast::_internal_x() const {
@@ -3027,14 +3036,14 @@ inline void RayCast::_internal_set_x(float value) {
 
 // required float y = 2;
 inline bool RayCast::has_y() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void RayCast::clear_y() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.y_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+                  0x00000004U);
 }
 inline float RayCast::y() const {
   // @@protoc_insertion_point(field_get:RayCast.y)
@@ -3042,7 +3051,7 @@ inline float RayCast::y() const {
 }
 inline void RayCast::set_y(float value) {
   _internal_set_y(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:RayCast.y)
 }
 inline float RayCast::_internal_y() const {
@@ -3054,7 +3063,123 @@ inline void RayCast::_internal_set_y(float value) {
   _impl_.y_ = value;
 }
 
-// required .Vec3f collision = 3;
+// required int64 r = 3;
+inline bool RayCast::has_r() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  return value;
+}
+inline void RayCast::clear_r() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.r_ = ::int64_t{0};
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
+}
+inline ::int64_t RayCast::r() const {
+  // @@protoc_insertion_point(field_get:RayCast.r)
+  return _internal_r();
+}
+inline void RayCast::set_r(::int64_t value) {
+  _internal_set_r(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  // @@protoc_insertion_point(field_set:RayCast.r)
+}
+inline ::int64_t RayCast::_internal_r() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.r_;
+}
+inline void RayCast::_internal_set_r(::int64_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.r_ = value;
+}
+
+// required int64 g = 4;
+inline bool RayCast::has_g() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
+  return value;
+}
+inline void RayCast::clear_g() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.g_ = ::int64_t{0};
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000010U);
+}
+inline ::int64_t RayCast::g() const {
+  // @@protoc_insertion_point(field_get:RayCast.g)
+  return _internal_g();
+}
+inline void RayCast::set_g(::int64_t value) {
+  _internal_set_g(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  // @@protoc_insertion_point(field_set:RayCast.g)
+}
+inline ::int64_t RayCast::_internal_g() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.g_;
+}
+inline void RayCast::_internal_set_g(::int64_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.g_ = value;
+}
+
+// required int64 b = 5;
+inline bool RayCast::has_b() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000020U);
+  return value;
+}
+inline void RayCast::clear_b() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.b_ = ::int64_t{0};
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000020U);
+}
+inline ::int64_t RayCast::b() const {
+  // @@protoc_insertion_point(field_get:RayCast.b)
+  return _internal_b();
+}
+inline void RayCast::set_b(::int64_t value) {
+  _internal_set_b(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000020U);
+  // @@protoc_insertion_point(field_set:RayCast.b)
+}
+inline ::int64_t RayCast::_internal_b() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.b_;
+}
+inline void RayCast::_internal_set_b(::int64_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.b_ = value;
+}
+
+// required int64 a = 6;
+inline bool RayCast::has_a() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000040U);
+  return value;
+}
+inline void RayCast::clear_a() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.a_ = ::int64_t{0};
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000040U);
+}
+inline ::int64_t RayCast::a() const {
+  // @@protoc_insertion_point(field_get:RayCast.a)
+  return _internal_a();
+}
+inline void RayCast::set_a(::int64_t value) {
+  _internal_set_a(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000040U);
+  // @@protoc_insertion_point(field_set:RayCast.a)
+}
+inline ::int64_t RayCast::_internal_a() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.a_;
+}
+inline void RayCast::_internal_set_a(::int64_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.a_ = value;
+}
+
+// required .Vec3f collision = 7;
 inline bool RayCast::has_collision() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
   PROTOBUF_ASSUME(!value || _impl_.collision_ != nullptr);
@@ -3151,163 +3276,6 @@ inline void RayCast::set_allocated_collision(::Vec3f* PROTOBUF_NULLABLE value) {
 
   _impl_.collision_ = reinterpret_cast<::Vec3f*>(value);
   // @@protoc_insertion_point(field_set_allocated:RayCast.collision)
-}
-
-// required .Vec3f position = 4;
-inline bool RayCast::has_position() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
-  PROTOBUF_ASSUME(!value || _impl_.position_ != nullptr);
-  return value;
-}
-inline void RayCast::clear_position() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.position_ != nullptr) _impl_.position_->Clear();
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
-}
-inline const ::Vec3f& RayCast::_internal_position() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  const ::Vec3f* p = _impl_.position_;
-  return p != nullptr ? *p : reinterpret_cast<const ::Vec3f&>(::_Vec3f_default_instance_);
-}
-inline const ::Vec3f& RayCast::position() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  // @@protoc_insertion_point(field_get:RayCast.position)
-  return _internal_position();
-}
-inline void RayCast::unsafe_arena_set_allocated_position(
-    ::Vec3f* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.position_);
-  }
-  _impl_.position_ = reinterpret_cast<::Vec3f*>(value);
-  if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:RayCast.position)
-}
-inline ::Vec3f* PROTOBUF_NULLABLE RayCast::release_position() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  ::Vec3f* released = _impl_.position_;
-  _impl_.position_ = nullptr;
-  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
-    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-    released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
-      delete old;
-    }
-  } else {
-    if (GetArena() != nullptr) {
-      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    }
-  }
-  return released;
-}
-inline ::Vec3f* PROTOBUF_NULLABLE RayCast::unsafe_arena_release_position() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  // @@protoc_insertion_point(field_release:RayCast.position)
-
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  ::Vec3f* temp = _impl_.position_;
-  _impl_.position_ = nullptr;
-  return temp;
-}
-inline ::Vec3f* PROTOBUF_NONNULL RayCast::_internal_mutable_position() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.position_ == nullptr) {
-    auto* p = ::google::protobuf::Message::DefaultConstruct<::Vec3f>(GetArena());
-    _impl_.position_ = reinterpret_cast<::Vec3f*>(p);
-  }
-  return _impl_.position_;
-}
-inline ::Vec3f* PROTOBUF_NONNULL RayCast::mutable_position()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  ::Vec3f* _msg = _internal_mutable_position();
-  // @@protoc_insertion_point(field_mutable:RayCast.position)
-  return _msg;
-}
-inline void RayCast::set_allocated_position(::Vec3f* PROTOBUF_NULLABLE value) {
-  ::google::protobuf::Arena* message_arena = GetArena();
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (message_arena == nullptr) {
-    delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.position_);
-  }
-
-  if (value != nullptr) {
-    ::google::protobuf::Arena* submessage_arena = value->GetArena();
-    if (message_arena != submessage_arena) {
-      value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
-    }
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  }
-
-  _impl_.position_ = reinterpret_cast<::Vec3f*>(value);
-  // @@protoc_insertion_point(field_set_allocated:RayCast.position)
-}
-
-// required float nearclip = 5;
-inline bool RayCast::has_nearclip() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
-  return value;
-}
-inline void RayCast::clear_nearclip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.nearclip_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000010U);
-}
-inline float RayCast::nearclip() const {
-  // @@protoc_insertion_point(field_get:RayCast.nearclip)
-  return _internal_nearclip();
-}
-inline void RayCast::set_nearclip(float value) {
-  _internal_set_nearclip(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
-  // @@protoc_insertion_point(field_set:RayCast.nearclip)
-}
-inline float RayCast::_internal_nearclip() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.nearclip_;
-}
-inline void RayCast::_internal_set_nearclip(float value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.nearclip_ = value;
-}
-
-// required float farclip = 6;
-inline bool RayCast::has_farclip() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000020U);
-  return value;
-}
-inline void RayCast::clear_farclip() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.farclip_ = 0;
-  ClearHasBit(_impl_._has_bits_[0],
-                  0x00000020U);
-}
-inline float RayCast::farclip() const {
-  // @@protoc_insertion_point(field_get:RayCast.farclip)
-  return _internal_farclip();
-}
-inline void RayCast::set_farclip(float value) {
-  _internal_set_farclip(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000020U);
-  // @@protoc_insertion_point(field_set:RayCast.farclip)
-}
-inline float RayCast::_internal_farclip() const {
-  ::google::protobuf::internal::TSanRead(&_impl_);
-  return _impl_.farclip_;
-}
-inline void RayCast::_internal_set_farclip(float value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.farclip_ = value;
 }
 
 // -------------------------------------------------------------------

@@ -10,10 +10,11 @@ class Vec3f(metaclass=Serializable):
 class RayCast(metaclass=Serializable):
     x: np.float32
     y: np.float32
+    r: int
+    g: int
+    b: int
+    a: int
     collision: Vec3f
-    position: Vec3f
-    nearclip: np.float32
-    farclip: np.float32
 
 class VertexShaderConstants(metaclass=Serializable):
     nearclip: np.float32

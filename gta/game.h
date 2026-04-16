@@ -106,6 +106,7 @@ void ScriptMain()
 	FLAGS.SetFlag(BEGIN_TRAINING, true);
 	while (true)
 	{
+		Ray::UpdateAll();
 		OnTick();
 		WAIT(0);
 	}

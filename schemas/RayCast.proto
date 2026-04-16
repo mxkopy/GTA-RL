@@ -2,8 +2,9 @@ import "Vec3f.proto";
 message RayCast {
  required float x = 1;
  required float y = 2;
- required Vec3f collision = 3;
- required Vec3f position = 4;
- required float nearclip = 5;
- required float farclip = 6;
+ required int64 r = 3;
+ required int64 g = 4;
+ required int64 b = 5;
+ required int64 a = 6;
+ required Vec3f collision = 7;
 }

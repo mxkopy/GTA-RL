@@ -96,7 +96,7 @@ struct Memory: MemoryMap
 
 	Memory(string Tagname) : MemoryMap(Tagname, max(HEAD_LENGTH, Capacity(Tagname)))
 	{
-		if (Capacity() == 0) ChangeCapacity(1);
+		if (Capacity() == 0) ChangeCapacity(1024);
 	}
 
 	inline size_t& Capacity() const
