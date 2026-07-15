@@ -11,6 +11,7 @@ struct VSConstants
     inline static StructuredMemory<VertexShaderConstants> VSMemory{ "VSConstants" };
     inline static VertexShaderConstants Data{};
 
+    // Hacky shortcut for defining fields that access a memory-mapped region on read 
     #define MAP_VSB_TO_EIGEN_TYPE(NAME, MAP_TYPE, VSB_INDEX, VSB_OFFSET) \
         inline static struct { \
             operator const Eigen::Map<MAP_TYPE> () const { \

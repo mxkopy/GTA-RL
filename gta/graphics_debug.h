@@ -2,8 +2,12 @@
 #include "framework.h"
 #include "vertex_buffers.h"
 
+
+// Controls ingame debug rays with path tracing
+// Converts screen-space coordinates to a direction and origin in world-space, casts a ray along that direction, and writes the result to a RayCast protobuf object stored in memory
 struct Ray
 {
+    // Stores a Protobuf object in memory containing screen space coordinates, origin, world-space direction
     StructuredMemory<RayCast> Memory;
     RayCast Data{};
 
@@ -18,6 +22,7 @@ struct Ray
         return Axes * Vector3f(Data.x(), Data.y(), 1);
     }
 
+    // Casts a ray in world-space indicated by the screen-space coordinates stored by the StructuredMemory<RayCast> object
     void Cast()
     {
         Data = Memory;
@@ -38,6 +43,7 @@ struct Ray
         Memory = Data;
     }
 
+    // Displays the rays ingame
     Vector3 Debug()
     {
         Eigen::Map<Vector3f> P = VSConstants::P;
