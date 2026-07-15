@@ -1,5 +1,5 @@
 #pragma once
-// TY https://stackoverflow.com/questions/20337870/what-is-the-equivalent-of-system-diagnostics-debugger-launch-in-unmanaged-code
+// Stolen from https://stackoverflow.com/questions/20337870/what-is-the-equivalent-of-system-diagnostics-debugger-launch-in-unmanaged-code
 
 #include <windows.h>
 #include <string>

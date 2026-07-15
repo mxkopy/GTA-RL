@@ -6,7 +6,9 @@
 #include "cuda_ipc.h"
 #include "graphics_debug.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Util
+// Apologies for the lack of comments here. 
+// The bulk of this is DirectX11 boilerplate and is difficult to document without losing one's mind. 
+// I've tried to indicate the areas that are off the beaten path.
 
 static void GetDeviceAndContextFromSwapChain(void* chain) {
     SwapChain = (IDXGISwapChain*) chain;
@@ -15,8 +17,6 @@ static void GetDeviceAndContextFromSwapChain(void* chain) {
     Device->GetImmediateContext(&DeviceContext);
     DeviceContextVirtualTable = (void**)*(void**)DeviceContext.Get();
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Compute Shader
 
 
 DXGI_FORMAT GetDepthFormatFromDepthStencilFormat(DXGI_FORMAT Format)
@@ -65,7 +65,7 @@ void GetTextureFromView(ComPtr<ViewType> View, D3D11_TEXTURE2D_DESC* TextureDesc
     Texture->GetDesc(TextureDesc);
 }
 
-
+// Manages intrinsic camera parameters in the DirectX context, and writes them to the publically accessible Eigen matrix object in the VSConstants class
 struct CameraTransforms
 {
     inline static ComPtr<ID3D11Buffer> LastMatrixBuffer;
@@ -82,6 +82,7 @@ struct CameraTransforms
         ERR(Device->CreateBuffer(&BufferDesc, NULL, CurrentMatrixBuffer.GetAddressOf()));
     }
 
+    // Gets DX11 vertex buffer containing camera paremeters and writes them to the VSConstants class
     static void Update(ComPtr<ID3D11DeviceContext> DeviceContext)
     {   
         auto A = (Matrix3f&) VSConstants::Axes;
@@ -109,7 +110,9 @@ struct CameraTransforms
     CameraTransforms() = default;
 };
 
-
+// Manages the depth & stencil resources in the DX11 context, writing them to CUDA arrays and updating in the relevant places
+// See the "HOOKS" comment section following this for the big picture
+// Painful amounts of boilerplate
 struct DepthStencilComputeShader
 {
     inline static ComPtr<ID3D11ComputeShader> ComputeShader;
@@ -300,7 +303,7 @@ struct DepthStencilComputeShader
 #ifdef _WINDLL
 #include "game.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Hooks
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// HOOKS
 
 
 // Unfortunately there doesn't seem to be a straightforward way to read the depth stencil texture directly into cuda memory.
@@ -482,6 +485,7 @@ BOOL APIENTRY DllMain
     return TRUE;
 }
 #else
+// Testing stuff without needing to launch the game
 #include "input.h"
 
 int main(int argc, char* argv[])
