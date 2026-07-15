@@ -15,6 +15,8 @@ const static Hash ENTITY_XF = 3003014393;
 const static Vector3 AIRPORT = {.x = -1161.462f, .y = -2584.786f, .z = 13.505f };
 const static Vector3 HIGHWAY = {.x = -704.8778f, .y = -2111.786,  .z = 13.51563f};
 
+// Clears wanted level
+// Runs every tick
 inline static void ClearWanted()
 {
 	if (PLAYER::GET_PLAYER_WANTED_LEVEL(_PLAYER) > 0)
@@ -24,6 +26,8 @@ inline static void ClearWanted()
 	}
 }
 
+// Forces the camera to be aligned with the car and face the front
+// Runs every tick
 inline static void CenterCamera()
 {
 
@@ -35,8 +39,9 @@ inline static void CenterCamera()
 	CAM::SET_GAMEPLAY_CAM_RELATIVE_PITCH(-10.0f, 1.0f);
 }
 
-
-// It's better to just not think about it
+// Creates a car at a given position and sets the player into it
+// There's a lot of idiosyncracies from the RAGE engine API in here, and it's better to just not think about it
+// Runs once at the beginning of every training episode
 inline static void InitializePlayerDrivingPosition(Vector3 Position)
 {
 	float Heading = 360 * UniformRandom(Gen);
@@ -52,6 +57,9 @@ inline static void InitializePlayerDrivingPosition(Vector3 Position)
 	//STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(ENTITY_XF);
 }
 
+
+// Sets the position and heading of the car the player is in
+// Runs once at the beginning of every training episode
 inline static void ResetPlayerDrivingPosition(Vector3 Position, float Heading)
 {
 	auto V = _VEHICLE;
@@ -61,6 +69,9 @@ inline static void ResetPlayerDrivingPosition(Vector3 Position, float Heading)
 	VEHICLE::SET_VEHICLE_FIXED(V);
 }
 
+
+// Initializes everything for a training episode (car position, orientation, etc.)
+// Runs once at the beginning of every training episode
 inline static void Reset()
 {
 	float Heading = 360 * UniformRandom(Gen);
@@ -69,6 +80,8 @@ inline static void Reset()
 
 static Flags FLAGS;
 
+// Code to run every tick (i.e. frame) of the game
+// Checks to see if the python script is running, if so initializes the training episode, checks to see if the car crashed and needs to reset, reads and writes to synchronized memory, etc.
 void OnTick()
 {
 	static RequestLockedMemory<GameState> GameStateMemory("GameState");

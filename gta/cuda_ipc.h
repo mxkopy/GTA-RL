@@ -25,6 +25,9 @@ cudaChannelFormatDesc CudaChannelFormatFromDXGIFormat(DXGI_FORMAT Format)
     throw std::system_error(E_NOTIMPL, std::system_category());
 }
 
+// Wrapper around CUDA Pitched Arrays
+// Stores auxiliary information (bytes-per-pixel, extent, etc) so it can be read/written by other methods in the program
+// Also publishes this information via IPC so it can be read by cuda libraries in other programs 
 struct CUDAPitchedArray
 {
     inline static set<CUDAPitchedArray*> Instances;
@@ -45,6 +48,7 @@ struct CUDAPitchedArray
         return (ChannelFormat.x + ChannelFormat.y + ChannelFormat.z + ChannelFormat.w) / CHAR_BIT;
     }
 
+    // Copies memory from another cudaArray into the one stored by this object
     cudaError_t CopyFrom(cudaArray_t Array)
     {
         return cudaMemcpy2DFromArray(cuMemory, Pitch, Array, 0, 0, BPP() * Extent.width, Extent.height, cudaMemcpyDefault);
@@ -61,6 +65,7 @@ struct CUDAPitchedArray
         for (auto Array : CUDAPitchedArray::Instances) Array -> Free();
     }
 
+    // Publishes the memory segment information (bytes per pixel, width, length, etc) to an IPC channel that makes it readable by other programs  
     void Publish(string Tagname)
     {
         StructuredMemory<CUDAPitchedArrayObject> Memory(Tagname);
@@ -91,6 +96,8 @@ struct CUDAPitchedArray
 
 };
 
+
+// Boilerplate to create a CUDA array from DirectX11 Texture object, and update it when the latter changes
 template <typename T>
 struct D3DBackedCUDAPitchedArray : CUDAPitchedArray
 {
