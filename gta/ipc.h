@@ -17,7 +17,7 @@ using std::string_view;
 using google::protobuf::Message;
 
 // Wrapper around Windows' memory-mapping methods
-// Exposes pointer to memory mapped region as `void* Bytes`
+// Exposes pointer to memory mapped region as `void* Bytes` (i.e. write/read to MemoryMap -> Bytes)
 struct MemoryMap
 {
 	string Tagname;
@@ -79,7 +79,6 @@ struct MemoryMap
 
 };
 
-
 // Memory mapped vector of bytes
 // The first 16 bytes of shared memory hold its capacity and length, which are now accessible to other programs
 struct Memory: MemoryMap
@@ -133,7 +132,7 @@ struct Memory: MemoryMap
 	}
 };
 
-
+// DEPRECATED: See Event class
 // Synchronization bitflags
 #define BEGIN_TRAINING 0
 #define REQUEST_GAME_STATE 1
@@ -173,44 +172,16 @@ struct Flags: MemoryMap
 	}
 };
 
-// TODO: add some sort of assertion that the deserialized typename is the actual type's name
-// A memory region that contains a protobuf object
-template<std::derived_from<Message> T>
-struct StructuredMemory : Memory
-{
-	inline static const std::string PayloadTypeName = std::string(T::GetDescriptor()->name());
 
-	StructuredMemory(string Tagname) : Memory(Tagname) 
-	{};
-
-	StructuredMemory() = default;
-
-	void operator = (const T& Msg)
-	{
-		Payload P = {};
-		P.set_typename_(PayloadTypeName);
-		P.set_data(Msg.SerializeAsString());
-		Memory::operator=(P.SerializeAsString());
-	}
-
-	operator T ()
-	{
-		Payload P = {};
-		T Message = {};
-		P.ParseFromString(static_cast<string_view>(*this));
-		Message.ParseFromString(P.data());
-		return Message;
-	}
-};
-
-
+// Win32 Events-based synchronization of above
 struct Event
 {
 	HANDLE Handle;
 
-	Event(string Name, bool ManualReset = false, bool InitialState = false) : 
+	Event(string Name, bool ManualReset = false, bool InitialState = false) :
 		Handle(CreateEventA(NULL, ManualReset, InitialState, Name.c_str()))
-	{}
+	{
+	}
 
 	Event() = default;
 
@@ -224,15 +195,53 @@ struct Event
 		return ResetEvent(Handle);
 	}
 
+	// Blocking wait
 	DWORD Wait(bool Alertable = true)
 	{
 		DWORD result;
+		// Alertable WaitForSingleObjectEx doesn't block, while WaitForSingleObjectEx does
+		// Since we want this method to block, we wait until we get a response in the Alertable case
 		if (Alertable) while (true) if ((result = WaitForSingleObjectEx(Handle, INFINITE, true)) != WAIT_IO_COMPLETION) return result;
+		// Otherwise run the blocking method 
 		else return WaitForSingleObjectEx(Handle, INFINITE, false);
 	}
 };
 
-// A memory region containing a protobuf object with a specific synchronized access pattern 
+// DEPRECATED
+// TODO: add some sort of assertion that the deserialized typename is the actual type's name
+// A memory region that contains a protobuf object. Inherits read/write lock behavior from Protobuf library
+template<std::derived_from<Message> T>
+struct StructuredMemory : Memory
+{
+	inline static const std::string PayloadTypeName = std::string(T::GetDescriptor()->name());
+
+	StructuredMemory(string Tagname) : Memory(Tagname) 
+	{};
+
+	StructuredMemory() = default;
+
+	// Supports assignment-is-writing-memory when the operand is a protobuf Message object
+	void operator = (const T& Msg)
+	{
+		Payload P = {};
+		P.set_typename_(PayloadTypeName);
+		P.set_data(Msg.SerializeAsString());
+		Memory::operator=(P.SerializeAsString());
+	}
+
+	// Supports casting-is-reading-memory when the cast type is a protobuf Message object
+	operator T ()
+	{
+		Payload P = {};
+		T Message = {};
+		P.ParseFromString(static_cast<string_view>(*this));
+		Message.ParseFromString(P.data());
+		return Message;
+	}
+};
+
+// DEPRECATED
+// A memory region containing a protobuf object with a specific synchronized access pattern ('request-locked')
 // See scripts/ipc.py
 template<std::derived_from<Message> T>
 struct RequestLockedMemory : StructuredMemory<T>
@@ -241,12 +250,14 @@ struct RequestLockedMemory : StructuredMemory<T>
 	Event ReadFlag;
 	Event WriteFlag;
 
+	// Initializes RequestLockedMemory object with read and write access flags 
 	RequestLockedMemory(string Tagname) : 
 		StructuredMemory<T>(Tagname), 
 		ReadFlag(Tagname + "Read"),
 		WriteFlag(Tagname + "Write")
 	{}
 
+	// Supports assignment-is-writing-memory when the operand is a protobuf Message object
 	void operator = (const T& Msg)
 	{
 		ReadFlag.Wait();
@@ -254,6 +265,7 @@ struct RequestLockedMemory : StructuredMemory<T>
 		WriteFlag.Set();
 	}
 
+	// Supports casting-is-reading-memory when the cast type is a protobuf Message object
 	operator T ()
 	{
 		ReadFlag.Set();
